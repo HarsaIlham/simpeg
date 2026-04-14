@@ -1,0 +1,71 @@
+.item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: var(--color-bg-green);
+}
+
+.unread {
+  background-color: #f7fcf9;
+}
+
+.iconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.box-success { background-color: #e6f4ee; }
+.iconSuccess { color: var(--color-primary); }
+
+.box-error { background-color: #fce4e4; }
+.iconError { color: #e53e3e; }
+
+.box-warning { background-color: #fff3e0; }
+.iconWarning { color: #ef6c00; }
+
+.box-info { background-color: #e3f2fd; }
+.iconInfo { color: #1565c0; }
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.desc {
+  font-size: 11px;
+  color: #6b8f7b;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.time {
+  font-size: 10px;
+  color: #a0aec0;
+}

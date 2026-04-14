@@ -1,0 +1,55 @@
+.text {
+  margin: 0;
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: var(--font-size-2xl);
+  line-height: 1.4;
+}
+
+.body {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+.caption {
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.semibold {
+  font-weight: 600;
+}
+
+.medium {
+  font-weight: 500;
+}
+
+.normal {
+  font-weight: 400;
+}
+
+.default {
+  color: #1B5E4B;
+}
+
+.white {
+  color: white;
+}
+
+.muted {
+  color: #b9dec9;
+}
+
+.green {
+  color: #176d49;
+}

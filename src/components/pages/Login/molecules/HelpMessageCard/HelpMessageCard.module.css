@@ -1,0 +1,21 @@
+.card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 16px 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    margin-top: 16px;
+}
+
+.text {
+    font-size: var(--font-size-base);
+    color: #6b7280;
+    margin: 0;
+}
+
+.bold {
+    color: #1f2937;
+    font-weight: 700;
+}

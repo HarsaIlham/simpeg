@@ -1,0 +1,10 @@
+.recordList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.tabsWrapper {
+    margin-bottom: 1.5rem;
+}

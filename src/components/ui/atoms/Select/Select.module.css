@@ -1,0 +1,59 @@
+.label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.labelText {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+    font-family: inherit;
+}
+
+.selectWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.select {
+    width: 100%;
+    padding: 12px 14px;
+    padding-right: 36px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: #1f2937;
+    font-family: inherit;
+    background-color: var(--color-white);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+.select:focus {
+    border-color: #1b7a5a;
+    box-shadow: 0 0 0 3px rgba(27, 122, 90, 0.15);
+}
+
+.select:disabled {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    cursor: default;
+    border-color: var(--color-border);
+}
+
+.chevron {
+    position: absolute;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    pointer-events: none;
+}

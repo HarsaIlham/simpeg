@@ -1,0 +1,28 @@
+.profilLayout {
+    display: flex;
+    gap: var(--spacing-2xl);
+    align-items: flex-start;
+}
+
+.profilContentLeft{
+    position: sticky;
+    top: 0;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 350px;
+    flex-shrink: 0;
+    gap: var(--spacing-2xl);
+}
+
+
+@media (max-width: 1024px) {
+    .profilLayout {
+        flex-direction: column;
+    }
+    .profilContentLeft {
+        position: relative;
+        width: 100%;
+    }
+}

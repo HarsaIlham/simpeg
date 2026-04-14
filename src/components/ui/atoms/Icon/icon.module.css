@@ -1,0 +1,69 @@
+.iconBox {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background-color: #118a5a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.xs {
+  width: 24px;
+  height: 24px;
+}
+
+.sm {
+  width: 36px;
+  height: 36px;
+}
+
+.md {
+  width: 48px;
+  height: 48px;
+}
+
+.lg {
+  width: 56px;
+  height: 56px;
+}
+
+.xl {
+  width: 100px;
+  height: 100px;
+}
+
+.rounded {
+  border-radius: 14px;
+}
+
+.full {
+  border-radius: 50%;
+}
+
+.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.soft {
+  background-color: #e7f3ed;
+  color: #118a5a;
+}
+
+.dark {
+  background-color: var(--sidebar-bg);
+  color: white;
+}
+
+.white {
+  background-color: white;
+  color: #118a5a;
+}
+
+.transparant {
+  background-color: transparent;
+  color: var(--color-primary);
+}

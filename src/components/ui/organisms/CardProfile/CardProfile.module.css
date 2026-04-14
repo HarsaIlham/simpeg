@@ -1,0 +1,48 @@
+.card {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.cardHeaderContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm); 
+}
+
+.cardHeaderIcon {
+  color: var(--color-primary);
+}
+
+.cardTitle {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.divider {
+    margin: var(--spacing-lg) 0;
+    border: 1px solid var(--color-border);
+}
+
+.contactItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}

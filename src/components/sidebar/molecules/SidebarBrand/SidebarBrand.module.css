@@ -1,0 +1,27 @@
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  color: var(--sidebar-text-muted);
+}

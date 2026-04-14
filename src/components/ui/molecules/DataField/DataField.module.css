@@ -1,0 +1,31 @@
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.label {
+    font-size: var(--font-size-xs);
+    color: #6b8f7b;
+    position: relative;
+    padding-left: 12px;
+}
+
+.label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-primary);
+}
+
+.value {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-text);
+    padding-left: 12px;
+}

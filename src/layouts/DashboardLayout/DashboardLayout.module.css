@@ -1,0 +1,38 @@
+.layout {
+  min-height: 100vh;
+}
+
+/* ---- Main Content ---- */
+.main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  transition: margin-left var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-green);
+}
+
+.main.mainCollapsed {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
+/* ---- Content Area ---- */
+.content {
+  flex: 1;
+  padding: 0 var(--spacing-2xl) var(--spacing-2xl);
+}
+
+/* ========== MOBILE ========== */
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+  }
+
+  .main.mainCollapsed {
+    margin-left: 0;
+  }
+
+  .content {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+  }
+}

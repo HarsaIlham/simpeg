@@ -1,0 +1,9 @@
+.header {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.headerTitle{
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}

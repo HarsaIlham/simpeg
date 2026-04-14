@@ -1,0 +1,7 @@
+.loginPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 440px; /* Lebar maksimal konten form sesuai referensi */
+}

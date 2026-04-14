@@ -1,0 +1,44 @@
+.item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid #fce4e4;
+    background-color: #fef7f7;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+    cursor: pointer;
+}
+
+.item:hover {
+    background-color: #fdeaea;
+    transform: translateX(4px);
+}
+
+.iconBox {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    background-color: #fce4e4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e53e3e;
+    flex-shrink: 0;
+}
+
+.textContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.desc {
+    font-size: var(--font-size-xs);
+    color: #6b8f7b;
+}

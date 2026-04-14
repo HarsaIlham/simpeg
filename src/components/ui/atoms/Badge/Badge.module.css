@@ -1,0 +1,40 @@
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 9999px; /* Pill shape */
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    line-height: 1;
+}
+
+.default {
+    background-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.info {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.success {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.warning {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.danger {
+    background-color: #fce4e4;
+    color: #e53e3e;
+}
+
+.parent {
+    background-color: #e0d8f1;
+    color: #805ad5;
+}

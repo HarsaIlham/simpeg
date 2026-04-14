@@ -1,0 +1,16 @@
+.header {
+    margin-bottom: var(--spacing-xs);
+}
+
+.grid {
+    display: flex;
+    gap: var(--spacing-2xl);
+    margin-top: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .grid {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+}

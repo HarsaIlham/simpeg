@@ -1,0 +1,30 @@
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.grid {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+
+.actionsBox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .dates {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+    .grid {
+        flex-direction: column;
+    }
+}

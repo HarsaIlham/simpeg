@@ -1,0 +1,45 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -4px;
+}
+
+.forgotLink {
+    font-size: 13.5px;
+    color: #4b5563; 
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.forgotLink:hover {
+    color: #1b7a5a; 
+    text-decoration: underline;
+}
+
+.eyeBtn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.eyeBtn:focus {
+    outline: none;
+}
+
+.submitWrapper {
+    margin-top: 8px; 
+}

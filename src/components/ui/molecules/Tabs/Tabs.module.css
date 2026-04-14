@@ -1,0 +1,51 @@
+.tabsContainer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-xs); 
+    margin-bottom: var(--spacing-md);
+}
+
+.tabsContainer::-webkit-scrollbar {
+    height: 4px;
+}
+.tabsContainer::-webkit-scrollbar-track {
+    background: transparent;
+}
+.tabsContainer::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-full);
+}
+
+.tabButton {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap; 
+}
+
+.tabButton:hover {
+    background-color: rgba(33, 136, 85, 0.05); 
+}
+
+.tabButton.active {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    box-shadow: 0 4px 6px -1px rgba(33, 136, 85, 0.3);
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

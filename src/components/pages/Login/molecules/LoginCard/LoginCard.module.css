@@ -1,0 +1,60 @@
+.card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 32px 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1b7a5a; 
+    margin: 16px 0 8px 0;
+    font-family: inherit;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.body {
+    width: 100%;
+}
+
+.footer {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+}
+
+.adminLink {
+    font-size: 13.5px;
+    color: #6b7280;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.adminLink:hover {
+    color: #1b7a5a;
+}

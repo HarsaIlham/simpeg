@@ -1,0 +1,126 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: width var(--transition-normal);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+/* ---- Overlay (mobile) ---- */
+.overlay {
+  display: none;
+}
+
+/* ---- Sections ---- */
+.section {
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+/* ---- Switch Account Button ---- */
+.switchBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: calc(100% - var(--spacing-md));
+  margin: 0 auto;
+  padding: 8px var(--spacing-md);
+  border: 1.5px solid var(--sidebar-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.switchBtn:hover {
+  background-color: var(--sidebar-hover);
+}
+
+/* ---- Navigation ---- */
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-lg) 0;
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--spacing-md);
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+/* ---- Footer ---- */
+.footer {
+  border-top: 1px solid var(--sidebar-border);
+  border-spacing: 1px solid var(--sidebar-border);
+  padding: var(--spacing-md) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footerBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: 10px var(--spacing-md);
+  margin: 0 var(--spacing-sm);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--sidebar-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.footerBtn:hover {
+  background-color: var(--sidebar-hover);
+  color: white;
+}
+
+/* ========== MOBILE ========== */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-width);
+    transition: transform var(--transition-normal);
+  }
+
+  .sidebar.collapsed {
+    width: var(--sidebar-width);
+  }
+
+  .sidebar.mobileOpen {
+    transform: translateX(0);
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 99;
+  }
+}

@@ -1,0 +1,77 @@
+.statContent {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.iconBox {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.green {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.teal {
+    background-color: #e0f2f1;
+    color: #00897b;
+}
+
+.amber {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.red {
+    background-color: #fce4e4;
+    color: #e53e3e;
+}
+
+.blue {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.1;
+}
+
+.label {
+    font-size: var(--font-size-xs);
+    color: #6b8f7b;
+    margin-top: 2px;
+}
+
+.skeletonValue {
+    width: 60px;
+    height: 32px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

@@ -15,6 +15,12 @@
   padding-top: var(--spacing-2xl);
 }
 
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .notifBtn {
   position: relative;
   display: flex;

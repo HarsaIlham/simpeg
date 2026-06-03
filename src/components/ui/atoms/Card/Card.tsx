@@ -5,7 +5,7 @@ import styles from "./Card.module.css";
 interface CardProps {
     children: ReactNode;
     className?: string;
-    padding?: "sm" | "md" | "lg";
+    padding?: "none" | "xs" | "sm" | "md" | "lg";
     hover?: boolean;
     onClick?: () => void;
 }

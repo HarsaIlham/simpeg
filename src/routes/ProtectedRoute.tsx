@@ -20,7 +20,6 @@ export const ProtectedRoute = () => {
 
 export const PublicRoute = () => {
     const { user, isLoading } = useAuth();
-
     if (isLoading) {
         return null;
     }

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import styles from "./StatCard.module.css";
 import Card from "../../atoms/Card";
 
-type StatVariant = "green" | "teal" | "amber" | "red" | "blue";
+type StatVariant = "green" | "teal" | "amber" | "red" | "blue" | "purple";
 
 interface StatCardProps {
     icon: ReactNode;

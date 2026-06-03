@@ -8,7 +8,7 @@ export interface ChangeRequestData {
     title: string;
     date: string;
     statusLabel: string;
-    statusVariant: "info" | "success" | "warning" | "danger" | "default";
+    statusVariant:  "success" | "warning" | "danger" | "default";
 }
 
 interface propsType {

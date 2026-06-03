@@ -1,0 +1,77 @@
+.tableContainer {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-white);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    min-width: 900px;
+}
+
+.th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-primary-light);
+    padding: 14px 16px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.bodyScroll {
+    overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bodyScroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.bodyScroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.bodyScroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+}
+
+.bodyScroll::-webkit-scrollbar-thumb:hover {
+    background: #b0c4b8;
+}
+
+.tr {
+    transition: background-color var(--transition-fast);
+}
+
+.tr:not(:last-child) {
+    border-bottom: 1px solid #f0f4f2;
+}
+
+.tr:hover {
+    background-color: #f9fcfa;
+}
+
+.td {
+    padding: 14px 16px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    vertical-align: middle;
+}
+
+.emptyState {
+    padding: 48px 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: var(--font-size-sm);
+}

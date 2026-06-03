@@ -1,0 +1,45 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.periodLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d5a47;
+    margin-bottom: -8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e0e8e4;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding-top: 8px;
+}
+
+@media (min-width: 768px) {
+    .row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.errorMessage {
+    font-size: 13px;
+    color: #dc3545;
+    background-color: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    margin: 8px -24px -24px -24px;
+    border-top: 2px solid #4E7F6A;
+    background-color: transparent;
+}

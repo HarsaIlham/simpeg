@@ -22,3 +22,9 @@
         grid-template-columns: 1fr;
     }
 }
+
+.actionsBox {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    justify-content: flex-start;
+}

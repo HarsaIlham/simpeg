@@ -1,4 +1,4 @@
-import { ChevronLeft, LogOut, PanelLeftOpen, RefreshCw } from "lucide-react";
+import { ChevronLeft, LogOut, PanelLeftOpen} from "lucide-react";
 import { sidebarMenuItems } from "../../data/sidebarMenu";
 import SidebarBrand from "./molecules/SidebarBrand";
 import SidebarUserCard from "./molecules/SidebarUserCard";
@@ -42,14 +42,6 @@ const Sidebar = () => {
             role={user.role.toUpperCase()}
           />
         </div>
-        {!isCollapsed && (
-          <div className={styles.section}>
-            <button className={styles.switchBtn} onClick={() => console.log("Switch account")}>
-              <RefreshCw size={16} />
-              <span>Ganti Akun</span>
-            </button>
-          </div>
-        )}
         <nav className={styles.nav}>
           {accessibleMenus.map((item) => (
             <SidebarNavItem
@@ -65,7 +57,13 @@ const Sidebar = () => {
           </button>
         </div>
         <div className={styles.footer}>
-          <button className={styles.footerBtn} onClick={toggleCollapse}>
+          <button className={styles.footerBtn} onClick={() => {
+            if (window.innerWidth <= 768) {
+              closeMobile();
+            } else {
+              toggleCollapse();
+            }
+          }}>
             {isCollapsed ? <PanelLeftOpen size={18} /> : <ChevronLeft size={18} />}
             {!isCollapsed && <span>Sembunyikan</span>}
           </button>

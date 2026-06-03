@@ -1,12 +1,14 @@
 import React from "react";
 import styles from "./Select.module.css";
+import ReactSelect from "react-select";
+import type { SingleValue } from "react-select";
 
 interface OptionType {
     value: string;
     label: string;
 }
 
-interface propsType {
+interface PropsType {
     label?: string;
     name: string;
     id: string;
@@ -18,41 +20,104 @@ interface propsType {
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     disabled?: boolean;
     bgColor?: string;
+    searchable?: boolean;
+    icon?: React.ReactNode;
 }
 
-const Select = (props: propsType) => {
-    const { label, name, id, options, placeholder, required = false, className, value, onChange, disabled, bgColor } = props;
+const Select = (props: PropsType) => {
+    const {
+        label,
+        name,
+        id,
+        options,
+        placeholder,
+        required = false,
+        className,
+        value,
+        onChange,
+        disabled,
+        bgColor,
+        searchable = false,
+        icon,
+    } = props;
+
+    const handleReactSelectChange = (selected: SingleValue<OptionType>) => {
+        if (!onChange) return;
+        const syntheticEvent = {
+            target: {
+                name,
+                value: selected?.value ?? "",
+            },
+        } as React.ChangeEvent<HTMLSelectElement>;
+        onChange(syntheticEvent);
+    };
+
+    const selectedOption = options.find((opt) => opt.value === value) || null;
+    const reactSelectOptions = options.filter((opt) => opt.value !== "");
+
     return (
-        <label htmlFor={id} className={styles.label}>
-            {label && <span className={styles.labelText}>{label}</span>}
-            <div className={styles.selectWrapper}>
-                <select
-                    id={id}
-                    name={name}
-                    required={required}
-                    className={`${styles.select} ${className || ""}`}
-                    value={value}
-                    onChange={onChange}
-                    disabled={disabled}
-                    style={bgColor ? { backgroundColor: bgColor } : undefined}
-                >
-                    {placeholder && (
-                        <option value="" disabled>
-                            {placeholder}
-                        </option>
-                    )}
-                    {options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                        </option>
-                    ))}
-                </select>
-                <div className={styles.chevron}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+        <label htmlFor={id} className={`${styles.label} ${className || ""}`}>
+            {label && (
+                <span className={styles.labelText}>
+                    {label}
+                    {required && <span className={styles.required}>*</span>}
+                </span>
+            )}
+
+            {searchable ? (
+                <div className={styles.selectWrapper}>
+                    <ReactSelect<OptionType, false>
+                        inputId={id}
+                        name={name}
+                        options={reactSelectOptions}
+                        value={selectedOption}
+                        onChange={handleReactSelectChange}
+                        placeholder={placeholder || "Pilih..."}
+                        isDisabled={disabled}
+                        isSearchable
+                        noOptionsMessage={() => "Tidak ada hasil"}
+                        className="react-select-container"
+                        classNamePrefix="react-select"
+                        menuPlacement="auto"
+                        menuPortalTarget={document.body}
+                        maxMenuHeight={250}
+                        components={icon ? { IndicatorSeparator: () => null } : undefined}
+                        styles={{
+                            control: (base) => ({
+                                ...base,
+                                paddingLeft: icon ? 36 : 12,
+                                display: "flex",
+                                alignItems: "center",
+                            }),
+                            valueContainer: (base) => ({
+                                ...base,
+                                padding: 0,
+                            }),
+                        }}
+                    />
+                    {icon && <span className={styles.icon}>{icon}</span>}
                 </div>
-            </div>
+            ) : (
+                <div className={styles.selectWrapper} style={{ backgroundColor: bgColor }}>
+                    <select
+                        name={name}
+                        id={id}
+                        value={value}
+                        onChange={onChange}
+                        disabled={disabled}
+                        className={styles.select}
+                        style={icon ? { paddingLeft: "38px" } : undefined}
+                    >
+                        {placeholder && <option value="">{placeholder}</option>}
+                        {options.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                    {icon && <span className={styles.icon}>{icon}</span>}
+                </div>
+            )}
         </label>
     );
 };

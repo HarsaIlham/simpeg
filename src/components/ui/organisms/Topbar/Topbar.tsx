@@ -1,59 +1,61 @@
 import styles from "./Topbar.module.css";
 import Text from "../../atoms/Text";
-import { Bell } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import BurgerButton from "../../atoms/BurgerButton";
+import { Bell, CheckCheck } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import NotificationItem from "../../molecules/NotificationItem";
-import type { NotificationItemProps } from "../../molecules/NotificationItem/NotificationItem";
+import type { NotifVariant } from "../../molecules/NotificationItem/NotificationItem";
+import { notificationService } from "../../../../services/notificationService";
+import { useSidebar } from "../../../../contexts/SidebarContext";
+import type { Notifikasi } from "../../../../types/api";
 
 interface propsType {
   title: string;
+  notifications?: Notifikasi[];
 }
 
-const Topbar = ({ title }: propsType) => {
+
+const mapVariant = (title: string): NotifVariant => {
+  const lower = title.toLowerCase();
+  if (lower.includes("ditolak") || lower.includes("gagal")) return "error";
+  if (lower.includes("disetujui") || lower.includes("berhasil") || lower.includes("selesai")) return "success";
+  if (lower.includes("menunggu") || lower.includes("jadwal") || lower.includes("mendatang") || lower.includes("pengingat")) return "warning";
+  return "info";
+};
+
+const formatRelativeTime = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+
+  if (diffMinutes < 1) return "Baru saja";
+  if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays} hari lalu`;
+
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
+  const { openMobile } = useSidebar();
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItemProps[]>([]);
+  const [localNotifs, setLocalNotifs] = useState<Notifikasi[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchNotifs = async () => {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setNotifications([
-        {
-          id: "n1",
-          title: "Pengajuan Perubahan Data",
-          desc: "Perubahan Profil Anda sedang Menunggu Persetujuan HRD",
-          time: "25 Maret 2026 pukul 07:00",
-          variant: "warning",
-          isUnread: true
-        },
-        {
-          id: "n2",
-          title: "Perubahan Data Diklat Disetujui",
-          desc: "Perubahan Profil Anda telah disetujui oleh HRD dan data telah diperbarui",
-          time: "4 jam yang lalu",
-          variant: "success",
-          isUnread: true
-        },
-        {
-          id: "n3",
-          title: "Perubahan Data Keluarga Ditolak",
-          desc: "Perubahan Data Keluarga Anda ditolak. Mohon sertakan dokumen pendukung perubahan data",
-          time: "25 Maret 2026 pukul 07:00",
-          variant: "error",
-          isUnread: false
-        },
-        {
-          id: "n4",
-          title: "Pengingat Update STR",
-          desc: "Surat Tanda Registrasi (STR) Anda akan habis dalam 30 hari. Segera lakukan perpanjangan.",
-          time: "15 Maret 2026 pukul 07:00",
-          variant: "info",
-          isUnread: false
-        }
-      ]);
-    };
-    fetchNotifs();
-  }, []);
+    if (externalNotifications) {
+      setLocalNotifs(externalNotifications);
+    }
+  }, [externalNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,15 +67,38 @@ const Topbar = ({ title }: propsType) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const unreadCount = notifications.filter(n => n.isUnread).length;
+  const unreadCount = localNotifs.filter(n => !n.is_read).length;
+
+  const handleMarkOneRead = useCallback(async (id: number) => {
+    try {
+      await notificationService.markAsRead(id);
+      setLocalNotifs(prev =>
+        prev.map(n => (n.id === id ? { ...n, is_read: true } : n))
+      );
+    } catch (err) {
+      console.error("Gagal menandai notifikasi dibaca:", err);
+    }
+  }, []);
+
+  const handleMarkAllRead = useCallback(async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setLocalNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (err) {
+      console.error("Gagal menandai semua notifikasi dibaca:", err);
+    }
+  }, []);
 
   return (
     <div className={styles.topBar}>
-      <Text text={title} variant="subtitle" weight="bold" color="default" />
-      
+      <div className={styles.leftSection}>
+        <BurgerButton onClick={openMobile} />
+        <Text text={title} variant="subtitle" weight="bold" color="default" />
+      </div>
+
       <div className={styles.notifContainer} ref={dropdownRef}>
-        <button 
-          className={styles.notifBtn} 
+        <button
+          className={styles.notifBtn}
           aria-label="Notifications"
           onClick={() => setIsOpen(!isOpen)}
         >
@@ -84,18 +109,43 @@ const Topbar = ({ title }: propsType) => {
         {isOpen && (
           <div className={styles.dropdown}>
             <div className={styles.dropdownHeader}>
-              <Text text="Notifications" variant="body" weight="bold" color="default" />
+              <Text text="Notifikasi" variant="body" weight="bold" color="default" />
+              {unreadCount > 0 && (
+                <button
+                  className={styles.markAllBtn}
+                  onClick={handleMarkAllRead}
+                  title="Tandai semua sudah dibaca"
+                >
+                  <CheckCheck size={16} />
+                  <span>Tandai semua</span>
+                </button>
+              )}
             </div>
             <div className={styles.dropdownList}>
-              {notifications.map(notif => (
-                <NotificationItem key={notif.id} {...notif} />
-              ))}
+              {localNotifs.length === 0 ? (
+                <div className={styles.emptyState}>
+                  Tidak ada notifikasi
+                </div>
+              ) : (
+                localNotifs.map(notif => (
+                  <NotificationItem
+                    key={notif.id}
+                    id={String(notif.id)}
+                    title={notif.title}
+                    desc={notif.message}
+                    time={formatRelativeTime(notif.created_at)}
+                    variant={mapVariant(notif.title)}
+                    isUnread={!notif.is_read}
+                    onClick={!notif.is_read ? () => handleMarkOneRead(notif.id) : undefined}
+                  />
+                ))
+              )}
             </div>
           </div>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Topbar;

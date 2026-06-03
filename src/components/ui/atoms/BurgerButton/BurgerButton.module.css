@@ -1,0 +1,24 @@
+.burgerBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.burgerBtn:hover {
+  background-color: var(--color-primary-light, #f0f0f0);
+}
+
+@media (max-width: 768px) {
+  .burgerBtn {
+    display: flex;
+  }
+}

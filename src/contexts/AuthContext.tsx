@@ -22,18 +22,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // const [user, setUser] = useState<User | null>(null);
-  const [user, setUser] = useState<User | null>({
-    id: 999,
-    nik: "12345",
-    role: "pegawai",
-    nama: "Admin (Mode Tanpa API)"
-  });
-  const [token, setToken] = useState<string | null>("TOKEN_DUMMY");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    /* 
     const storedUser = localStorage.getItem("simpeg_user");
     const storedToken = localStorage.getItem("simpeg_token");
 
@@ -47,9 +40,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem("simpeg_token");
       }
     }
-    
+
     setIsLoading(false);
-    */
   }, []);
 
   const login = (userData: User, tokenData: string) => {

@@ -8,10 +8,11 @@ interface RecordCardProps {
     icon: ReactNode;
     onEdit?: () => void;
     onDelete?: () => void;
+    enableDelete?: boolean ;
     children: ReactNode;
 }
 
-const RecordCard = ({ icon, onEdit, onDelete, children }: RecordCardProps) => {
+const RecordCard = ({ icon, onEdit, onDelete, enableDelete = true, children }: RecordCardProps) => {
     return (
         <Card hover>
             <div className={styles.container}>
@@ -31,7 +32,7 @@ const RecordCard = ({ icon, onEdit, onDelete, children }: RecordCardProps) => {
                                 iconOnly 
                             />
                         )}
-                        {onDelete && (
+                        {onDelete && enableDelete && (
                             <Button 
                                 icon={<Trash2 size={16} />} 
                                 onClick={onDelete} 

@@ -1,11 +1,18 @@
-import { useState } from "react";
-import { Send, X, Edit } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Send, X, Edit, UserRound, Briefcase } from "lucide-react";
 import styles from "./FormProfile.module.css";
 import Input from "../../atoms/Input";
 import Select from "../../atoms/Select";
 import Textarea from "../../atoms/Textarea";
 import Button from "../../atoms/Button";
 import CardHeader from "../../molecules/CardHeader";
+import DocumentField from "../../molecules/DocumentField";
+import PdfViewerModal from "../../molecules/PdfViewerModal";
+import Modal from "../Modal";
+import DocumentPreview from "../../molecules/DocumentPreview";
+import { hitungMasaKerja } from "../../../../utils/dateUtils";
+import { useMasterData } from "../../../../hooks/useMasterData";
+import { getProxiedFileUrl } from "../../../../utils/api";
 
 export interface propsType {
     namaLengkap: string;
@@ -18,15 +25,32 @@ export interface propsType {
     agama: string;
     statusPernikahan: string;
     pendidikanTerakhir: string;
+    ktp: string | null;
+    bukuNikah: string | null;
+    kartuKeluarga: string | null;
     jabatan: string;
+    pangkat: string;
+    profesi: string;
     unitKerja: string;
+    golonganRuang: string;
+    jenisPegawai: string;
     alamat: string;
+    tanggalMasuk: string;
+    tmtCpns: string;
+    tmtPns: string;
+    tmtPangkatTerakhir: string;
 }
 
 interface FormProfileProps {
     initialData: propsType;
     onSubmit?: (data: propsType) => void;
+    onDocumentUpload?: (fieldName: string, file: File) => Promise<boolean>;
+    isDocUploading?: boolean;
+    readOnly?: boolean;
+    isAdd?: boolean;
 }
+
+
 
 const jenisKelaminOptions = [
     { value: "Laki-laki", label: "Laki-laki" },
@@ -54,14 +78,31 @@ const pendidikanOptions = [
     { value: "SMP", label: "SMP" },
     { value: "SMA/SMK", label: "SMA/SMK" },
     { value: "D3", label: "D3" },
-    { value: "S1", label: "S1" },
+    { value: "S1/D4", label: "S1/D4" },
     { value: "S2", label: "S2" },
     { value: "S3", label: "S3" },
 ];
 
-const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
+const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading = false, readOnly = false, isAdd = false }: FormProfileProps) => {
+    const { options: golonganRuangOptions } = useMasterData("golonganRuang", undefined, [
+        { value: "Golongan I", label: "Golongan I" },
+        { value: "Golongan II", label: "Golongan II" },
+        { value: "Golongan III", label: "Golongan III" },
+        { value: "Golongan IV", label: "Golongan IV" },
+    ]);
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<propsType>(initialData);
+    const [previewDoc, setPreviewDoc] = useState<{ label: string; url: string; fieldName: string } | null>(null);
+    const [uploadDoc, setUploadDoc] = useState<{ label: string; fieldName: string } | null>(null);
+
+    const docFileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        setFormData(initialData);
+    }, [initialData]);
+
+    const masaKerja = useMemo(() => hitungMasaKerja(formData.tanggalMasuk), [formData.tanggalMasuk]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -71,6 +112,7 @@ const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
+
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -92,40 +134,67 @@ const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
         setIsEditing(false);
     };
 
+    const handleDocUploadClick = () => {
+        docFileInputRef.current?.click();
+    };
+
+    const handleDocFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !uploadDoc) return;
+        e.target.value = "";
+
+        if (onDocumentUpload) {
+            const success = await onDocumentUpload(uploadDoc.fieldName, file);
+            if (success) {
+                setUploadDoc(null);
+            }
+        }
+    };
+
     return (
         <div className={styles.card}>
             <div className={styles.cardHeader}>
                 <CardHeader title="Data Profil" />
-                <div className={styles.cardActions}>
-                    {isEditing ? (
-                        <>
+                {!readOnly && (
+                    <div className={styles.cardActions}>
+                        {isEditing ? (
+                            <>
+                                <Button
+                                    label={isAdd ? "Simpan" : "Ajukan Perubahan"}
+                                    icon={<Send size={16} />}
+                                    variant="primary"
+                                    onClick={handleSubmit}
+                                />
+                                <Button
+                                    label="Batal"
+                                    icon={<X size={16} />}
+                                    variant="light"
+                                    onClick={handleCancel}
+                                />
+                            </>
+                        ) : (
                             <Button
-                                label="Ajukan Perubahan"
-                                icon={<Send size={16} />}
+                                label="Edit Profil"
+                                icon={<Edit size={24} />}
                                 variant="primary"
-                                onClick={handleSubmit}
+                                onClick={handleEdit}
                             />
-                            <Button
-                                label="Batal"
-                                icon={<X size={16} />}
-                                variant="light"
-                                onClick={handleCancel}
-                            />
-                        </>
-                    ) : (
-                        <Button
-                            label="Edit Profil"
-                            icon={<Edit size={24} />}
-                            variant="primary"
-                            onClick={handleEdit}
-                        />
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className={styles.formGrid}>
+
+                <div className={styles.sectionDivider}>
+                    <span className={styles.sectionLabel}>
+                        <span className={styles.sectionIcon}><UserRound size={14} /></span>
+                        Data Pribadi
+                    </span>
+                </div>
+
                 <Input
-                    bgColor="#E6F4EE"   
+                    bgColor="#E6F4EE"
                     label="Nama Lengkap"
                     name="namaLengkap"
                     id="namaLengkap"
@@ -134,7 +203,7 @@ const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
                     disabled={!isEditing}
                 />
                 <Input
-                    bgColor="#E6F4EE"   
+                    bgColor="#E6F4EE"
                     label="Email"
                     name="email"
                     id="email"
@@ -145,38 +214,41 @@ const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
                 />
 
                 <Input
-                    bgColor="#E6F4EE"   
+                    bgColor="#E6F4EE"
                     label="NIK"
                     name="nik"
                     id="nik"
+                    type="text"
+                    onlyNumbers={true}
                     value={formData.nik}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                 />
 
                 <Input
-                    bgColor="#E6F4EE"   
+                    bgColor={"#E6F4EE"}
                     label="NIP (jika ada)"
                     name="nip"
                     id="nip"
                     value={formData.nip}
                     onChange={handleInputChange}
-                    disabled={true}
+                    disabled={!isEditing}
                 />
 
                 <Input
-                    bgColor="#E6F4EE"   
+                    bgColor="#E6F4EE"
                     label="No. Telepon"
                     name="noTelepon"
                     id="noTelepon"
-                    type="tel"
+                    type="text"
+                    onlyNumbers={true}
                     value={formData.noTelepon}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                 />
 
                 <Input
-                    bgColor="#E6F4EE"   
+                    bgColor="#E6F4EE"
                     label="Tanggal Lahir"
                     name="tanggalLahir"
                     id="tanggalLahir"
@@ -219,34 +291,53 @@ const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
                 />
 
                 <Select
-                    bgColor="#E6F4EE"
+                    bgColor={isEditing ? undefined : "#E6F4EE"}
                     label="Pendidikan Terakhir"
                     name="pendidikanTerakhir"
                     id="pendidikanTerakhir"
                     options={pendidikanOptions}
                     value={formData.pendidikanTerakhir}
                     onChange={handleSelectChange}
-                    disabled={!isEditing}
+                    disabled
                 />
 
-                <Input
+                <DocumentField
+                    label="KTP"
+                    name="ktp"
+                    id="ktp"
+                    fileUrl={formData.ktp}
+                    onViewClick={() => {
+                        if (formData.ktp) {
+                            setPreviewDoc({ label: "KTP", url: formData.ktp, fieldName: "ktp" });
+                        } else {
+                            setUploadDoc({ label: "KTP", fieldName: "ktp" });
+                        }
+                    }}
                     bgColor="#E6F4EE"
-                    label="Jabatan"
-                    name="jabatan"
-                    id="jabatan"
-                    value={formData.jabatan}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
                 />
 
-                <Input
+                {/* <DocumentField
+                    label="Buku Nikah"
+                    name="bukuNikah"
+                    id="bukuNikah"
+                    fileUrl={formData.bukuNikah}
+                    onViewClick={() => setPreviewDoc({ label: "Buku Nikah", url: formData.bukuNikah || "", fieldName: "bukuNikah" })}
                     bgColor="#E6F4EE"
-                    label="Unit Kerja"
-                    name="unitKerja"
-                    id="unitKerja"
-                    value={formData.unitKerja}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
+                /> */}
+
+                <DocumentField
+                    label="Kartu Keluarga"
+                    name="kartuKeluarga"
+                    id="kartuKeluarga"
+                    fileUrl={formData.kartuKeluarga}
+                    onViewClick={() => {
+                        if (formData.kartuKeluarga) {
+                            setPreviewDoc({ label: "Kartu Keluarga", url: formData.kartuKeluarga, fieldName: "kartuKeluarga" });
+                        } else {
+                            setUploadDoc({ label: "Kartu Keluarga", fieldName: "kartuKeluarga" });
+                        }
+                    }}
+                    bgColor="#E6F4EE"
                 />
 
                 <div className={styles.fullWidth}>
@@ -261,7 +352,175 @@ const FormProfile = ({ initialData, onSubmit }: FormProfileProps) => {
                         rows={3}
                     />
                 </div>
+
+                <div className={styles.sectionDivider}>
+                    <span className={styles.sectionLabel}>
+                        <span className={styles.sectionIcon}><Briefcase size={14} /></span>
+                        Data Kepegawaian
+                    </span>
+                </div>
+
+                <Input
+                    bgColor={isEditing ? undefined : "#E6F4EE"}
+                    label="Jabatan"
+                    name="jabatan"
+                    id="jabatan"
+                    value={formData.jabatan}
+                    onChange={handleInputChange}
+                    className={!isEditing ? styles.disabledInput : ""}
+                    disabled
+                />
+
+                <Input
+                    bgColor="#E6F4EE"
+                    label="Profesi"
+                    name="profesi"
+                    id="profesi"
+                    value={formData.profesi}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                />
+
+                <Input
+                    bgColor={isEditing ? undefined : "#E6F4EE"}
+                    label="Pangkat Sekarang"
+                    name="pangkat"
+                    id="pangkat"
+                    value={formData.pangkat}
+                    onChange={handleInputChange}
+                    disabled
+                />
+
+                <Select
+                    bgColor={isEditing ? undefined : "#E6F4EE"}
+                    label="Golongan Ruang"
+                    name="golonganRuang"
+                    id="golonganRuang"
+                    options={golonganRuangOptions}
+                    value={formData.golonganRuang}
+                    onChange={handleSelectChange}
+                    disabled
+                />
+
+                <Input
+                    bgColor="#E6F4EE"
+                    label="Unit Kerja"
+                    name="unitKerja"
+                    id="unitKerja"
+                    value={formData.unitKerja}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                />
+
+                <Input
+                    bgColor="#E6F4EE"
+                    label="Jenis Pegawai"
+                    name="jenisPegawai"
+                    id="jenisPegawai"
+                    value={formData.jenisPegawai}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                />
+
+                <Input
+                    bgColor="#E6F4EE"
+                    label="Tanggal Masuk"
+                    name="tanggalMasuk"
+                    id="tanggalMasuk"
+                    value={formData.tanggalMasuk}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    type="date"
+                />
+
+                <div className={styles.computedField}>
+                    <Input
+                        bgColor={isEditing ? undefined : "#E6F4EE"}
+                        label="Masa Kerja"
+                        name="masaKerja"
+                        id="masaKerja"
+                        value={masaKerja}
+                        disabled
+                    />
+                </div>
+
+                <Input
+                    bgColor="#E6F4EE"
+                    label="TMT CPNS"
+                    name="tmtCpns"
+                    id="tmtCpns"
+                    value={formData.tmtCpns}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    type="date"
+                />
+
+                <Input
+                    bgColor="#E6F4EE"
+                    label="TMT PNS"
+                    name="tmtPns"
+                    id="tmtPns"
+                    value={formData.tmtPns}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    type="date"
+                />
+
+                <Input
+                    bgColor={isEditing ? undefined : "#E6F4EE"}
+                    label="TMT Pangkat Terakhir"
+                    name="tmtPangkatTerakhir"
+                    id="tmtPangkatTerakhir"
+                    type="date"
+                    value={formData.tmtPangkatTerakhir}
+                    onChange={handleInputChange}
+                    disabled
+                />
             </div>
+
+            <input
+                ref={docFileInputRef}
+                type="file"
+                accept=".pdf"
+                style={{ display: "none" }}
+                onChange={handleDocFileSelected}
+            />
+
+            <PdfViewerModal
+                isOpen={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                fileUrl={previewDoc ? getProxiedFileUrl(previewDoc.url) : null}
+                title={`Lihat ${previewDoc?.label || "Dokumen"}`}
+                fileName={previewDoc?.label || "Dokumen"}
+                extraActions={
+                    onDocumentUpload ? (
+                        <Button
+                            label={isDocUploading ? "Mengupload..." : `Update ${previewDoc?.label || "Dokumen"}`}
+                            variant="primary"
+                            onClick={() => {
+                                if (previewDoc) {
+                                    setUploadDoc({ label: previewDoc.label, fieldName: previewDoc.fieldName });
+                                    setPreviewDoc(null);
+                                }
+                            }}
+                            disabled={isDocUploading}
+                        />
+                    ) : undefined
+                }
+            />
+
+            <Modal
+                isOpen={!!uploadDoc}
+                onClose={() => setUploadDoc(null)}
+                title={`Upload ${uploadDoc?.label || "Dokumen"}`}
+            >
+                <DocumentPreview
+                    imgSrc={null}
+                    altText={uploadDoc?.label}
+                    onUploadClick={handleDocUploadClick}
+                    isUploading={isDocUploading}
+                />
+            </Modal>
         </div>
     );
 };

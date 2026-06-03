@@ -1,0 +1,90 @@
+.cardSearch {
+    border-radius: var(--radius-md);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.searchWrapper {
+    flex: 1;
+    max-width: 400px;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: var(--spacing-3xl);
+}
+
+.filterRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    width: 100%;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.cardList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-3xl) var(--spacing-xl);
+}
+
+.emptyText {
+    color: #6b7280;
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.uploadForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.uploadInfo {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+    .cardHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .searchWrapper {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .buttonGroup {
+        width: 100%;
+        gap: var(--spacing-md);
+    }
+
+    .filterRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .spacer {
+        display: none;
+    }
+}

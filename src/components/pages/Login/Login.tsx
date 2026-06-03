@@ -9,7 +9,7 @@ const Login = () => {
         <AuthLayout backgroundImage={bgLogin}>
             <div className={styles.loginPage}>
                 <LoginCard />
-                <HelpMessageCard />
+                <HelpMessageCard title="TIPS" subtitle="Gunakan NIK dan Password yang Telah Terdaftar"/>
             </div>
         </AuthLayout>
     )

@@ -29,7 +29,6 @@ const LoginForm = () => {
 
     try {
       const response = await authService.login({ nik, password });
-      
       login(response.data.user, response.data.access_token);
       navigate("/");
     } catch (err: any) {

@@ -1,3 +1,4 @@
+
 import RecordCard from "../../molecules/RecordCard"
 import Icon from "../../atoms/Icon"
 import Text from "../../atoms/Text"
@@ -6,57 +7,46 @@ import Button from "../../atoms/Button"
 import { FileText } from "lucide-react"
 import styles from "./CardStr.module.css"
 import DataField from "../../molecules/DataField"
+import { getProxiedFileUrl } from "../../../../utils/api"
 
 export interface CardStrData {
-    id: string;
-    type: "STR" | "SIP"; 
-    noSurat: string;
-    terbit: string;
-    berlaku: string;
-    tempat?: string; 
-    status: "Aktif" | "Tidak Aktif";
+    id: number;
+    nomorStr: string;
+    tanggalTerbit: string;
+    tanggalKadaluarsa: string | null;
+    isCurrent: boolean;
+    linkSk: string | null;
 }
 
 interface CardStrProps {
     data: CardStrData;
     onEdit?: () => void;
     onDelete?: () => void;
+    onViewDocument?: (url: string) => void;
 }
 
-const CardStr = ({ data, onEdit, onDelete }: CardStrProps) => {
-    const isStr = data.type === "STR";
-    const headerTitle = isStr ? "Surat Tanda Registrasi (STR)" : "Surat Izin Praktik (SIP)";
+const CardStr = ({ data, onEdit, onDelete, onViewDocument }: CardStrProps) => {
 
     return (
         <RecordCard
             icon={<Icon icon={FileText} variant="soft" color="#218838" bgColor="#e6f4ea" rounded="md" sizeBox="lg" sizeIcon="sm" />}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            onEdit={onEdit} onDelete={onDelete} enableDelete={false}
         >
             <div className={styles.header}>
-                <Text text={headerTitle} weight="bold" color="default" fontSize="18px" />
-                <Text text={`No: ${data.noSurat}`} variant="body" color="green" />
+                <Text text="Surat Tanda Registrasi (STR)" weight="bold" color="default" fontSize="18px" />
+                <Text text={`No: ${data.nomorStr}`} variant="body" color="green" />
             </div>
-
-            <div className={styles.contentGrid}>
-                {data.tempat && (
-                    <Text text={`Tempat: ${data.tempat}`} variant="body" color="default" />
-                )}
-
-                <div className={styles.dates}>
-                    <DataField label="Terbit" value={data.terbit} />
-                    <DataField label="Berlaku" value={data.berlaku} />
-                </div>
+            <div className={styles.dates}>
+                <DataField label="Tanggal Terbit" value={data.tanggalTerbit} isDate={true} />
+                <DataField label="Tanggal Akhir" value={data.tanggalKadaluarsa || "-"} isDate={true} />
             </div>
-
             <div className={styles.actionsBox}>
-                <Badge variant={data.status === "Aktif" ? "success" : "danger"}>
-                    {data.status}
+                <Badge variant={data.isCurrent ? "success" : "danger"}>
+                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
                 </Badge>
-                <Button 
-                    label="Lihat Dokumen" 
-                    variant="primary" 
-                />
+                {data.linkSk && onViewDocument && (
+                    <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.linkSk))} />
+                )}
             </div>
         </RecordCard>
     )

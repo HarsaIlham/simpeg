@@ -1,0 +1,70 @@
+.card {
+    border-radius: 12px;
+    padding: 20px;
+    border: 1.5px solid;
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.old {
+    background-color: #FEF2F2;
+    border-color: #FECACA;
+}
+
+.old .headerIcon,
+.old .headerTitle {
+    color: #B91C1C;
+}
+
+.new {
+    background-color: #F0FDF4;
+    border-color: #BBF7D0;
+}
+
+.new .headerIcon,
+.new .headerTitle {
+    color: #15803D;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.headerIcon {
+    flex-shrink: 0;
+}
+
+.headerTitle {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.fieldList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fieldItem {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fieldLabel {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B7280;
+}
+
+.fieldValue {
+    font-size: 14px;
+    font-weight: 400;
+    color: #1F2937;
+}

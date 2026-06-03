@@ -14,10 +14,10 @@ interface TextProps {
     className?: string;
 }
 
-const Text = (props: TextProps) => {
-    let finalWeight = props.weight;
+const Text = ({text, variant, weight, fontSize, as, color, className}: TextProps) => {
+    let finalWeight = weight;
     if (!finalWeight) {
-        switch (props.variant) {
+        switch (variant) {
             case "title": finalWeight = "bold"; break;
             case "subtitle": finalWeight = "medium"; break;
             case "caption": finalWeight = "normal"; break;
@@ -28,11 +28,13 @@ const Text = (props: TextProps) => {
   return (
     <div className={`
         ${styles.text} 
-        ${styles[props.variant || "body"]} 
-        ${styles[props.color || "default"]} 
+        ${styles[variant || "body"]} 
+        ${styles[color || "default"]} 
         ${styles[finalWeight]}
-    `.trim()} style={{color: props.color, fontSize: props.fontSize}}>
-        {props.text}
+        ${styles[as || "p"]}
+        ${className}
+    `.trim()} style={{color: color, fontSize: fontSize}}>
+        {text}
     </div>
   )
 }

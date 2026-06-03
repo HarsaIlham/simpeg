@@ -15,11 +15,12 @@ interface propsType {
     rows?: number;
 }
 
-const Textarea = (props: propsType) => {
-    const { label, name, id, placeholder, required = false, className, value, onChange, disabled, rows = 3, bgColor } = props;
+const Textarea = ({ label, name, id, placeholder, required = false, className, value, onChange, disabled, rows = 3, bgColor }: propsType) => {
     return (
         <label htmlFor={id} className={styles.label}>
-            {label && <span className={styles.labelText}>{label}</span>}
+            {label && <span className={styles.labelText}>{label}
+                {required && <span className={styles.required}>*</span>}
+            </span>}
             <textarea
                 id={id}
                 name={name}
@@ -30,7 +31,7 @@ const Textarea = (props: propsType) => {
                 onChange={onChange}
                 disabled={disabled}
                 rows={rows}
-                style={bgColor ? { backgroundColor: bgColor } : undefined}
+                style={bgColor ? { backgroundColor: bgColor } : { backgroundColor: "#F9FAFC" }}
             />
         </label>
     );

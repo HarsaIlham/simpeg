@@ -11,6 +11,7 @@ export interface NotificationItemProps {
   time: string;
   variant: NotifVariant;
   isUnread?: boolean;
+  onClick?: () => void;
 }
 
 const getIcon = (variant: NotifVariant) => {
@@ -23,9 +24,14 @@ const getIcon = (variant: NotifVariant) => {
   }
 };
 
-const NotificationItem = ({ title, desc, time, variant, isUnread }: NotificationItemProps) => {
+const NotificationItem = ({ title, desc, time, variant, isUnread, onClick }: NotificationItemProps) => {
   return (
-    <div className={`${styles.item} ${isUnread ? styles.unread : ""}`}>
+    <div
+      className={`${styles.item} ${isUnread ? styles.unread : ""} ${onClick ? styles.clickable : ""}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className={`${styles.iconBox} ${styles[`box-${variant}`]}`}>
         {getIcon(variant)}
       </div>

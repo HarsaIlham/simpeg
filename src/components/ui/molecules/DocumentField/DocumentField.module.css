@@ -1,0 +1,104 @@
+.fieldWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.labelText {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+    font-family: inherit;
+}
+
+.viewButton {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--color-primary);
+    font-weight: 500;
+    background-color: var(--color-bg);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+}
+
+.viewButton:hover {
+    background-color: rgba(34, 139, 96, 0.06);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(34, 139, 96, 0.08);
+}
+
+.viewButton:active {
+    background-color: rgba(34, 139, 96, 0.1);
+}
+
+.viewButtonIcon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+.viewButtonLabel {
+    flex: 1;
+    text-align: left;
+}
+
+.viewButtonArrow {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--color-primary);
+    opacity: 0.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.viewButton:hover .viewButtonArrow {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+.viewButtonEmpty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px dashed #9ca3af;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 500;
+    user-select: none;
+    color: #6b7280;
+    cursor: pointer;
+    background-color: var(--color-bg);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.viewButtonEmpty:hover {
+    background-color: rgba(34, 139, 96, 0.04);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.viewButtonEmpty:hover .viewButtonIcon {
+    color: var(--color-primary);
+}
+
+.viewButtonEmpty:hover .viewButtonArrow {
+    opacity: 1;
+    color: var(--color-primary);
+    transform: translateX(2px);
+}
+
+.viewButtonEmpty .viewButtonIcon {
+    color: #9ca3af;
+}

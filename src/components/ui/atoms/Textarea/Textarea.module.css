@@ -41,3 +41,8 @@
     border-color: var(--color-border);
     resize: none;
 }
+
+.required {
+    color: #ef4444;
+    margin-left: 4px;
+}

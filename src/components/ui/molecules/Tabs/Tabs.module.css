@@ -1,10 +1,8 @@
 .tabsContainer {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-lg);
     overflow-x: auto;
-    padding-bottom: var(--spacing-xs); 
-    margin-bottom: var(--spacing-md);
 }
 
 .tabsContainer::-webkit-scrollbar {
@@ -32,6 +30,7 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap; 
+    padding: 12px 24px;
 }
 
 .tabButton:hover {

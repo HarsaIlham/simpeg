@@ -1,17 +1,19 @@
 import styles from "./Button.module.css";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "warning" | "success" | "info" | "light" | "dark" | "dangerSoft";
+type ButtonVariant = "primary" | "secondary" | "danger" | "warning" | "success" | "info" | "light" | "dark" | "dangerSoft" | "transparant";
 
 interface ButtonProps {
     label?: string;
     icon?: React.ReactNode;
     onClick?: () => void;
     variant?: ButtonVariant;
+    size?: "sm" | "md" | "lg";
     fullWidth?: boolean;
     type?: "button" | "submit" | "reset";
     iconOnly?: boolean;
     rounded?: "default" | "full";
     disabled?: boolean;
+    className?: string;
 }
 
 const Button = ({
@@ -19,11 +21,13 @@ const Button = ({
     icon,
     onClick,
     variant = "primary",
+    size = "md",
     fullWidth = false,
     type = "button",
     iconOnly = false,
     rounded = "default",
     disabled = false,
+    className,
 }: ButtonProps) => {
     return (
         <button
@@ -31,9 +35,11 @@ const Button = ({
             className={`
                 ${styles.button} 
                 ${styles[variant]} 
+                ${styles[size]}
                 ${fullWidth ? styles.fullWidth : ""}
                 ${iconOnly ? styles.iconOnly : ""}
                 ${rounded === "full" ? styles.roundedFull : ""}
+                ${className}
             `.trim()}
             onClick={onClick}
             disabled={disabled}

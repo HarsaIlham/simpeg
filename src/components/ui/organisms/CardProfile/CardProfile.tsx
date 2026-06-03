@@ -1,8 +1,10 @@
 import styles from "./CardProfile.module.css";
 import Text from "../../atoms/Text";
 import Icon from "../../atoms/Icon";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Maximize2 } from "lucide-react";
 import type { ReactNode } from "react";
+
+type StatusVariant = "success" | "warning" | "danger" | "neutral";
 
 interface propsType {
     nama?: string;
@@ -13,17 +15,38 @@ interface propsType {
     email?: string;
     phone?: string;
     location?: string;
+    statusPegawai?: string;
+    statusVariant?: StatusVariant;
+    onPhotoClick?: () => void;
 }
 
-const CardProfile = ({nama, nip, icon, profesi, img, email, phone, location}: propsType) => {
+const CardProfile = ({nama, nip, icon, profesi, img, email, phone, location, statusPegawai, statusVariant = "success", onPhotoClick}: propsType) => {
   return (
     <div className={styles.card}>
         <div className={styles.cardHeader}>
             <div className={styles.cardHeaderContent}>
-                {img ?? icon}
+                <button
+                    type="button"
+                    className={styles.avatarButton}
+                    onClick={onPhotoClick}
+                    title="Lihat foto profil"
+                >
+                    <div className={styles.avatarWrapper}>
+                        {img ?? icon}
+                        <div className={styles.avatarOverlay}>
+                            <Maximize2 size={24} />
+                        </div>
+                    </div>
+                </button>
                 <Text text={nama || ""} variant="body" weight="bold" color="default" />
                 <Text text={nip || ""} variant="body" weight="normal" color="green" />
                 <Text text={profesi || ""} variant="body" weight="normal" color="green" />
+                {statusPegawai && (
+                    <span className={`${styles.statusBadge} ${styles[`status_${statusVariant}`]}`}>
+                        <span className={styles.statusDot} />
+                        {statusPegawai}
+                    </span>
+                )}
             </div>
         </div>
         <hr className={styles.divider} />

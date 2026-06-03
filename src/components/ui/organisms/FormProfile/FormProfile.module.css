@@ -31,8 +31,63 @@
     grid-column: 1 / -1;
 }
 
-.inputGreen {
-    color: #4E7F6A;
+.disabledInput {
+    cursor: not-allowed;
+    background-color: var(--color-disabled);
+}
+
+.sectionDivider {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-lg) 0 var(--spacing-xs) 0;
+}
+
+.sectionDivider::before,
+.sectionDivider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.sectionLabel {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+    white-space: nowrap;
+    letter-spacing: 0.025em;
+    user-select: none;
+}
+
+.sectionIcon {
+    display: flex;
+    align-items: center;
+    color: var(--color-primary);
+    opacity: 0.8;
+}
+
+.computedField {
+    position: relative;
+}
+
+.computedBadge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: rgba(34, 139, 96, 0.08);
+    border: 1px solid rgba(34, 139, 96, 0.18);
+    border-radius: var(--radius-full);
+    padding: 2px 8px;
+    letter-spacing: 0.03em;
+    user-select: none;
 }
 
 @media (max-width: 768px) {

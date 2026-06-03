@@ -1,0 +1,185 @@
+/* ── Wide Modal Override ── */
+.wideModal {
+    max-width: 800px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md, 16px);
+    width: 100%;
+    min-width: 0;
+}
+
+/* ── Viewer Area ── */
+.viewerArea {
+    width: 100%;
+    max-height: 60vh;
+    overflow: auto;
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--color-border, #e5e7eb);
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+/* ── PDF Wrapper ── */
+.pdfWrapper {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-md, 16px);
+    min-height: 300px;
+}
+
+.pdfWrapper canvas {
+    max-width: 100%;
+    height: auto !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+}
+
+/* ── Image Viewer ── */
+.imageWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--spacing-md, 16px);
+}
+
+.image {
+    max-width: 100%;
+    max-height: 58vh;
+    object-fit: contain;
+    border-radius: var(--radius-md, 8px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Loading State ── */
+.loadingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md, 16px);
+    padding: var(--spacing-xl, 32px);
+    color: #6b7280;
+    font-size: var(--font-size-sm, 14px);
+    min-height: 300px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: var(--color-primary, #0d6e3f);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Error State ── */
+.errorState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md, 16px);
+    padding: var(--spacing-xl, 32px);
+    color: #ef4444;
+    font-size: var(--font-size-sm, 14px);
+    text-align: center;
+    min-height: 300px;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg, 24px);
+    padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+    background-color: #f9fafb;
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--color-border, #e5e7eb);
+    flex-wrap: wrap;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs, 4px);
+}
+
+.pageInfo {
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 600;
+    color: var(--color-text-primary, #1f2937);
+    min-width: 60px;
+    text-align: center;
+    user-select: none;
+}
+
+.zoomControls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs, 4px);
+}
+
+.zoomInfo {
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 500;
+    color: #6b7280;
+    min-width: 48px;
+    text-align: center;
+    user-select: none;
+}
+
+.toolbarButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--color-border, #e5e7eb);
+    background-color: #ffffff;
+    color: var(--color-text-primary, #1f2937);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.toolbarButton:hover:not(:disabled) {
+    background-color: var(--color-primary-light, #e6f4ee);
+    border-color: var(--color-primary, #0d6e3f);
+    color: var(--color-primary, #0d6e3f);
+}
+
+.toolbarButton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .viewerArea {
+        max-height: 50vh;
+        min-height: 200px;
+    }
+
+    .toolbar {
+        gap: var(--spacing-sm, 8px);
+        padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
+    }
+
+    .pdfWrapper {
+        padding: var(--spacing-sm, 8px);
+    }
+}

@@ -7,13 +7,18 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    className?: string;
 }
 
-const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
+const Modal = ({ isOpen, onClose, title, children, className }: ModalProps) => {
     const modalRef = useRef<HTMLDivElement>(null);
 
     const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        const target = e.target as HTMLElement;
+        if (target.closest(".react-select__menu-portal")) {
+            return;
+        }
+        if (modalRef.current && !modalRef.current.contains(target)) {
             onClose();
         }
     };
@@ -40,7 +45,7 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
 
     return (
         <div className={styles.overlay} onClick={handleOutsideClick}>
-            <div className={styles.modal} ref={modalRef} role="dialog" aria-modal="true">
+            <div className={`${styles.modal} ${className || ""}`} ref={modalRef} role="dialog" aria-modal="true">
                 <div className={styles.header}>
                     <h2 className={styles.headerTitle}>{title}</h2>
                     <button 

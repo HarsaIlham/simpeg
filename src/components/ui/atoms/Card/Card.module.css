@@ -5,6 +5,14 @@
     border: 1px solid var(--color-border);
 }
 
+.padding-none {
+    padding: 0;
+}
+
+.padding-xs {
+    padding: var(--spacing-sm);
+}
+
 .padding-sm {
     padding: var(--spacing-lg);
 }
@@ -19,7 +27,7 @@
 
 .hover {
     transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-    cursor: pointer;
+    cursor: default;
 }
 
 .hover:hover {

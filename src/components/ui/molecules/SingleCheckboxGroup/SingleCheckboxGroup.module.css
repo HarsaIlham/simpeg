@@ -1,0 +1,25 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.labelText {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563; 
+    font-family: inherit;
+}
+
+.required {
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+.optionsWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 0;
+}

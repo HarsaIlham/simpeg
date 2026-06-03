@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ========== DESIGN TOKENS ========== */
 :root {
@@ -24,6 +24,7 @@
   --color-warning: #F97316;
   --color-danger: #E53935;
   --color-danger-light: #F8BBD0;
+  --color-disabled: #F9FAFC;
 
   /* Spacing */
   --spacing-xs: 4px;

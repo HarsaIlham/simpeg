@@ -1,0 +1,127 @@
+.header {
+    margin-bottom: var(--spacing-xs);
+}
+
+.ditolak{
+    color: var(--color-red-600);
+}
+
+.row{
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xl);
+}
+
+.badgeGroup {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-xs);
+}
+
+.underlined {
+    text-decoration: underline;
+    font-weight: 400;
+    font-size: var(--font-size-sm);
+}
+
+.underlined:hover {
+    cursor: pointer;
+    font-weight: 800;
+    color: var(--color-primary);
+    transition: all 0.2s ease-in-out;
+    text-underline-offset: 4px;
+}
+
+.bodyWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.detailList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.pencatatWrapper {
+    text-align: right;
+    margin-top: auto;
+}
+
+.pencatatLabel {
+    font-size: var(--font-size-sm);
+    color: #6b7280;
+    font-style: italic;
+}
+
+.detailItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+}
+
+.detailIcon {
+    display: flex;
+    align-items: center;
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.divider {
+    border-top: 1px solid var(--color-border);
+    margin: var(--spacing-md) 0;
+    margin-left: calc(-1 * (var(--spacing-md) + 56px + var(--spacing-xl)));
+    margin-right: calc(-1 * (70px + var(--spacing-md)));
+}
+
+@media (max-width: 768px) {
+    .divider {
+        margin-left: calc(-1 * var(--spacing-md));
+        margin-right: calc(-1 * var(--spacing-md));
+    }
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.footerLabel {
+    font-size: var(--font-size-sm);
+    display: flex;
+    flex-direction: column;
+    color: #6b7280;
+    gap: var(--spacing-xs);
+}
+
+.footerRow {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xs);
+}
+
+.footerLabelBold {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.footerRight {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+}

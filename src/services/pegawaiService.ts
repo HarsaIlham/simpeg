@@ -81,11 +81,19 @@ export const pegawaiService = {
     }
   },
 
-  changeRole: async (id: number, role: "admin" | "hrd" | "direktur" | "pegawai"): Promise<ApiResponse<{ id: number; nik: string; nama: string; role: string }>> => {
+  changeRole: async (
+    id: number,
+    role?: "admin" | "hrd" | "direktur" | "pegawai",
+    status_pegawai?: string
+  ): Promise<ApiResponse<{ id: number; nik: string; nama: string; role: string; status_pegawai: string }>> => {
     try {
+      const body: Record<string, string> = {};
+      if (role) body.role = role;
+      if (status_pegawai) body.status_pegawai = status_pegawai;
+
       const response = await apiFetch(`${BASE_URL}/${id}/change-role`, {
         method: "PATCH",
-        body: JSON.stringify({ role }),
+        body: JSON.stringify(body),
       });
       const data = await response.json();
       if (!response.ok) {

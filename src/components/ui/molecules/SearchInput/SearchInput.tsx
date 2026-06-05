@@ -12,6 +12,7 @@ interface SearchInputProps {
     className?: string;
     autoFocus?: boolean;
     ariaLabel?: string;
+    style?: React.CSSProperties;
 }
 
 const SearchInput = ({
@@ -24,6 +25,7 @@ const SearchInput = ({
     className = "",
     autoFocus = false,
     ariaLabel = "Cari",
+    style,
 }: SearchInputProps) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,6 +54,7 @@ const SearchInput = ({
                 ${fullWidth ? styles.fullWidth : ""} 
                 ${className}
             `.trim()}
+            style={style}
         >
             <span className={styles.searchIcon}>
                 <Search size={16} />

@@ -1,12 +1,10 @@
 .card {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-2xl);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
-    flex: 1;
+    display: flex;
+    flex-direction: column;
     min-width: 0;
+    padding: var(--spacing-2xl);
 }
+
 
 .cardHeader {
     display: flex;
@@ -19,12 +17,14 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    
 }
 
 .formGrid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--spacing-xl);
+    
 }
 
 @media (max-width: 768px) {
@@ -33,4 +33,39 @@
         align-items: flex-start;
         gap: var(--spacing-md);
     }
+}
+
+.passwordActionWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.passwordLabel {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.passwordButton {
+    align-self: flex-start;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+.passwordRow {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    
+}
+
+.dummyPasswordInput {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    color: var(--color-text);
+    outline: none;
 }

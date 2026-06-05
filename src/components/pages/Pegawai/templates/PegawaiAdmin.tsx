@@ -10,7 +10,6 @@ import Button from "../../../ui/atoms/Button";
 import DataTable from "../../../ui/organisms/DataTable";
 import Pagination from "../../../ui/molecules/Pagination";
 import Modal from "../../../ui/organisms/Modal";
-import Input from "../../../ui/atoms/Input";
 import Select from "../../../ui/atoms/Select";
 import { pegawaiService } from "../../../../services/pegawaiService";
 
@@ -266,6 +265,7 @@ const PegawaiAdmin = () => {
                 <>
                     <Card>
                         <FilterBar
+                            customWidth="640px"
                             searchValue={searchValue}
                             onSearchChange={setSearchValue}
                             filters={[]}

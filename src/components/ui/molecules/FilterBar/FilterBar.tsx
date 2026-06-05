@@ -17,6 +17,7 @@ interface FilterBarProps {
     onSearchChange: (value: string) => void;
     searchPlaceholder?: string;
     filters: FilterItem[];
+    customWidth?: string;
 }
 
 const FilterBar = ({
@@ -24,11 +25,13 @@ const FilterBar = ({
     onSearchChange,
     searchPlaceholder = "Cari...",
     filters,
+    customWidth,
 }: FilterBarProps) => {
     return (
         <div className={styles.filterBar}>
             <SearchInput
                 className={styles.searchContainer}
+                style={customWidth ? { maxWidth: customWidth } : undefined}
                 value={searchValue}
                 onChange={onSearchChange}
                 placeholder={searchPlaceholder}

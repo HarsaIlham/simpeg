@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Home from "../components/pages/Home";
 import Profil from "../components/pages/Profil";
+import Akun from "../components/pages/Akun";
 import Login from "../components/pages/Login/Login";
 import DataDiklat from "../components/pages/DataDiklat";
 import DataKeluarga from "../components/pages/DataKeluarga";
@@ -30,6 +31,10 @@ const routes: RouteObject[] = [
                     {
                         path: "profil",
                         element: <Profil />,
+                    },
+                    {
+                        path: "akun",
+                        element: <Akun />,
                     },
                     {
                         path: "data-diklat",

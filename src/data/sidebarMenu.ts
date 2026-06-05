@@ -9,6 +9,7 @@ import {
   Award,
   GraduationCap,
   NotebookPen,
+  Wrench,
 } from "lucide-react";
 import type { SidebarMenuItem } from "../types/sidebar";
 
@@ -25,7 +26,14 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Profil",
     icon: UserRound,
     path: "/profil",
-    allowedRoles: ["pegawai", "admin", "hrd"],
+    allowedRoles: ["pegawai", "hrd"],
+  },
+  {
+    id: "akun",
+    label: "Akun",
+    icon: Wrench,
+    path: "/akun",
+    allowedRoles: ["admin"],
   },
   {
     id: "manajemen-pegawai",

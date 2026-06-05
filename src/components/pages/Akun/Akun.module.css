@@ -1,0 +1,41 @@
+.akunLayout {
+    width: 100%;
+    margin-top: var(--spacing-xl);
+}
+
+.passwordForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.modalInstructions {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.errorAlert {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    border-top: 2px solid #4E7F6A;
+    padding: var(--spacing-lg);
+    padding-bottom: 0;
+
+}

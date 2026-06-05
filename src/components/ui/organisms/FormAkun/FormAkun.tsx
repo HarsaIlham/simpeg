@@ -1,22 +1,23 @@
 import { useState, useEffect } from "react";
-import { Send, X, Edit } from "lucide-react";
+import { Send, X, Edit, Key } from "lucide-react";
 import styles from "./FormAkun.module.css";
 import Input from "../../atoms/Input";
 import Button from "../../atoms/Button";
 import CardHeader from "../../molecules/CardHeader";
+import Card from "../../atoms/Card";
 
 export interface FormAkunData {
     username: string;
-    password: string;
 }
 
 interface FormAkunProps {
     initialData: FormAkunData;
     onSubmit?: (data: FormAkunData) => void;
+    onUbahPasswordClick?: () => void;
     readOnly?: boolean;
 }
 
-const FormAkun = ({ initialData, onSubmit, readOnly = false }: FormAkunProps) => {
+const FormAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false }: FormAkunProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState<FormAkunData>(initialData);
 
@@ -46,7 +47,7 @@ const FormAkun = ({ initialData, onSubmit, readOnly = false }: FormAkunProps) =>
     };
 
     return (
-        <div className={styles.card}>
+        <Card padding="md" className={styles.card}>
             <div className={styles.cardHeader}>
                 <CardHeader title="Data Akun" />
                 {!readOnly && (
@@ -68,7 +69,7 @@ const FormAkun = ({ initialData, onSubmit, readOnly = false }: FormAkunProps) =>
                             </>
                         ) : (
                             <Button
-                                label="Edit Profil"
+                                label="Edit Akun"
                                 icon={<Edit size={16} />}
                                 variant="primary"
                                 onClick={handleEdit}
@@ -88,18 +89,18 @@ const FormAkun = ({ initialData, onSubmit, readOnly = false }: FormAkunProps) =>
                     onChange={handleInputChange}
                     disabled={!isEditing}
                 />
-                <Input
-                    bgColor="#E6F4EE"
-                    label="Password"
-                    name="password"
-                    id="password"
-                    type={isEditing ? "text" : "password"}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                />
+                {!isEditing && (
+                    <div className={styles.passwordActionWrapper}>
+                        <Button
+                            className={styles.passwordButton}
+                            label="Ubah Password"                            
+                            variant="transparant"
+                            onClick={onUbahPasswordClick}
+                        />
+                    </div>
+                )}
             </div>
-        </div>
+        </Card>
     );
 };
 

@@ -20,6 +20,10 @@
     font-weight: 600;
 }
 
+.tableWrapper {
+padding-top: 24px;
+}
+
 .editBtn {
     display: inline-flex;
     align-items: center;

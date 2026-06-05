@@ -337,6 +337,7 @@ const PegawaiHrd = () => {
                 <>
                     <Card>
                         <FilterBar
+                            customWidth="640px"
                             searchValue={searchValue}
                             onSearchChange={setSearchValue}
                             filters={filters}

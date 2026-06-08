@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { UsersRound, SquarePen } from "lucide-react";
+import { UsersRound, SquarePen, UserRoundPlus } from "lucide-react";
 import Card from "../../../ui/atoms/Card";
 import FilterBar from "../../../ui/molecules/FilterBar";
 import MainHeaderSection from "../../../ui/molecules/MainHeaderSection";
@@ -11,14 +11,18 @@ import Pagination from "../../../ui/molecules/Pagination";
 import Modal from "../../../ui/organisms/Modal";
 import Popup from "../../../ui/molecules/Popup";
 import FormEditRoleStatus from "../../../ui/organisms/FormEditRoleStatus";
+import FormTambahPegawai from "../../../ui/organisms/FormTambahPegawai";
 import { pegawaiService } from "../../../../services/pegawaiService";
+import Button from "../../../ui/atoms/Button";
 
 export interface PegawaiItem {
     id: number;
     nama: string;
     jabatan: string;
+    unitKerja: string;
     nik: string;
-    profesi: string;
+    email: string;
+    noTelepon: string;
     status: string;
     role: "admin" | "hrd" | "direktur" | "pegawai";
     statusData: "lengkap" | "belum-lengkap";
@@ -53,6 +57,7 @@ const PegawaiAdmin = () => {
     });
 
     const [editingPegawai, setEditingPegawai] = useState<PegawaiItem | null>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     const [popup, setPopup] = useState({
@@ -89,9 +94,11 @@ const PegawaiAdmin = () => {
                     nama: item.nama || "",
                     nik: item.nik || "",
                     jabatan: item.jabatan || "-",
-                    profesi: item.profesi || item.unit_kerja || "-",
                     status: item.status || "Aktif",
+                    unitKerja: item.unit_kerja || "-",
                     role: item.role || "pegawai",
+                    email: item.email || "-",
+                    noTelepon: item.no_telp || "-",
                     statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
                     jenisPegawai: item.jenis_pegawai || "",
                     pendidikan: item.pendidikan || "",
@@ -163,6 +170,28 @@ const PegawaiAdmin = () => {
         }
     };
 
+    const handleCreatePegawai = async (payload: { nik: string; nama: string; password?: string }) => {
+        setIsSaving(true);
+        try {
+            const response = await pegawaiService.create(payload);
+            if (response.success) {
+                setIsAddModalOpen(false);
+                showPopup("checklist", "Berhasil", `Pegawai ${payload.nama} berhasil ditambahkan.`);
+                fetchPegawai(1);
+            }
+        } catch (err: any) {
+            let errorMsg = "Gagal menambahkan pegawai.";
+            if (err?.errors?.nik) {
+                errorMsg = "NIK sudah terdaftar.";
+            } else if (err?.message) {
+                errorMsg = err.message;
+            }
+            showPopup("error", "Gagal", errorMsg);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const displayedPegawai = useMemo(() => {
         return pegawaiList;
     }, [pegawaiList]);
@@ -170,9 +199,13 @@ const PegawaiAdmin = () => {
     const columns = useMemo(() => [
         {
             key: "nama",
-            label: "Nama",
+            label: "Nama/NIK",
             width: "20%",
-            render: (row: PegawaiItem) => <span className={styles.empName}>{row.nama}</span>
+            render: (row: PegawaiItem) => 
+                <div>
+                    <span className={styles.empName}>{row.nama}</span> 
+                    <div className={styles.empNik}><small>NIK: {row.nik}</small></div>
+                </div>
         },
         {
             key: "jabatan",
@@ -181,14 +214,21 @@ const PegawaiAdmin = () => {
             render: (row: PegawaiItem) => <span>{row.jabatan}</span>
         },
         {
-            key: "nik",
-            label: "NIK",
+            key: "unitkerja",
+            label: "Unit Kerja",
             width: "15%",
+            render: (row: PegawaiItem) => <span>{row.unitKerja}</span>
         },
         {
-            key: "profesi",
-            label: "Profesi",
+            key: "kontak",
+            label: "Kontak",
             width: "23%",
+            
+            render: (row: PegawaiItem) => 
+                <div>
+                    <span>{row.email}</span>
+                    <div className={styles.empNik}><small>{row.noTelepon}</small></div>
+                </div>
         },
         {
             key: "status",
@@ -254,13 +294,20 @@ const PegawaiAdmin = () => {
             </div>
 
             <>
-                <Card>
+                <Card className={styles.row}>
                     <FilterBar
                         customWidth="640px"
                         searchValue={searchValue}
                         onSearchChange={setSearchValue}
                         filters={[]}
                         searchPlaceholder="Cari nama atau NIK "
+                    />
+                    <Button                        
+                        icon={<UserRoundPlus size={20} />}
+                        label="Tambah Pegawai"
+                        variant="primary"
+                        size="md"
+                        onClick={() => setIsAddModalOpen(true)}
                     />
                 </Card>
 
@@ -293,6 +340,20 @@ const PegawaiAdmin = () => {
                     itemName="pegawai"
                 />
             </>
+
+            {isAddModalOpen && (
+                <Modal
+                    title="Tambah Pegawai Baru"
+                    isOpen={isAddModalOpen}
+                    onClose={() => setIsAddModalOpen(false)}
+                >
+                    <FormTambahPegawai
+                        onSubmit={handleCreatePegawai}
+                        onCancel={() => setIsAddModalOpen(false)}
+                        isSaving={isSaving}
+                    />
+                </Modal>
+            )}
 
             {editingPegawai && (
                 <Modal

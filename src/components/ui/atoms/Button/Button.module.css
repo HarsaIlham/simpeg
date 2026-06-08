@@ -8,6 +8,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
+  white-space: nowrap;
 }
 
 .sm {

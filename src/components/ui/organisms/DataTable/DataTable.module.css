@@ -21,7 +21,7 @@
     font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--color-primary);
-    text-align: left;
+    text-align: center;
     white-space: nowrap;
     border-bottom: 2px solid var(--color-border);
 }
@@ -67,6 +67,7 @@
     font-size: var(--font-size-sm);
     color: var(--color-text);
     vertical-align: middle;
+    text-align: center;
 }
 
 .emptyState {

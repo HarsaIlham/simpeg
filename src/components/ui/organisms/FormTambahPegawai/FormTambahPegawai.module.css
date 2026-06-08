@@ -1,0 +1,43 @@
+.pegawaiForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md, 16px);
+    padding: var(--spacing-xs, 4px) 0;
+}
+
+.instructions {
+    font-size: var(--font-size-sm, 14px);
+    color: var(--color-text-secondary, #4b5563);
+    margin-bottom: var(--spacing-xs, 4px);
+    line-height: 1.5;
+}
+
+.errorAlert {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    padding: var(--spacing-sm, 12px);
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid #fee2e2;
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 500;
+}
+
+.fieldRow {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.charCount {
+    align-self: flex-end;
+    font-size: 11px;
+    color: var(--color-text-secondary, #9ca3af);
+    margin-top: 4px;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm, 10px);
+    margin-top: var(--spacing-md, 16px);
+}

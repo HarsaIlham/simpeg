@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { ChevronLeft, LogOut, PanelLeftOpen} from "lucide-react";
 import { sidebarMenuItems } from "../../data/sidebarMenu";
 import SidebarBrand from "./molecules/SidebarBrand";
@@ -6,11 +7,29 @@ import SidebarNavItem from "./molecules/SidebarNavItem";
 import styles from "./Sidebar.module.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSidebar } from "../../contexts/SidebarContext";
+import { profileService } from "../../services/profileService";
+import { getProxiedFileUrl } from "../../utils/api";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const { isCollapsed, isMobileOpen, toggleCollapse, closeMobile } = useSidebar();
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   
+  useEffect(() => {
+    if (!user) return;
+    const fetchAvatar = async () => {
+      try {
+        const response = await profileService.getProfile();
+        if (response.success && response.data?.profile?.link_photo_profile) {
+          setAvatarUrl(getProxiedFileUrl(response.data.profile.link_photo_profile));
+        }
+      } catch (err) {
+        console.error("Gagal mengambil foto profil di sidebar:", err);
+      }
+    };
+    fetchAvatar();
+  }, [user]);
+
   if (!user) return null;
 
   const currentRole = user.role; 
@@ -40,6 +59,7 @@ const Sidebar = () => {
           <SidebarUserCard
             name={user.nama}
             role={user.role.toUpperCase()}
+            avatarSrc={avatarUrl}
           />
         </div>
         <nav className={styles.nav}>

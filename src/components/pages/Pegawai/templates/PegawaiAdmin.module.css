@@ -5,8 +5,19 @@
     margin: var(--spacing-lg) 0;
 }
 
+.row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .empName {
     font-weight: 600;
+    color: var(--color-text);
+}
+
+.empNik {
     color: var(--color-primary);
 }
 

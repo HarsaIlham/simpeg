@@ -45,7 +45,8 @@ const mapProfileToFormData = (profile: ProfileData): propsType => ({
     kartuKeluarga: profile.link_kk || null,
 });
 
-const mapStatusKawin = (status: string): string => {
+const mapStatusKawin = (status: string | null | undefined): string => {
+    if (!status) return "";
     const statusMap: Record<string, string> = {
         kawin: "Menikah",
         "belum kawin": "Belum Menikah",
@@ -55,7 +56,8 @@ const mapStatusKawin = (status: string): string => {
     return statusMap[status.toLowerCase()] || status;
 };
 
-const unmapStatusKawin = (status: string): string => {
+const unmapStatusKawin = (status: string | null | undefined): string => {
+    if (!status) return "";
     const statusMap: Record<string, string> = {
         "Menikah": "kawin",
         "Belum Menikah": "belum kawin",
@@ -146,13 +148,14 @@ const Profil = () => {
                 setPhotoUrl(profile.link_photo_profile);
                 setStatusPegawai(profile.status_pegawai);
 
-                if (profile.status_perubahan) {
+                if (profile.status_perubahan && profile.status_perubahan.status) {
+                    const statusStr = profile.status_perubahan.status;
                     setMyChangeRequests([{
                         id: `req-${profile.status_perubahan.last_update}`,
                         title: `Pengajuan ${profile.status_perubahan.fitur}`,
                         date: profile.status_perubahan.last_update,
-                        statusLabel: profile.status_perubahan.status.charAt(0).toUpperCase() + profile.status_perubahan.status.slice(1),
-                        statusVariant: profile.status_perubahan.status === "pending" ? "warning" : profile.status_perubahan.status === "approved" ? "success" : "danger",
+                        statusLabel: statusStr.charAt(0).toUpperCase() + statusStr.slice(1),
+                        statusVariant: statusStr === "pending" ? "warning" : statusStr === "approved" ? "success" : "danger",
                     }]);
                 } else {
                     setMyChangeRequests([]);
@@ -425,8 +428,8 @@ const Profil = () => {
                         email={profileData.email}
                         phone={profileData.noTelepon}
                         location={profileData.unitKerja}
-                        statusPegawai={statusPegawai.charAt(0).toUpperCase() + statusPegawai.slice(1)}
-                        statusVariant={statusVariantMap[statusPegawai.toLowerCase()] || "neutral"}
+                        statusPegawai={statusPegawai ? (statusPegawai.charAt(0).toUpperCase() + statusPegawai.slice(1)) : "Aktif"}
+                        statusVariant={statusVariantMap[(statusPegawai || "aktif").toLowerCase()] || "neutral"}
                         onPhotoClick={handlePhotoClick}
                     />
 

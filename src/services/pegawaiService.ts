@@ -55,7 +55,7 @@ export const pegawaiService = {
     }
   },
 
-  create: async (payload: Omit<PegawaiData, "id">): Promise<ApiResponse<PegawaiData>> => {
+  create: async (payload: { nik: string; nama: string; password?: string }): Promise<ApiResponse<{ id: number; nik: string; nama: string }>> => {
     try {
       const response = await apiFetch(BASE_URL, {
         method: "POST",

@@ -5,6 +5,7 @@ export interface Column<T> {
     key: string;
     label: string;
     width?: string;
+    align?: "left" | "center" | "right";
     render?: (row: T) => ReactNode;
 }
 
@@ -40,7 +41,10 @@ const DataTable = <T,>({
                                 <th
                                     key={col.key}
                                     className={styles.th}
-                                    style={col.width ? { width: col.width } : undefined}
+                                    style={{
+                                        ...(col.width ? { width: col.width } : {}),
+                                        ...(col.align ? { textAlign: col.align } : {}),
+                                    }}
                                 >
                                     {col.label}
                                 </th>
@@ -64,7 +68,10 @@ const DataTable = <T,>({
                                         <td
                                             key={col.key}
                                             className={styles.td}
-                                            style={col.width ? { width: col.width } : undefined}
+                                            style={{
+                                                ...(col.width ? { width: col.width } : {}),
+                                                ...(col.align ? { textAlign: col.align } : {}),
+                                            }}
                                         >
                                             {col.render
                                                 ? col.render(row)

@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react";
-import { Send, X, Edit, Key } from "lucide-react";
-import styles from "./FormAkun.module.css";
+import { Send, X, Edit } from "lucide-react";
+import styles from "./CardAkun.module.css";
 import Input from "../../atoms/Input";
 import Button from "../../atoms/Button";
 import CardHeader from "../../molecules/CardHeader";
 import Card from "../../atoms/Card";
 
-export interface FormAkunData {
+export interface CardAkunData {
     username: string;
 }
 
-interface FormAkunProps {
-    initialData: FormAkunData;
-    onSubmit?: (data: FormAkunData) => void;
+interface CardAkunProps {
+    initialData: CardAkunData;
+    onSubmit?: (data: CardAkunData) => void;
     onUbahPasswordClick?: () => void;
     readOnly?: boolean;
 }
 
-const FormAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false }: FormAkunProps) => {
+const CardAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false }: CardAkunProps) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState<FormAkunData>(initialData);
+    const [formData, setFormData] = useState<CardAkunData>(initialData);
 
     useEffect(() => {
         setFormData(initialData);
@@ -93,7 +93,7 @@ const FormAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false
                     <div className={styles.passwordActionWrapper}>
                         <Button
                             className={styles.passwordButton}
-                            label="Ubah Password"                            
+                            label="Ubah Password"
                             variant="transparant"
                             onClick={onUbahPasswordClick}
                         />
@@ -104,4 +104,4 @@ const FormAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false
     );
 };
 
-export default FormAkun;
+export default CardAkun;

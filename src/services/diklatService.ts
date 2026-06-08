@@ -3,8 +3,23 @@ import type { ApiResponse, DiklatResponse } from "../types/api";
 
 export const diklatService = {
 
-  getDiklat: async (): Promise<ApiResponse<DiklatResponse>> => {
-    const response = await apiFetch("/diklat");
+  getDiklat: async (params?: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    jenis?: string;
+    status?: string;
+  }): Promise<ApiResponse<DiklatResponse>> => {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.per_page) query.set("per_page", String(params.per_page));
+    if (params?.search) query.set("search", params.search);
+    if (params?.jenis) query.set("jenis", params.jenis);
+    if (params?.status) query.set("status", params.status);
+    const qs = query.toString();
+    const url = qs ? `/diklat?${qs}` : "/diklat";
+
+    const response = await apiFetch(url);
     const data = await response.json();
 
     if (!response.ok) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 import styles from "./DataDiklat.module.css"
 import Topbar from "../../ui/organisms/Topbar/Topbar"
@@ -13,6 +13,7 @@ import type { CardDiklatData } from "../../ui/organisms/CardDiklat/CardDiklat"
 import Modal from "../../ui/organisms/Modal"
 import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal"
 import FormLaporanDiklat from "../../ui/organisms/FormLaporanDiklat"
+import Pagination from "../../ui/molecules/Pagination"
 import { diklatService } from "../../../services/diklatService"
 import { cvService } from "../../../services/cvService"
 import { generateCvPdf } from "../../../utils/generateCvPdf"
@@ -77,10 +78,10 @@ const STATUS_OPTIONS = [
   { value: "mendatang", label: "Mendatang" },
 ]
 
-
+const ITEMS_PER_PAGE = 7
 
 const DataDiklat = () => {
-  const { options: filterJenisOptions } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS);
+  const { options: filterJenisOptions } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
   const [searchParams] = useSearchParams()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -94,6 +95,12 @@ const DataDiklat = () => {
   const [_ringkasan, setRingkasan] = useState<DiklatRingkasan | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
+  const [perPage, setPerPage] = useState(ITEMS_PER_PAGE)
+
   const [popup, setPopup] = useState<popupState>({
     isOpen: false,
     variant: "checklist",
@@ -121,19 +128,42 @@ const DataDiklat = () => {
     setPreviewFile({ url: proxied, namaDiklat })
   }
 
-  const fetchDiklat = useCallback(async () => {
+  const currentFilters = useMemo(() => ({
+    search: search || undefined,
+    jenis: filterJenis || undefined,
+    status: filterStatus || undefined,
+  }), [search, filterJenis, filterStatus])
+
+  const fetchDiklat = useCallback(async (
+    page: number = 1,
+    filters?: { search?: string; jenis?: string; status?: string }
+  ) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await diklatService.getDiklat()
+      const response = await diklatService.getDiklat({
+        page,
+        per_page: ITEMS_PER_PAGE,
+        search: filters?.search,
+        jenis: filters?.jenis,
+        status: filters?.status,
+      })
 
       if (response.success && response.data) {
         const { diklat } = response.data
 
-        const rawRiwayat = (diklat.riwayat_diklat as any)?.data || diklat.riwayat_diklat || []
+        const riwayatPaginated = diklat.riwayat_diklat as any
+        const rawRiwayat = riwayatPaginated?.data || riwayatPaginated || []
         const mappedDiklat = rawRiwayat.map(mapRiwayatToCardDiklat)
         setDiklatList(mappedDiklat)
+
+        if (riwayatPaginated?.current_page !== undefined) {
+          setCurrentPage(riwayatPaginated.current_page)
+          setTotalPages(riwayatPaginated.last_page || 1)
+          setTotalItems(riwayatPaginated.total || 0)
+          setPerPage(riwayatPaginated.per_page || ITEMS_PER_PAGE)
+        }
 
         setRingkasan(diklat.ringkasan)
       } else {
@@ -148,20 +178,21 @@ const DataDiklat = () => {
   }, [])
 
   useEffect(() => {
-    fetchDiklat()
+    fetchDiklat(1)
   }, [fetchDiklat])
 
-  const filteredLaporanData = diklatList.filter((item) => {
-    const matchSearch =
-      item.namaDiklat.toLowerCase().includes(search.toLowerCase()) ||
-      item.jenisDiklat.toLowerCase().includes(search.toLowerCase()) ||
-      item.kategori.toLowerCase().includes(search.toLowerCase()) ||
-      item.penyelenggara.toLowerCase().includes(search.toLowerCase())
-    const matchJenis = !filterJenis || item.jenisDiklat === filterJenis
-    const matchStatus = !filterStatus || item.status === filterStatus
-    return matchSearch && matchJenis && matchStatus
-  })
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1)
+      fetchDiklat(1, currentFilters)
+    }, 700)
+    return () => clearTimeout(timer)
+  }, [currentFilters, fetchDiklat])
 
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page)
+    fetchDiklat(page, currentFilters)
+  }, [fetchDiklat, currentFilters])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<CardDiklatData | null>(null)
@@ -188,7 +219,7 @@ const DataDiklat = () => {
     try {
       await diklatService.deleteDiklat(deleteTarget.id)
       setDeleteTarget(null)
-      await fetchDiklat()
+      await fetchDiklat(currentPage, currentFilters)
       showPopup("checklist", "Berhasil", "Data diklat berhasil dihapus.")
     } catch (err: unknown) {
       const errorObj = err as { message?: string }
@@ -210,7 +241,7 @@ const DataDiklat = () => {
       }
       setIsModalOpen(false)
       setSelectedDiklat(null)
-      await fetchDiklat()
+      await fetchDiklat(currentPage, currentFilters)
     } catch (err: unknown) {
       const errorObj = err as { message?: string }
       showPopup("error", "Gagal", errorObj?.message || "Gagal menyimpan data diklat.")
@@ -247,7 +278,7 @@ const DataDiklat = () => {
 
       setIsModalOpen(false)
       setSelectedDiklat(null)
-      await fetchDiklat()
+      await fetchDiklat(currentPage, currentFilters)
       showPopup("checklist", "Berhasil", "Laporan sertifikat berhasil diupload.")
     } catch (err: unknown) {
       const errorObj = err as { message?: string }
@@ -277,30 +308,6 @@ const DataDiklat = () => {
     } finally {
       setIsCetakLoading(false)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <>
-        <Topbar title="Data Diklat" />
-        <MainHeaderSection title="Data Laporan Diklat" subtitle="Kelola riwayat pelatihan dan pendidikan lanjutan" />
-        <Card className={styles.emptyState}>
-          <p className={styles.emptyText}>Memuat data diklat...</p>
-        </Card>
-      </>
-    )
-  }
-
-  if (error) {
-    return (
-      <>
-        <Topbar title="Data Diklat" />
-        <MainHeaderSection title="Data Laporan Diklat" subtitle="Kelola riwayat pelatihan dan pendidikan lanjutan" />
-        <Card className={styles.emptyState}>
-          <p className={styles.emptyText}>{error}</p>
-        </Card>
-      </>
-    )
   }
 
   return (
@@ -350,25 +357,46 @@ const DataDiklat = () => {
       </Card>
 
       <div className={styles.cardList}>
-        {filteredLaporanData.length > 0 ? (
-          filteredLaporanData.map((diklat) => (
-            <CardDiklat
-              key={diklat.id}
-              data={diklat}
-              onEdit={() => handleEdit(diklat)}
-              onDelete={() => handleDelete(diklat)}
-              onUploadLaporan={() => handleUploadLaporan(diklat)}
-              onViewDocument={(url) => handleViewDocument(url, diklat.namaDiklat)}
-            />
-          ))
-        ) : (
+        {isLoading ? (
           <Card className={styles.emptyState}>
-            <p className={styles.emptyText}>
-              Tidak ada data diklat yang ditemukan.
-            </p>
+            <p className={styles.emptyText}>Memuat data diklat...</p>
           </Card>
-        )}
+        )
+          : error ? (
+            <Card className={styles.emptyState}>
+              <p className={styles.emptyText}>{error}</p>
+            </Card>
+          )
+            : diklatList.length > 0 ? (
+              diklatList.map((diklat) => (
+                <CardDiklat
+                  key={diklat.id}
+                  data={diklat}
+                  onEdit={() => handleEdit(diklat)}
+                  onDelete={() => handleDelete(diklat)}
+                  onUploadLaporan={() => handleUploadLaporan(diklat)}
+                  onViewDocument={(url) => handleViewDocument(url, diklat.namaDiklat)}
+                />
+              ))
+            ) : (
+              <Card className={styles.emptyState}>
+                <p className={styles.emptyText}>
+                  Tidak ada data diklat yang ditemukan.
+                </p>
+              </Card>
+            )}
       </div>
+
+      {totalPages > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={perPage}
+          onPageChange={handlePageChange}
+          itemName="diklat"
+        />
+      )}
 
       {isModalOpen && modalMode !== "Upload Laporan Diklat" && (
         <Modal

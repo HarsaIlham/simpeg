@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styles from "./DiklatPegawai.module.css"
 import Topbar from "../../ui/organisms/Topbar/Topbar"
@@ -11,6 +11,7 @@ import CardDiklat from "../../ui/organisms/CardDiklat"
 import type { CardDiklatData } from "../../ui/organisms/CardDiklat/CardDiklat"
 import Popup from "../../ui/molecules/Popup"
 import Modal from "../../ui/organisms/Modal"
+import Pagination from "../../ui/molecules/Pagination"
 import FormTambahJenisDiklat from "../../ui/organisms/FormTambahJenisDiklat/FormTambahJenisDiklat"
 import FormTambahJadwalDiklat from "../../ui/organisms/FormTambahJadwalDiklat"
 import { hrdDiklatService } from "../../../services/hrdDiklatService"
@@ -29,8 +30,10 @@ interface PopupState {
     message: string
 }
 
+const ITEMS_PER_PAGE = 7
+
 const DiklatPegawai = () => {
-    const { options: filterJenisOptions, refetch: refetchTipeDiklat } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS);
+    const { options: filterJenisOptions, refetch: refetchTipeDiklat } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
     const navigate = useNavigate()
     const [search, setSearch] = useState("")
     const [filterJenis, setFilterJenis] = useState("")
@@ -47,6 +50,11 @@ const DiklatPegawai = () => {
     const [modalMode, setModalMode] = useState<string>("")
     const [isModalOpen, setIsModalOpen] = useState(false)
 
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalItems, setTotalItems] = useState(0)
+    const [perPage, setPerPage] = useState(ITEMS_PER_PAGE)
+
     const [popup, setPopup] = useState<PopupState>({
         isOpen: false,
         variant: "checklist",
@@ -62,16 +70,38 @@ const DiklatPegawai = () => {
         setPopup(prev => ({ ...prev, isOpen: false }))
     }
 
-    const fetchDiklat = useCallback(async () => {
+    const currentFilters = useMemo(() => ({
+        search: search || undefined,
+        jenis: filterJenis || undefined,
+    }), [search, filterJenis])
+
+    const fetchDiklat = useCallback(async (
+        page: number = 1,
+        filters?: { search?: string; jenis?: string }
+    ) => {
         setIsLoading(true)
         setError(null)
 
         try {
-            const response = await hrdDiklatService.getAll()
+            const response = await hrdDiklatService.getAll({
+                page,
+                per_page: ITEMS_PER_PAGE,
+                search: filters?.search,
+                jenis: filters?.jenis,
+            })
             if (response.success && response.data) {
-                const rawList = response.data.list || (response.data as any).data || [];
+                const responseData = response.data as any
+
+                const rawList = responseData?.data || responseData?.list || []
                 const mapped = rawList.map(mapHrdItemToCardDiklat)
                 setDiklatList(mapped)
+
+                if (responseData?.current_page !== undefined) {
+                    setCurrentPage(responseData.current_page)
+                    setTotalPages(responseData.last_page || 1)
+                    setTotalItems(responseData.total || 0)
+                    setPerPage(responseData.per_page || ITEMS_PER_PAGE)
+                }
             } else {
                 setError(response.message || "Gagal mengambil data diklat.")
             }
@@ -84,19 +114,21 @@ const DiklatPegawai = () => {
     }, [])
 
     useEffect(() => {
-        fetchDiklat()
+        fetchDiklat(1)
     }, [fetchDiklat])
 
-    const filteredData = diklatList.filter((item) => {
-        const matchSearch =
-            item.namaDiklat.toLowerCase().includes(search.toLowerCase()) ||
-            item.jenisDiklat.toLowerCase().includes(search.toLowerCase()) ||
-            item.kategori.toLowerCase().includes(search.toLowerCase()) ||
-            item.penyelenggara.toLowerCase().includes(search.toLowerCase())
-        const matchJenis = !filterJenis || item.jenisDiklat === filterJenis
-        return matchSearch && matchJenis
-    })
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setCurrentPage(1)
+            fetchDiklat(1, currentFilters)
+        }, 700)
+        return () => clearTimeout(timer)
+    }, [currentFilters, fetchDiklat])
 
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page)
+        fetchDiklat(page, currentFilters)
+    }, [fetchDiklat, currentFilters])
 
     const handleTambahDropdown = () => {
         setServerErrorsJenis(undefined)
@@ -200,7 +232,7 @@ const DiklatPegawai = () => {
             await hrdDiklatService.createMasterDiklat(payload)
             setIsModalOpen(false)
             showPopup("checklist", "Berhasil", "Jadwal diklat berhasil ditambahkan.")
-            await fetchDiklat()
+            await fetchDiklat(currentPage, currentFilters)
         } catch (err: unknown) {
             const errorObj = err as { message?: string }
             showPopup("error", "Gagal", errorObj?.message || "Gagal menambahkan jadwal diklat.")
@@ -295,8 +327,8 @@ const DiklatPegawai = () => {
             </Card>
 
             <div className={styles.cardList}>
-                {filteredData.length > 0 ? (
-                    filteredData.map((diklat) => (
+                {diklatList.length > 0 ? (
+                    diklatList.map((diklat) => (
                         <CardDiklat
                             key={diklat.id}
                             data={diklat}
@@ -314,6 +346,17 @@ const DiklatPegawai = () => {
                     </Card>
                 )}
             </div>
+
+            {totalPages > 0 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={perPage}
+                    onPageChange={handlePageChange}
+                    itemName="diklat"
+                />
+            )}
 
             <Modal
                 isOpen={isModalJenisOpen}

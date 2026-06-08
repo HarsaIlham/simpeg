@@ -1,0 +1,31 @@
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md, 16px);
+    padding: var(--spacing-sm, 8px) 0;
+}
+
+.formInstructions {
+    font-size: var(--font-size-sm, 14px);
+    color: var(--color-text-secondary, #4b5563);
+    margin-bottom: var(--spacing-sm, 8px);
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs, 6px);
+}
+
+.label {
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 600;
+    color: var(--color-primary, #111827);
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm, 10px);
+    margin-top: var(--spacing-md, 16px);
+}

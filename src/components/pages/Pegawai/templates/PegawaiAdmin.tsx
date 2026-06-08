@@ -6,11 +6,11 @@ import MainHeaderSection from "../../../ui/molecules/MainHeaderSection";
 import Topbar from "../../../ui/organisms/Topbar/Topbar";
 import styles from "./PegawaiAdmin.module.css";
 import StatCard from "../../../ui/molecules/StatCard";
-import Button from "../../../ui/atoms/Button";
 import DataTable from "../../../ui/organisms/DataTable";
 import Pagination from "../../../ui/molecules/Pagination";
 import Modal from "../../../ui/organisms/Modal";
-import Select from "../../../ui/atoms/Select";
+import Popup from "../../../ui/molecules/Popup";
+import FormEditRoleStatus from "../../../ui/organisms/FormEditRoleStatus";
 import { pegawaiService } from "../../../../services/pegawaiService";
 
 export interface PegawaiItem {
@@ -27,44 +27,63 @@ export interface PegawaiItem {
     statusPegawai: string;
 }
 
-const ROLE_OPTIONS = [
-    { value: "pegawai", label: "Pegawai" },
-    { value: "hrd", label: "HRD" },
-    { value: "direktur", label: "Direktur" },
-    { value: "admin", label: "Admin" },
-];
-
-const STATUS_OPTIONS = [
-    { value: "aktif", label: "Aktif" },
-    { value: "cuti", label: "Cuti" },
-    { value: "berhenti", label: "Berhenti" },
-    { value: "pensiun", label: "Pensiun" },
-];
-
 const capitalize = (str: string) => {
     if (!str) return "-";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
+
+const ITEMS_PER_PAGE = 10;
 
 const PegawaiAdmin = () => {
     const [pegawaiList, setPegawaiList] = useState<PegawaiItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchValue, setSearchValue] = useState("");
+
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
+
+    const [statCounts, setStatCounts] = useState({
+        totalPegawai: 0,
+        hrdCount: 0,
+        direkturCount: 0,
+        adminCount: 0,
+    });
 
     const [editingPegawai, setEditingPegawai] = useState<PegawaiItem | null>(null);
-    const [formRole, setFormRole] = useState<string>("");
-    const [formStatus, setFormStatus] = useState<string>("");
     const [isSaving, setIsSaving] = useState(false);
 
-    const fetchPegawai = useCallback(async () => {
+    const [popup, setPopup] = useState({
+        isOpen: false,
+        variant: "success" as "success" | "error" | "warning" | "checklist",
+        title: "",
+        message: "",
+    });
+
+    const showPopup = (variant: typeof popup.variant, title: string, message: string) => {
+        setPopup({ isOpen: true, variant, title, message });
+    };
+
+    const closePopup = () => {
+        setPopup(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const fetchPegawai = useCallback(async (page: number = 1, search?: string) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await pegawaiService.getAll();
+            const response = await pegawaiService.getAll({
+                page,
+                per_page: ITEMS_PER_PAGE,
+                search: search || undefined,
+            });
             if (response.success && response.data) {
-                const rawList = (response.data as any).pegawai?.data || [];
+                const responseData = response.data as any;
+                const paginatedPegawai = responseData.pegawai;
+
+                const rawList = paginatedPegawai?.data || [];
                 const mapped: PegawaiItem[] = rawList.map((item: any) => ({
                     id: item.id_pegawai,
                     nama: item.nama || "",
@@ -79,6 +98,17 @@ const PegawaiAdmin = () => {
                     statusPegawai: item.status || "",
                 }));
                 setPegawaiList(mapped);
+
+                setCurrentPage(paginatedPegawai?.current_page || 1);
+                setTotalPages(paginatedPegawai?.last_page || 1);
+                setTotalItems(paginatedPegawai?.total || 0);
+                setPerPage(paginatedPegawai?.per_page || ITEMS_PER_PAGE);
+                setStatCounts({
+                    totalPegawai: responseData.total_pegawai ?? 0,
+                    hrdCount: responseData.jumlah_hrd ?? 0,
+                    direkturCount: responseData.jumlah_direktur ?? 0,
+                    adminCount: responseData.jumlah_admin ?? 0,
+                });
             }
         } catch (err: any) {
             setError(err?.message || "Gagal mengambil data pegawai.");
@@ -88,83 +118,54 @@ const PegawaiAdmin = () => {
     }, []);
 
     useEffect(() => {
-        fetchPegawai();
+        fetchPegawai(1);
     }, [fetchPegawai]);
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+        fetchPegawai(page, searchValue);
+    }, [fetchPegawai, searchValue]);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setCurrentPage(1);
+            fetchPegawai(1, searchValue);
+        }, 700);
+        return () => clearTimeout(timer);
+    }, [searchValue, fetchPegawai]);
 
     const handleEditClick = (pegawai: PegawaiItem) => {
         setEditingPegawai(pegawai);
-        setFormRole(pegawai.role);
-        setFormStatus(pegawai.statusPegawai.toLowerCase());
     };
 
     const handleModalClose = () => {
         setEditingPegawai(null);
     };
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSave = async (role: string, status: string) => {
         if (!editingPegawai) return;
 
         setIsSaving(true);
         try {
             const response = await pegawaiService.changeRole(
                 editingPegawai.id,
-                formRole as any,
-                formStatus
+                role as any,
+                status
             );
             if (response.success) {
-                setPegawaiList((prev) =>
-                    prev.map((p) =>
-                        p.id === editingPegawai.id
-                            ? {
-                                  ...p,
-                                  role: formRole as any,
-                                  status: capitalize(formStatus),
-                                  statusPegawai: capitalize(formStatus),
-                              }
-                            : p
-                    )
-                );
                 handleModalClose();
+                showPopup("checklist", "Berhasil", `Role dan status ${editingPegawai.nama} berhasil diperbarui.`);
+                fetchPegawai(currentPage, searchValue);
             }
         } catch (err: any) {
-            alert(err?.message || "Gagal memperbarui hak akses dan status.");
+            showPopup("error", "Gagal", err?.message || "Gagal memperbarui hak akses dan status.");
         } finally {
             setIsSaving(false);
         }
     };
 
-    const totalCount = pegawaiList.length;
-    const hrdCount = pegawaiList.filter((p) => p.role === "hrd").length;
-    const direkturCount = pegawaiList.filter((p) => p.role === "direktur").length;
-    const adminCount = pegawaiList.filter((p) => p.role === "admin").length;
-
-    const filteredPegawai = useMemo(() => {
-        return pegawaiList.filter((item) => {
-            if (!searchValue) return true;
-            const term = searchValue.toLowerCase();
-            return (
-                item.nama.toLowerCase().includes(term) ||
-                item.nik.includes(term) ||
-                item.profesi.toLowerCase().includes(term) ||
-                item.jabatan.toLowerCase().includes(term)
-            );
-        });
-    }, [pegawaiList, searchValue]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchValue]);
-
-    const itemsPerPage = 10;
-    const totalItems = filteredPegawai.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-    const activePage = Math.min(currentPage, totalPages);
-
-    const paginatedPegawai = useMemo(() => {
-        const startIndex = (activePage - 1) * itemsPerPage;
-        return filteredPegawai.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredPegawai, activePage]);
+    const displayedPegawai = useMemo(() => {
+        return pegawaiList;
+    }, [pegawaiList]);
 
     const columns = useMemo(() => [
         {
@@ -228,71 +229,70 @@ const PegawaiAdmin = () => {
             <div className={styles.statsRow}>
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(totalCount)}
+                    value={String(statCounts.totalPegawai)}
                     label="Pegawai"
                     variant="green"
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(hrdCount)}
+                    value={String(statCounts.hrdCount)}
                     label="HRD"
                     variant="blue"
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(direkturCount)}
+                    value={String(statCounts.direkturCount)}
                     label="Direktur"
                     variant="purple"
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(adminCount)}
+                    value={String(statCounts.adminCount)}
                     label="Admin"
                     variant="amber"
                 />
             </div>
 
-            {isLoading ? (
-                <div className={styles.centeredState}>
-                    <div className={styles.spinner} />
-                    <p className={styles.stateText}>Memuat data pegawai...</p>
-                </div>
-            ) : error ? (
-                <div className={styles.centeredState}>
-                    <p className={styles.errorText}>{error}</p>
-                </div>
-            ) : (
-                <>
-                    <Card>
-                        <FilterBar
-                            customWidth="640px"
-                            searchValue={searchValue}
-                            onSearchChange={setSearchValue}
-                            filters={[]}
-                            searchPlaceholder="Cari nama, Jabatan.."
-                        />
-                    </Card>
+            <>
+                <Card>
+                    <FilterBar
+                        customWidth="640px"
+                        searchValue={searchValue}
+                        onSearchChange={setSearchValue}
+                        filters={[]}
+                        searchPlaceholder="Cari nama atau NIK "
+                    />
+                </Card>
 
-                    <div className={styles.tableWrapper}>
+                <div className={styles.tableWrapper}>
+                    {isLoading ? (
+                        <div className={styles.centeredState}>
+                            <div className={styles.spinner} />
+                            <p className={styles.stateText}>Memuat data pegawai...</p>
+                        </div>
+                    ) : error ? (
+                        <div className={styles.centeredState}>
+                            <p className={styles.errorText}>{error}</p>
+                        </div>
+                    ) : (
                         <DataTable
                             columns={columns}
-                            data={paginatedPegawai}
+                            data={displayedPegawai}
                             rowKey={(row) => row.id}
                             emptyMessage="Tidak ada data pegawai yang cocok."
                             maxVisibleRows={10}
-                        />
-                    </div>
+                        />)}
+                </div>
 
-                    <Pagination
-                        currentPage={activePage}
-                        totalPages={totalPages}
-                        totalItems={totalItems}
-                        itemsPerPage={itemsPerPage}
-                        onPageChange={setCurrentPage}
-                        itemName="pegawai"
-                    />
-                </>
-            )}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={perPage}
+                    onPageChange={handlePageChange}
+                    itemName="pegawai"
+                />
+            </>
 
             {editingPegawai && (
                 <Modal
@@ -300,51 +300,25 @@ const PegawaiAdmin = () => {
                     isOpen={!!editingPegawai}
                     onClose={handleModalClose}
                 >
-                    <form onSubmit={handleSave} className={styles.editForm}>
-                        <p className={styles.formInstructions}>
-                            Sesuaikan peran (role) sistem dan status kepegawaian untuk: <strong>{editingPegawai.nama}</strong>
-                        </p>
-
-                        <div className={styles.formGroup}>
-                            <label htmlFor="edit-role" className={styles.label}>Role / Hak Akses</label>
-                            <Select
-                                id="edit-role"
-                                name="role"
-                                options={ROLE_OPTIONS}
-                                value={formRole}
-                                onChange={(e) => setFormRole(e.target.value)}
-                            />
-                        </div>
-
-                        <div className={styles.formGroup}>
-                            <label htmlFor="edit-status" className={styles.label}>Status Pegawai</label>
-                            <Select
-                                id="edit-status"
-                                name="status"
-                                options={STATUS_OPTIONS}
-                                value={formStatus}
-                                onChange={(e) => setFormStatus(e.target.value)}
-                            />
-                        </div>
-
-                        <div className={styles.buttonGroup}>
-                            <Button
-                                type="submit"
-                                label={isSaving ? "Menyimpan..." : "Simpan Perubahan"}
-                                variant="primary"
-                                disabled={isSaving}
-                            />
-                            <Button
-                                type="button"
-                                label="Batal"
-                                variant="secondary"
-                                onClick={handleModalClose}
-                                disabled={isSaving}
-                            />
-                        </div>
-                    </form>
+                    <FormEditRoleStatus
+                        initialRole={editingPegawai.role}
+                        initialStatus={editingPegawai.statusPegawai.toLowerCase()}
+                        pegawai={editingPegawai}
+                        onSubmit={handleSave}
+                        onCancel={handleModalClose}
+                        isSaving={isSaving}
+                    />
                 </Modal>
             )}
+
+            <Popup
+                isOpen={popup.isOpen}
+                onClose={closePopup}
+                variant={popup.variant}
+                title={popup.title}
+                message={popup.message}
+                confirmLabel="Ok"
+            />
         </>
     );
 };

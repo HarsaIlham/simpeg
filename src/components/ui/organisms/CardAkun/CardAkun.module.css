@@ -48,9 +48,16 @@
 }
 
 .passwordButton {
+    padding: 0%;
     align-self: flex-start;
     text-decoration: underline;
+    text-underline-offset: 1px;
+    text-decoration-thickness: 0.5px;
+}
+.passwordButton:hover{
     text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+    cursor: pointer;
 }
 
 .passwordRow {

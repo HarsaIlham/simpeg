@@ -43,13 +43,6 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     allowedRoles: ["admin", "hrd", "direktur"],
   },
   {
-    id: "persetujuan",
-    label: "Persetujuan",
-    icon: UserRoundCheck,
-    path: "/persetujuan",
-    allowedRoles: ["admin", "hrd"],
-  },
-  {
     id: "diklat-pegawai",
     label: "Diklat Pegawai",
     icon: GraduationCap,

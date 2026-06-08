@@ -13,8 +13,21 @@ import type {
 
 export const hrdDiklatService = {
   
-  getAll: async (): Promise<ApiResponse<DiklatPegawaiHrdListResponse>> => {
-    const response = await apiFetch("/diklat/all");
+  getAll: async (params?: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    jenis?: string;
+  }): Promise<ApiResponse<DiklatPegawaiHrdListResponse>> => {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.per_page) query.set("per_page", String(params.per_page));
+    if (params?.search) query.set("search", params.search);
+    if (params?.jenis) query.set("jenis", params.jenis);
+    const qs = query.toString();
+    const url = qs ? `/diklat/all?${qs}` : "/diklat/all";
+
+    const response = await apiFetch(url);
     const data = await response.json();
 
     if (!response.ok) {

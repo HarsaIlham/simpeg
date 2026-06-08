@@ -65,6 +65,8 @@ const PROFESI_OPTIONS = [
     { value: "Dokter Spesialis Anak", label: "Dokter Spesialis Anak" },
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 const PegawaiHrd = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -78,18 +80,51 @@ const PegawaiHrd = () => {
     const [pendidikan, setPendidikan] = useState("");
     const [statusPegawai, setStatusPegawai] = useState("");
     const [profesi, setProfesi] = useState("");
+
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
+
+    const [statCounts, setStatCounts] = useState({
+        totalPegawai: 0,
+        hrdCount: 0,
+        direkturCount: 0,
+        adminCount: 0,
+    });
 
     const { options: filterJenisPegawaiOptions } = useMasterData("jenisPegawai", "Semua Jenis Pegawai", JENIS_PEGAWAI_OPTIONS);
     const { options: filterProfesiOptions } = useMasterData("profesi", "Semua Profesi", PROFESI_OPTIONS);
 
-    const fetchPegawai = useCallback(async () => {
+    const fetchPegawai = useCallback(async (
+        page: number = 1,
+        filters?: {
+            search?: string;
+            status_kelengkapan?: string;
+            jenis_pegawai?: string;
+            pendidikan?: string;
+            status_pegawai?: string;
+            profesi?: string;
+        }
+    ) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await pegawaiService.getAll();
+            const response = await pegawaiService.getAll({
+                page,
+                per_page: ITEMS_PER_PAGE,
+                search: filters?.search || undefined,
+                status_kelengkapan: filters?.status_kelengkapan || undefined,
+                jenis_pegawai: filters?.jenis_pegawai || undefined,
+                pendidikan: filters?.pendidikan || undefined,
+                status_pegawai: filters?.status_pegawai || undefined,
+                profesi: filters?.profesi || undefined,
+            });
             if (response.success && response.data) {
-                const rawList = (response.data as any).pegawai?.data || [];
+                const responseData = response.data as any;
+                const paginatedPegawai = responseData.pegawai;
+
+                const rawList = paginatedPegawai?.data || [];
                 const mapped: PegawaiItem[] = rawList.map((item: any) => ({
                     id: item.id_pegawai,
                     nama: item.nama || "",
@@ -104,6 +139,18 @@ const PegawaiHrd = () => {
                     statusPegawai: item.status || "",
                 }));
                 setPegawaiList(mapped);
+
+                setCurrentPage(paginatedPegawai?.current_page || 1);
+                setTotalPages(paginatedPegawai?.last_page || 1);
+                setTotalItems(paginatedPegawai?.total || 0);
+                setPerPage(paginatedPegawai?.per_page || ITEMS_PER_PAGE);
+
+                setStatCounts({
+                    totalPegawai: responseData.total_pegawai ?? 0,
+                    hrdCount: responseData.jumlah_hrd ?? 0,
+                    direkturCount: responseData.jumlah_direktur ?? 0,
+                    adminCount: responseData.jumlah_admin ?? 0,
+                });
             }
         } catch (err: any) {
             setError(err?.message || "Gagal mengambil data pegawai.");
@@ -112,77 +159,48 @@ const PegawaiHrd = () => {
         }
     }, []);
 
+    const currentFilters = useMemo(() => ({
+        search: searchValue || undefined,
+        status_kelengkapan: statusdata || undefined,
+        jenis_pegawai: jenisPegawai || undefined,
+        pendidikan: pendidikan || undefined,
+        status_pegawai: statusPegawai || undefined,
+        profesi: profesi || undefined,
+    }), [searchValue, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi]);
+
     useEffect(() => {
-        fetchPegawai();
+        fetchPegawai(1);
     }, [fetchPegawai]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setCurrentPage(1);
+            fetchPegawai(1, currentFilters);
+        }, 700);
+        return () => clearTimeout(timer);
+    }, [currentFilters, fetchPegawai]);
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
+        fetchPegawai(page, currentFilters);
+    }, [fetchPegawai, currentFilters]);
 
     const handleRoleChange = useCallback(async (id: number, newRole: "admin" | "hrd" | "direktur" | "pegawai") => {
         try {
             const response = await pegawaiService.changeRole(id, newRole);
             if (response.success) {
-                setPegawaiList(prev => prev.map(p => p.id === id ? { ...p, role: newRole } : p));
+                fetchPegawai(currentPage, currentFilters);
             }
         } catch (err: any) {
             alert(err?.message || "Gagal mengubah role pegawai.");
         }
-    }, []);
+    }, [currentPage, currentFilters, fetchPegawai]);
 
     const handleDetailClick = (id: number) => {
         navigate(`/pegawai/${id}`);
     };
 
-    const totalCount = pegawaiList.length;
-    const hrdCount = pegawaiList.filter((p) => p.role === "hrd").length;
-    const direkturCount = pegawaiList.filter((p) => p.role === "direktur").length;
-    const adminCount = pegawaiList.filter((p) => p.role === "admin").length;
-
-    const filteredPegawai = useMemo(() => {
-        return pegawaiList.filter((item) => {
-            const matchesSearch = searchValue
-                ? item.nama.toLowerCase().includes(searchValue.toLowerCase()) ||
-                  item.nik.includes(searchValue) ||
-                  item.profesi.toLowerCase().includes(searchValue.toLowerCase())
-                : true;
-
-            const matchesStatusData = statusdata
-                ? item.statusData === statusdata
-                : true;
-
-            const matchesJenisPegawai = jenisPegawai
-                ? item.jenisPegawai === jenisPegawai
-                : true;
-
-            const matchesPendidikan = pendidikan
-                ? item.pendidikan === pendidikan
-                : true;
-
-            const matchesStatusPegawai = statusPegawai
-                ? item.statusPegawai === statusPegawai
-                : true;
-
-            const matchesProfesi = profesi
-                ? item.profesi === profesi
-                : true;
-
-            return matchesSearch && matchesStatusData && matchesJenisPegawai && matchesPendidikan && matchesStatusPegawai && matchesProfesi;
-        });
-    }, [pegawaiList, searchValue, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchValue, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi]);
-
-    const itemsPerPage = 10;
-    const totalItems = filteredPegawai.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-    const activePage = Math.min(currentPage, totalPages);
-
-    const paginatedPegawai = useMemo(() => {
-        const startIndex = (activePage - 1) * itemsPerPage;
-        return filteredPegawai.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredPegawai, activePage]);
-
-    const filters = useMemo(() => [
+    const filterBarFilters = useMemo(() => [
         {
             name: "status-data",
             options: STATUS_DATA_OPTIONS,
@@ -300,80 +318,79 @@ const PegawaiHrd = () => {
             <div className={styles.statsRow}>
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(totalCount)}
+                    value={String(statCounts.totalPegawai)}
                     label="Pegawai"
                     variant="green"
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(hrdCount)}
+                    value={String(statCounts.hrdCount)}
                     label="HRD"
                     variant="blue"
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(direkturCount)}
+                    value={String(statCounts.direkturCount)}
                     label="Direktur"
                     variant="purple"
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(adminCount)}
+                    value={String(statCounts.adminCount)}
                     label="Admin"
                     variant="amber"
                 />
             </div>
+            <>
+                <Card>
+                    <FilterBar
+                        customWidth="640px"
+                        searchValue={searchValue}
+                        onSearchChange={setSearchValue}
+                        filters={filterBarFilters}
+                        searchPlaceholder="Cari nama atau NIK"
+                    />
+                </Card>
 
-            {isLoading ? (
-                <div className={styles.centeredState}>
-                    <div className={styles.spinner} />
-                    <p className={styles.stateText}>Memuat data pegawai...</p>
+                <div className={styles.filterRight}>
+                    <Button
+                        label="Tahun masuk"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => { }}
+                    />
                 </div>
-            ) : error ? (
-                <div className={styles.centeredState}>
-                    <p className={styles.errorText}>{error}</p>
-                </div>
-            ) : (
-                <>
-                    <Card>
-                        <FilterBar
-                            customWidth="640px"
-                            searchValue={searchValue}
-                            onSearchChange={setSearchValue}
-                            filters={filters}
-                            searchPlaceholder="Cari nama, Jabatan.."
-                        />
-                    </Card>
 
-                    <div className={styles.filterRight}>
-                        <Button
-                            label="Tahun masuk"
-                            variant="primary"
-                            size="sm"
-                            onClick={() => {}}
-                        />
-                    </div>
-
-                    <div className={styles.tableWrapper}>
+                <div className={styles.tableWrapper}>
+                    {isLoading ? (
+                        <div className={styles.centeredState}>
+                            <div className={styles.spinner} />
+                            <p className={styles.stateText}>Memuat data pegawai...</p>
+                        </div>
+                    ) : error ? (
+                        <div className={styles.centeredState}>
+                            <p className={styles.errorText}>{error}</p>
+                        </div>
+                    ) : (
                         <DataTable
                             columns={columns}
-                            data={paginatedPegawai}
+                            data={pegawaiList}
                             rowKey={(row) => row.id}
                             emptyMessage="Tidak ada data pegawai yang cocok."
                             maxVisibleRows={10}
                         />
-                    </div>
+                    )}
+                </div>
 
-                    <Pagination
-                        currentPage={activePage}
-                        totalPages={totalPages}
-                        totalItems={totalItems}
-                        itemsPerPage={itemsPerPage}
-                        onPageChange={setCurrentPage}
-                        itemName="pegawai"
-                    />
-                </>
-            )}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={perPage}
+                    onPageChange={handlePageChange}
+                    itemName="pegawai"
+                />
+            </>
         </>
     );
 };

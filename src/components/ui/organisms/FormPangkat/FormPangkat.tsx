@@ -9,12 +9,13 @@ interface FormPangkatProps {
     initialData?: CardPangkatData | null;
     isEdit?: boolean;
     isSubmitting?: boolean;
+    isPegawai?: boolean;
     serverErrors?: Record<string, string[]>;
     onCancel: () => void;
     onSubmit: (formData: FormData) => void;
 }
 
-const FormPangkat = ({ initialData, isSubmitting = false, serverErrors, onCancel, onSubmit }: FormPangkatProps) => {
+const FormPangkat = ({ initialData, isSubmitting = false, serverErrors, onCancel, onSubmit, isPegawai = true }: FormPangkatProps) => {
     const [namaPangkat, setNamaPangkat] = useState(initialData?.namaPangkat ?? "");
     const [isCurrent, setIsCurrent] = useState(initialData?.isCurrent ?? false);
     const [pejabatPenetap, setPejabatPenetap] = useState(initialData?.pejabatPenetap ?? "");
@@ -141,7 +142,7 @@ const FormPangkat = ({ initialData, isSubmitting = false, serverErrors, onCancel
                     setSkFile(file);
                 }}
                 error={getFieldError("sk_pangkat")}
-                required
+                required={isPegawai}
             />
             {initialData?.linkSk && !skFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

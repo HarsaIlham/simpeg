@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Input from "../../atoms/Input";
-import Button from "../../atoms/Button";
+import Input from "../../../../ui/atoms/Input";
+import Button from "../../../../ui/atoms/Button";
 import styles from "./FormTambahPegawai.module.css";
 
 interface FormTambahPegawaiProps {

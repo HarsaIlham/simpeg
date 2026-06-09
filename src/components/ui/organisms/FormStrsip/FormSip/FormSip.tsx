@@ -11,10 +11,11 @@ interface FormSipProps {
     initialData?: CardSipData | null;
     isEdit?: boolean;
     isSubmitting?: boolean;
+    isPegawai?: boolean;
     serverErrors?: Record<string, string[]>;
 }
 
-const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, serverErrors }: FormSipProps) => {
+const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, serverErrors, isPegawai = true }: FormSipProps) => {
     const [nomorSip, setNomorSip] = useState(initialData?.nomorSip ?? "");
     const [tanggalTerbit, setTanggalTerbit] = useState(initialData?.tanggalTerbit ?? "");
     const [tanggalKadaluarsa, setTanggalKadaluarsa] = useState(initialData?.tanggalKadaluarsa ?? "");
@@ -99,7 +100,7 @@ const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
                     setSkFile(file);
                 }}
                 error={getFieldError("sk_sip")}
-                required
+                required={isPegawai}
             />
             {initialData?.linkSk && !skFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

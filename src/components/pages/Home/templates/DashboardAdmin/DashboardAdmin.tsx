@@ -1,21 +1,21 @@
 import { Award, CircleCheckBig, Clock, FileText } from "lucide-react";
-import MainHeaderSection from "../../../ui/molecules/MainHeaderSection";
-import StatCard from "../../../ui/molecules/StatCard";
-import Topbar from "../../../ui/organisms/Topbar/Topbar";
+import MainHeaderSection from "../../../../ui/molecules/MainHeaderSection";
+import StatCard from "../../../../ui/molecules/StatCard";
+import Topbar from "../../../../ui/organisms/Topbar/Topbar";
 import styles from "./DashboardAdmin.module.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import CardRequest from "../../../ui/organisms/CardRequest";
-import type { CardRequestData } from "../../../ui/organisms/CardRequest/CardRequest";
-import Card from "../../../ui/atoms/Card";
-import Modal from "../../../ui/organisms/Modal";
-import Button from "../../../ui/atoms/Button";
-import Textarea from "../../../ui/atoms/Textarea";
-import Badge from "../../../ui/atoms/Badge";
-import Popup from "../../../ui/molecules/Popup";
-import Tabs from "../../../ui/molecules/Tabs";
-import DataChangeCard from "../../../ui/molecules/DataChangeCard";
-import { changeRequestService } from "../../../../services/changeRequestService";
-import type { AdminChangeRequest, ChangeRequestDetail } from "../../../../types/api";
+import CardRequest from "./components/CardRequest";
+import type { CardRequestData } from "./components/CardRequest/CardRequest";
+import Card from "../../../../ui/atoms/Card";
+import Modal from "../../../../ui/organisms/Modal";
+import Button from "../../../../ui/atoms/Button";
+import Textarea from "../../../../ui/atoms/Textarea";
+import Badge from "../../../../ui/atoms/Badge";
+import Popup from "../../../../ui/molecules/Popup";
+import Tabs from "../../../../ui/molecules/Tabs";
+import DataChangeCard from "../../../../ui/molecules/DataChangeCard";
+import { changeRequestService } from "../../../../../services/changeRequestService";
+import type { AdminChangeRequest, ChangeRequestDetail } from "../../../../../types/api";
 
 
 const mapToCardRequestData = (item: AdminChangeRequest): CardRequestData => ({

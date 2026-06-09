@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Topbar from "../../ui/organisms/Topbar/Topbar";
 import MainHeaderSection from "../../ui/molecules/MainHeaderSection/MainHeaderSection";
-import CardAkun from "../../ui/organisms/CardAkun/CardAkun";
-import type { CardAkunData } from "../../ui/organisms/CardAkun/CardAkun";
+import CardAkun from "./components/CardAkun/CardAkun";
+import type { CardAkunData } from "./components/CardAkun/CardAkun";
 import FormGantiPassword from "../../ui/organisms/FormGantiPassword/FormGantiPassword";
 import Modal from "../../ui/organisms/Modal";
 import Popup from "../../ui/molecules/Popup";

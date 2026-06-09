@@ -10,9 +10,10 @@ interface FormJabatanProps {
     initialData?: CardJabatanData | null;
     onCancel: () => void;
     onSubmit: (formData: FormData) => void;
+    isPegawai?: boolean;
 }
 
-const FormJabatan = ({ initialData, onCancel, onSubmit }: FormJabatanProps) => {
+const FormJabatan = ({ initialData, onCancel, onSubmit, isPegawai = true }: FormJabatanProps) => {
     const { options: unitKerjaOptions } = useMasterData("unitKerja", "Pilih Unit Kerja", [
         { value: "1", label: "Pelayanan Medis" },
         { value: "2", label: "SDM" },
@@ -138,7 +139,7 @@ const FormJabatan = ({ initialData, onCancel, onSubmit }: FormJabatanProps) => {
                     const file = e.target.files?.[0] ?? null;
                     setSkFile(file);
                 }}
-                required
+                required={isPegawai}
             />
             {initialData?.link_sk && (
                 <span className={styles.fileHint} style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

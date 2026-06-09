@@ -1,7 +1,7 @@
 import { User } from "lucide-react";
-import CardProfile from "../../../../ui/organisms/CardProfile";
-import FormProfile from "../../../../ui/organisms/FormProfile";
-import type { propsType } from "../../../../ui/organisms/FormProfile/FormProfile";
+import CardProfile from "../../../Profil/components/CardProfile";
+import FormProfile from "../../../Profil/components/FormProfile";
+import type { propsType } from "../../../Profil/components/FormProfile/FormProfile";
 import Icon from "../../../../ui/atoms/Icon";
 import styles from "../DetailPegawai.module.css";
 

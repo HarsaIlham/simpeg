@@ -12,7 +12,7 @@ import TabPegawai from "./components/TabPegawai";
 import TabDiklat from "./components/TabDiklat";
 import TabRiwayat from "./components/TabRiwayat";
 
-import type { propsType } from "../../../ui/organisms/FormProfile/FormProfile";
+import type { propsType } from "../../Profil/components/FormProfile/FormProfile";
 import type { CardDiklatData } from "../../../ui/organisms/CardDiklat/CardDiklat";
 import type { CardJabatanData } from "../../../ui/organisms/CardJabatan/CardJabatan";
 import type { CardStrData } from "../../../ui/organisms/CardStr/CardStr";
@@ -351,7 +351,7 @@ const DetailPegawai = () => {
                                 onRefresh={fetchDetail}
                             />
                         )}
-                    </div>                
+                    </div>
                 </>
             )}
         </>

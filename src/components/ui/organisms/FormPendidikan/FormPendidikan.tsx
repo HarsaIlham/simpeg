@@ -12,6 +12,7 @@ interface FormPendidikanProps {
     serverErrors?: Record<string, string[]>;
     onCancel: () => void;
     onSubmit: (formData: FormData) => void;
+    isPegawai?: boolean;
 }
 
 const jenjangOptions = [
@@ -33,6 +34,7 @@ const FormPendidikan = ({
     serverErrors,
     onCancel,
     onSubmit,
+    isPegawai = true,
 }: FormPendidikanProps) => {
     const [jenjang, setJenjang] = useState(initialData?.jenjang ?? "");
     const [jurusan, setJurusan] = useState(initialData?.jurusan ?? "");
@@ -155,7 +157,7 @@ const FormPendidikan = ({
                     setIjazahFile(file);
                 }}
                 error={getFieldError("ijazah")}
-                required
+                required={isPegawai}
             />
             {initialData?.link_ijazah && !ijazahFile && (
                 <span className={styles.fileHint}>

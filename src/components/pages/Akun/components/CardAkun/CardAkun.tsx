@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Send, X, Edit } from "lucide-react";
 import styles from "./CardAkun.module.css";
-import Input from "../../atoms/Input";
-import Button from "../../atoms/Button";
-import CardHeader from "../../molecules/CardHeader";
-import Card from "../../atoms/Card";
+import Input from "../../../../ui/atoms/Input";
+import Button from "../../../../ui/atoms/Button";
+import CardHeader from "../../../../ui/molecules/CardHeader";
+import Card from "../../../../ui/atoms/Card";
 
 export interface CardAkunData {
     username: string;

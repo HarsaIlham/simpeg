@@ -1,4 +1,4 @@
-import Topbar from "../../../ui/organisms/Topbar/Topbar";
+import Topbar from "../../../../ui/organisms/Topbar/Topbar";
 
 const DashboardDirektur = () => {
   return (

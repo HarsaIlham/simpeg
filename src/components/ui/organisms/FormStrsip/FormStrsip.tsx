@@ -16,6 +16,7 @@ interface FormStrsipProps {
     isSubmitting?: boolean;
     serverErrors?: Record<string, string[]>;
     forceType?: "STR" | "SIP";
+    isPegawai?: boolean;
 }
 
 const FormStrsip = ({
@@ -28,6 +29,7 @@ const FormStrsip = ({
     isSubmitting,
     serverErrors,
     forceType,
+    isPegawai = true,
 }: FormStrsipProps) => {
     const [formType, setFormType] = useState<"" | "STR" | "SIP">(forceType || "STR");
 
@@ -64,6 +66,7 @@ const FormStrsip = ({
                     isEdit={isEdit}
                     isSubmitting={isSubmitting}
                     serverErrors={serverErrors}
+                    isPegawai={isPegawai}
                 />
             )}
             {formType === "SIP" && (
@@ -74,6 +77,7 @@ const FormStrsip = ({
                     isEdit={isEdit}
                     isSubmitting={isSubmitting}
                     serverErrors={serverErrors}
+                    isPegawai={isPegawai}
                 />
             )}
         </div>

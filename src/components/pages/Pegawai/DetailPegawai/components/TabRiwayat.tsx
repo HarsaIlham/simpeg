@@ -35,7 +35,6 @@ import { penugasanKlinisService } from "../../../../../services/penugasanKlinisS
 
 import styles from "../DetailPegawai.module.css";
 
-/* ─── Tab items ─── */
 
 const TAB_ITEMS = [
     { id: "pendidikan", label: "Pendidikan", icon: <GraduationCap size={16} /> },
@@ -45,7 +44,6 @@ const TAB_ITEMS = [
     { id: "penugasan", label: "Penugasan Klinis", icon: <ClipboardList size={16} /> },
 ];
 
-/* ─── Types ─── */
 
 interface TabRiwayatProps {
     jabatanList: CardJabatanData[];
@@ -77,8 +75,6 @@ interface FeedbackState {
     message: string;
 }
 
-/* ─── Component ─── */
-
 const TabRiwayat = ({
     jabatanList,
     strList,
@@ -103,11 +99,17 @@ const TabRiwayat = ({
 }: TabRiwayatProps) => {
     const [activeTab, setActiveTab] = useState("pendidikan");
 
-    // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string[]> | undefined>(undefined);
     const [strsipType, setStrsipType] = useState<"" | "STR" | "SIP">("");
+
+    const [selectedPendidikan, setSelectedPendidikan] = useState<CardPendidikanData | null>(null);
+    const [selectedJabatan, setSelectedJabatan] = useState<CardJabatanData | null>(null);
+    const [selectedPangkat, setSelectedPangkat] = useState<CardPangkatData | null>(null);
+    const [selectedStr, setSelectedStr] = useState<CardStrData | null>(null);
+    const [selectedSip, setSelectedSip] = useState<CardSipData | null>(null);
+    const [selectedPenugasan, setSelectedPenugasan] = useState<CardPenugasanKlinisData | null>(null);
 
     // Feedback popup
     const [feedback, setFeedback] = useState<FeedbackState>({
@@ -118,34 +120,102 @@ const TabRiwayat = ({
         setFeedback({ isOpen: true, variant, title, message });
     };
 
-    /* ─── Modal helpers ─── */
 
     const getActiveTabLabel = () => TAB_ITEMS.find(t => t.id === activeTab)?.label ?? "";
 
     const getModalTitle = () => {
-        if (activeTab === "str-sip") return `Tambah Data ${strsipType || "STR/SIP"}`;
+        if (activeTab === "pendidikan") return selectedPendidikan ? "Edit Data Pendidikan" : "Tambah Data Pendidikan";
+        if (activeTab === "jabatan") return selectedJabatan ? "Edit Data Jabatan" : "Tambah Data Jabatan";
+        if (activeTab === "pangkat") return selectedPangkat ? "Edit Data Pangkat" : "Tambah Data Pangkat";
+        if (activeTab === "str-sip") {
+            if (selectedStr) return "Edit Data STR";
+            if (selectedSip) return "Edit Data SIP";
+            return `Tambah Data ${strsipType || "STR/SIP"}`;
+        }
+        if (activeTab === "penugasan") return selectedPenugasan ? "Edit Data Penugasan Klinis" : "Tambah Data Penugasan Klinis";
         return `Tambah Data ${getActiveTabLabel()}`;
+    };
+
+    const clearSelections = () => {
+        setSelectedPendidikan(null);
+        setSelectedJabatan(null);
+        setSelectedPangkat(null);
+        setSelectedStr(null);
+        setSelectedSip(null);
+        setSelectedPenugasan(null);
     };
 
     const handleOpenModal = () => {
         setServerErrors(undefined);
+        clearSelections();
         setStrsipType("");
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        clearSelections();
         setServerErrors(undefined);
     };
 
-    /* ─── Submit handlers ─── */
+
+    const handleEditPendidikan = (item: CardPendidikanData) => {
+        setServerErrors(undefined);
+        clearSelections();
+        setSelectedPendidikan(item);
+        setIsModalOpen(true);
+    };
+
+    const handleEditJabatan = (item: CardJabatanData) => {
+        setServerErrors(undefined);
+        clearSelections();
+        setSelectedJabatan(item);
+        setIsModalOpen(true);
+    };
+
+    const handleEditPangkat = (item: CardPangkatData) => {
+        setServerErrors(undefined);
+        clearSelections();
+        setSelectedPangkat(item);
+        setIsModalOpen(true);
+    };
+
+    const handleEditStr = (item: CardStrData) => {
+        setServerErrors(undefined);
+        clearSelections();
+        setSelectedStr(item);
+        setStrsipType("STR");
+        setIsModalOpen(true);
+    };
+
+    const handleEditSip = (item: CardSipData) => {
+        setServerErrors(undefined);
+        clearSelections();
+        setSelectedSip(item);
+        setStrsipType("SIP");
+        setIsModalOpen(true);
+    };
+
+    const handleEditPenugasan = (item: CardPenugasanKlinisData) => {
+        setServerErrors(undefined);
+        clearSelections();
+        setSelectedPenugasan(item);
+        setIsModalOpen(true);
+    };
+
 
     const handleSubmitPendidikan = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            await pendidikanService.create(formData);
-            showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil ditambahkan.");
+            if (selectedPendidikan) {
+                await pendidikanService.update(selectedPendidikan.id, formData);
+                showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil diupdate.");
+            } else {
+                await pendidikanService.create(formData);
+                showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil ditambahkan.");
+            }
             setIsModalOpen(false);
+            clearSelections();
             onRefresh?.();
         } catch (err: unknown) {
             const e = err as { message?: string; errors?: Record<string, string[]> };
@@ -157,9 +227,15 @@ const TabRiwayat = ({
     const handleSubmitJabatan = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            await jabatanService.create(formData);
-            showFeedback("success", "Berhasil", "Riwayat jabatan berhasil ditambahkan.");
+            if (selectedJabatan) {
+                await jabatanService.update(selectedJabatan.id, formData);
+                showFeedback("success", "Berhasil", "Riwayat jabatan berhasil diupdate.");
+            } else {
+                await jabatanService.create(formData);
+                showFeedback("success", "Berhasil", "Riwayat jabatan berhasil ditambahkan.");
+            }
             setIsModalOpen(false);
+            clearSelections();
             onRefresh?.();
         } catch (err: unknown) {
             const e = err as { message?: string; errors?: Record<string, string[]> };
@@ -171,9 +247,15 @@ const TabRiwayat = ({
     const handleSubmitPangkat = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            await pangkatService.create(formData);
-            showFeedback("success", "Berhasil", "Riwayat pangkat berhasil ditambahkan.");
+            if (selectedPangkat) {
+                await pangkatService.update(selectedPangkat.id, formData);
+                showFeedback("success", "Berhasil", "Riwayat pangkat berhasil diupdate.");
+            } else {
+                await pangkatService.create(formData);
+                showFeedback("success", "Berhasil", "Riwayat pangkat berhasil ditambahkan.");
+            }
             setIsModalOpen(false);
+            clearSelections();
             onRefresh?.();
         } catch (err: unknown) {
             const e = err as { message?: string; errors?: Record<string, string[]> };
@@ -184,15 +266,27 @@ const TabRiwayat = ({
 
     const handleSubmitStrSip = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
+        const isStr = strsipType === "STR" || !!selectedStr;
         try {
-            if (strsipType === "STR") {
-                await strService.create(formData);
-                showFeedback("success", "Berhasil", "Riwayat STR berhasil ditambahkan.");
+            if (isStr) {
+                if (selectedStr) {
+                    await strService.update(selectedStr.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat STR berhasil diupdate.");
+                } else {
+                    await strService.create(formData);
+                    showFeedback("success", "Berhasil", "Riwayat STR berhasil ditambahkan.");
+                }
             } else {
-                await sipService.create(formData);
-                showFeedback("success", "Berhasil", "Riwayat SIP berhasil ditambahkan.");
+                if (selectedSip) {
+                    await sipService.update(selectedSip.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat SIP berhasil diupdate.");
+                } else {
+                    await sipService.create(formData);
+                    showFeedback("success", "Berhasil", "Riwayat SIP berhasil ditambahkan.");
+                }
             }
             setIsModalOpen(false);
+            clearSelections();
             onRefresh?.();
         } catch (err: unknown) {
             const e = err as { message?: string; errors?: Record<string, string[]> };
@@ -204,9 +298,15 @@ const TabRiwayat = ({
     const handleSubmitPenugasan = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            await penugasanKlinisService.create(formData);
-            showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil ditambahkan.");
+            if (selectedPenugasan) {
+                await penugasanKlinisService.update(selectedPenugasan.id, formData);
+                showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil diupdate.");
+            } else {
+                await penugasanKlinisService.create(formData);
+                showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil ditambahkan.");
+            }
             setIsModalOpen(false);
+            clearSelections();
             onRefresh?.();
         } catch (err: unknown) {
             const e = err as { message?: string; errors?: Record<string, string[]> };
@@ -215,7 +315,6 @@ const TabRiwayat = ({
         } finally { setIsSubmitting(false); }
     };
 
-    /* ─── Render helpers ─── */
 
     const renderEmptyOrError = (isLoading: boolean | undefined, error: string | null | undefined, emptyMsg: string, listLen: number) => {
         if (isLoading) return <Card><p className={styles.emptyText}>Memuat data...</p></Card>;
@@ -229,42 +328,51 @@ const TabRiwayat = ({
             case "pendidikan":
                 return (
                     <FormPendidikan
-                        initialData={null} isEdit={false}
+                        initialData={selectedPendidikan} isEdit={!!selectedPendidikan}
                         isSubmitting={isSubmitting} serverErrors={serverErrors}
                         onCancel={handleCloseModal} onSubmit={handleSubmitPendidikan}
+                        isPegawai={false}
                     />
                 );
             case "jabatan":
                 return (
                     <FormJabatan
-                        initialData={null}
+                        initialData={selectedJabatan}
                         onCancel={handleCloseModal} onSubmit={handleSubmitJabatan}
+                        isPegawai={false}
                     />
                 );
             case "pangkat":
                 return (
                     <FormPangkat
-                        initialData={null} isEdit={false}
+                        initialData={selectedPangkat} isEdit={!!selectedPangkat}
                         isSubmitting={isSubmitting} serverErrors={serverErrors}
                         onCancel={handleCloseModal} onSubmit={handleSubmitPangkat}
+                        isPegawai={false}
                     />
                 );
             case "str-sip":
                 return (
                     <FormStrsip
-                        initialStrData={null} initialSipData={null}
-                        isEdit={false} isSubmitting={isSubmitting}
+                        initialStrData={selectedStr}
+                        initialSipData={selectedSip}
+                        isEdit={!!selectedStr || !!selectedSip}
+                        isSubmitting={isSubmitting}
                         serverErrors={serverErrors}
-                        onCancel={handleCloseModal} onSubmit={handleSubmitStrSip}
+                        forceType={selectedStr ? "STR" : selectedSip ? "SIP" : undefined}
+                        onCancel={handleCloseModal}
+                        onSubmit={handleSubmitStrSip}
                         onTypeChange={(type) => setStrsipType(type)}
+                        isPegawai={false}
                     />
                 );
             case "penugasan":
                 return (
                     <FormPenugasanKlinis
-                        initialData={null}
+                        initialData={selectedPenugasan}
                         isSubmitting={isSubmitting} serverErrors={serverErrors}
                         onCancel={handleCloseModal} onSubmit={handleSubmitPenugasan}
+                        isPegawai={false}
                     />
                 );
             default:
@@ -272,18 +380,14 @@ const TabRiwayat = ({
         }
     };
 
-    /* ─── JSX ─── */
-
     return (
         <>
-            {/* Sub-tabs */}
             <div className={styles.tabsWrapper}>
                 <Card>
                     <Tabs tabs={TAB_ITEMS} activeTab={activeTab} onChange={setActiveTab} />
                 </Card>
             </div>
 
-            {/* Tambah button (admin only) */}
             {isAdmin && (
                 <div className={styles.buttonContainer}>
                     <Button
@@ -295,12 +399,18 @@ const TabRiwayat = ({
                 </div>
             )}
 
-            {/* Card list */}
             <div className={styles.recordList}>
                 {activeTab === "pendidikan" && (
                     renderEmptyOrError(isLoadingPendidikan, errorPendidikan, "Belum ada data pendidikan.", pendidikanList.length) || (
                         <div className={styles.riwayatSection}>
-                            {pendidikanList.map((item) => <CardPendidikan key={item.id} data={item} />)}
+                            {pendidikanList.map((item) =>
+                                <CardPendidikan
+                                    key={item.id}
+                                    data={item}
+                                    onEdit={isAdmin ? () => handleEditPendidikan(item) : undefined}
+                                    onDelete={() => void {}}
+                                />
+                            )}
                         </div>
                     )
                 )}
@@ -308,7 +418,14 @@ const TabRiwayat = ({
                 {activeTab === "jabatan" && (
                     renderEmptyOrError(isLoadingJabatan, errorJabatan, "Belum ada data jabatan.", jabatanList.length) || (
                         <div className={styles.riwayatSection}>
-                            {jabatanList.map((item) => <CardJabatan key={item.id} data={item} />)}
+                            {jabatanList.map((item) =>
+                                <CardJabatan
+                                    key={item.id}
+                                    data={item}
+                                    onEdit={isAdmin ? () => handleEditJabatan(item) : undefined}
+                                    onDelete={() => void {}}
+                                />
+                            )}
                         </div>
                     )
                 )}
@@ -316,7 +433,14 @@ const TabRiwayat = ({
                 {activeTab === "pangkat" && (
                     renderEmptyOrError(isLoadingPangkat, errorPangkat, "Belum ada data pangkat.", pangkatList.length) || (
                         <div className={styles.riwayatSection}>
-                            {pangkatList.map((item) => <CardPangkat key={item.id} data={item} />)}
+                            {pangkatList.map((item) =>
+                                <CardPangkat
+                                    key={item.id}
+                                    data={item}
+                                    onEdit={isAdmin ? () => handleEditPangkat(item) : undefined}
+                                    onDelete={() => void {}}
+                                />
+                            )}
                         </div>
                     )
                 )}
@@ -333,12 +457,24 @@ const TabRiwayat = ({
                             <>
                                 {strList.length > 0 && (
                                     <div className={styles.riwayatSection}>
-                                        {strList.map((item) => <CardStr key={item.id} data={item} />)}
+                                        {strList.map((item) =>
+                                            <CardStr
+                                                key={item.id}
+                                                data={item}
+                                                onEdit={isAdmin ? () => handleEditStr(item) : undefined}
+                                            />
+                                        )}
                                     </div>
                                 )}
                                 {sipList.length > 0 && (
                                     <div className={styles.riwayatSection} style={{ marginTop: strList.length > 0 ? "12px" : 0 }}>
-                                        {sipList.map((item) => <CardSip key={item.id} data={item} />)}
+                                        {sipList.map((item) =>
+                                            <CardSip
+                                                key={item.id}
+                                                data={item}
+                                                onEdit={isAdmin ? () => handleEditSip(item) : undefined}
+                                            />
+                                        )}
                                     </div>
                                 )}
                             </>
@@ -349,20 +485,24 @@ const TabRiwayat = ({
                 {activeTab === "penugasan" && (
                     renderEmptyOrError(isLoadingPenugasan, errorPenugasan, "Belum ada data penugasan klinis.", penugasanList.length) || (
                         <div className={styles.riwayatSection}>
-                            {penugasanList.map((item) => <CardPenugasanKlinis key={item.id} data={item} />)}
+                            {penugasanList.map((item) =>
+                                <CardPenugasanKlinis
+                                    key={item.id}
+                                    data={item}
+                                    onEdit={isAdmin ? () => handleEditPenugasan(item) : undefined}
+                                />
+                            )}
                         </div>
                     )
                 )}
             </div>
 
-            {/* Add modal */}
             {isModalOpen && (
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>
                     {renderModalForm()}
                 </Modal>
             )}
 
-            {/* Feedback popup */}
             <Popup
                 isOpen={feedback.isOpen}
                 onClose={() => setFeedback(prev => ({ ...prev, isOpen: false }))}

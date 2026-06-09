@@ -1,25 +1,25 @@
-import Card from "../../atoms/Card";
-import CardHeader from "../../molecules/CardHeader";
-import RequestItem from "../../molecules/RequestItem";
+import Card from "../../../../ui/atoms/Card";
+import CardHeader from "../../../../ui/molecules/CardHeader";
+import RequestItem from "../../../../ui/molecules/RequestItem";
 import styles from "./ChangeRequestCard.module.css";
 
 export interface ChangeRequestData {
-    id: string;
-    title: string;
-    date: string;
-    statusLabel: string;
-    statusVariant:  "success" | "warning" | "danger" | "default";
+  id: string;
+  title: string;
+  date: string;
+  statusLabel: string;
+  statusVariant: "success" | "warning" | "danger" | "default";
 }
 
 interface propsType {
-    requests: ChangeRequestData[];
+  requests: ChangeRequestData[];
 }
 
 const ChangeRequestCard = ({ requests }: propsType) => {
   return (
     <Card>
       <CardHeader title="Status Perubahan Data" />
-      
+
       <div className={styles.listContainer}>
         {requests.length > 0 ? (
           requests.map((req) => (

@@ -1,9 +1,9 @@
-import Card from "../../atoms/Card";
+import Card from "../../../../../../ui/atoms/Card";
 import styles from "./CardRequest.module.css";
-import Text from "../../atoms/Text";
-import Button from "../../atoms/Button";
-import Badge from "../../atoms/Badge";
-import { formatRelativeDate } from "../../../../utils/dateUtils";
+import Text from "../../../../../../ui/atoms/Text";
+import Button from "../../../../../../ui/atoms/Button";
+import Badge from "../../../../../../ui/atoms/Badge";
+import { formatRelativeDate } from "../../../../../../../utils/dateUtils";
 
 export interface CardRequestData {
     id: number;

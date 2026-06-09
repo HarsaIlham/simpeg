@@ -8,12 +8,13 @@ import type { CardPenugasanKlinisData } from "../CardPenugasanKlinis/CardPenugas
 interface FormPenugasanKlinisProps {
     initialData?: CardPenugasanKlinisData | null;
     isSubmitting?: boolean;
+    isPegawai?: boolean;
     serverErrors?: Record<string, string[]>;
     onCancel: () => void;
     onSubmit: (formData: FormData) => void;
 }
 
-const FormPenugasanKlinis = ({ initialData, isSubmitting = false, serverErrors, onCancel, onSubmit }: FormPenugasanKlinisProps) => {
+const FormPenugasanKlinis = ({ initialData, isSubmitting = false, serverErrors, onCancel, onSubmit, isPegawai = true }: FormPenugasanKlinisProps) => {
     const [nomorSurat, setNomorSurat] = useState(initialData?.nomorSurat ?? "");
     const [tglMulai, setTglMulai] = useState(initialData?.tglMulai ?? "");
     const [tglKadaluarsa, setTglKadaluarsa] = useState(initialData?.tglKadaluarsa ?? "");
@@ -98,7 +99,7 @@ const FormPenugasanKlinis = ({ initialData, isSubmitting = false, serverErrors, 
                     setDokumenFile(file);
                 }}
                 error={getFieldError("dokumen_file")}
-                required
+                required={isPegawai}
             />
             {initialData?.linkDokumen && !dokumenFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

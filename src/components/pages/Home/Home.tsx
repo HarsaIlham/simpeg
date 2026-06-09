@@ -1,8 +1,7 @@
 import { useAuth } from "../../../contexts/AuthContext";
-import DashboardPegawai from "./templates/DashboardPegawai";
+import DashboardPegawai from "./templates/DashboardPegawai/DashboardPegawai";
 import DashboardHrd from "./templates/DashboardHrd/DashboardHrd";
-import DashboardDirektur from "./templates/DashboardDirektur";
-import DashboardAdmin from "./templates/DashboardAdmin";
+import DashboardAdmin from "./templates/DashboardAdmin/DashboardAdmin";
 
 const DASHBOARD_MAP = {
   pegawai: <DashboardPegawai />,

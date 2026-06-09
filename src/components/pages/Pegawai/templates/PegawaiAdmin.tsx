@@ -11,7 +11,7 @@ import Pagination from "../../../ui/molecules/Pagination";
 import Modal from "../../../ui/organisms/Modal";
 import Popup from "../../../ui/molecules/Popup";
 import FormEditRoleStatus from "../../../ui/organisms/FormEditRoleStatus";
-import FormTambahPegawai from "../../../ui/organisms/FormTambahPegawai";
+import FormTambahPegawai from "../components/FormTambahPegawai";
 import { pegawaiService } from "../../../../services/pegawaiService";
 import Button from "../../../ui/atoms/Button";
 
@@ -201,9 +201,9 @@ const PegawaiAdmin = () => {
             key: "nama",
             label: "Nama/NIK",
             width: "20%",
-            render: (row: PegawaiItem) => 
+            render: (row: PegawaiItem) =>
                 <div>
-                    <span className={styles.empName}>{row.nama}</span> 
+                    <span className={styles.empName}>{row.nama}</span>
                     <div className={styles.empNik}><small>NIK: {row.nik}</small></div>
                 </div>
         },
@@ -223,8 +223,8 @@ const PegawaiAdmin = () => {
             key: "kontak",
             label: "Kontak",
             width: "23%",
-            
-            render: (row: PegawaiItem) => 
+
+            render: (row: PegawaiItem) =>
                 <div>
                     <span>{row.email}</span>
                     <div className={styles.empNik}><small>{row.noTelepon}</small></div>
@@ -302,7 +302,7 @@ const PegawaiAdmin = () => {
                         filters={[]}
                         searchPlaceholder="Cari nama atau NIK "
                     />
-                    <Button                        
+                    <Button
                         icon={<UserRoundPlus size={20} />}
                         label="Tambah Pegawai"
                         variant="primary"

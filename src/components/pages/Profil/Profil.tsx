@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import Topbar from "../../ui/organisms/Topbar/Topbar";
 import MainHeaderSection from "../../ui/molecules/MainHeaderSection/MainHeaderSection";
-import CardProfile from "../../ui/organisms/CardProfile";
-import FormProfile from "../../ui/organisms/FormProfile";
+import CardProfile from "./components/CardProfile";
+import FormProfile from "./components/FormProfile";
 import Icon from "../../ui/atoms/Icon";
-import ChangeRequestCard from "../../ui/organisms/ChangeRequestCard";
-import type { ChangeRequestData } from "../../ui/organisms/ChangeRequestCard/ChangeRequestCard";
+import ChangeRequestCard from "./components/ChangeRequestCard";
+import type { ChangeRequestData } from "./components/ChangeRequestCard/ChangeRequestCard";
 import { User } from "lucide-react";
 
 import styles from "./Profil.module.css";
-import type { propsType } from "../../ui/organisms/FormProfile/FormProfile";
+import type { propsType } from "./components/FormProfile/FormProfile";
 import Popup from "../../ui/molecules/Popup";
 import Modal from "../../ui/organisms/Modal";
 import Button from "../../ui/atoms/Button";
@@ -130,7 +130,7 @@ const Profil = () => {
     const [pendingChanges, setPendingChanges] = useState<Partial<ProfileData>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [myChangeRequests, setMyChangeRequests] = useState<ChangeRequestData[]>([]);
-        
+
     const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
     const [isDocUploading, setIsDocUploading] = useState(false);
 
@@ -436,7 +436,7 @@ const Profil = () => {
                     <ChangeRequestCard requests={myChangeRequests} />
                 </div>
 
-                
+
                 <FormProfile
                     initialData={profileData}
                     onSubmit={handleSubmitChange}

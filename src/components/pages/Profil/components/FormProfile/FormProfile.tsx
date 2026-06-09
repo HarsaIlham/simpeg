@@ -1,18 +1,18 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Send, X, Edit, UserRound, Briefcase } from "lucide-react";
 import styles from "./FormProfile.module.css";
-import Input from "../../atoms/Input";
-import Select from "../../atoms/Select";
-import Textarea from "../../atoms/Textarea";
-import Button from "../../atoms/Button";
-import CardHeader from "../../molecules/CardHeader";
-import DocumentField from "../../molecules/DocumentField";
-import PdfViewerModal from "../../molecules/PdfViewerModal";
-import Modal from "../Modal";
-import DocumentPreview from "../../molecules/DocumentPreview";
-import { hitungMasaKerja } from "../../../../utils/dateUtils";
-import { useMasterData } from "../../../../hooks/useMasterData";
-import { getProxiedFileUrl } from "../../../../utils/api";
+import Input from "../../../../ui/atoms/Input";
+import Select from "../../../../ui/atoms/Select";
+import Textarea from "../../../../ui/atoms/Textarea";
+import Button from "../../../../ui/atoms/Button";
+import CardHeader from "../../../../ui/molecules/CardHeader";
+import DocumentField from "../../../../ui/molecules/DocumentField";
+import PdfViewerModal from "../../../../ui/molecules/PdfViewerModal";
+import Modal from "../../../../ui/organisms/Modal";
+import DocumentPreview from "../../../../ui/molecules/DocumentPreview";
+import { hitungMasaKerja } from "../../../../../utils/dateUtils";
+import { useMasterData } from "../../../../../hooks/useMasterData";
+import { getProxiedFileUrl } from "../../../../../utils/api";
 
 export interface propsType {
     namaLengkap: string;

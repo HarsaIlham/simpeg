@@ -75,4 +75,21 @@ export const diklatService = {
 
     return data;
   },
+
+  uploadLaporan: async (
+    id: number,
+    formData: FormData
+  ): Promise<ApiResponse<unknown>> => {
+    const response = await apiFetch(`/diklat/${id}/upload-laporan`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
+  },
 };

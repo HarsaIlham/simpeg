@@ -19,6 +19,7 @@ interface TabDiklatProps {
 const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedDiklat, setSelectedDiklat] = useState<CardDiklatData | null>(null);
     const [popup, setPopup] = useState<{
         isOpen: boolean;
         variant: "success" | "error" | "warning" | "checklist";
@@ -43,12 +44,23 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
         setIsModalOpen(true);
     };
 
+    const handleEditDiklat = (diklat: CardDiklatData) => {
+        setSelectedDiklat(diklat);
+        setIsModalOpen(true);
+    };
+
     const handleFormSubmit = async (formData: FormData) => {
         setIsSubmitting(true);
         try {
-            await diklatService.createDiklat(formData);
-            showPopup("checklist", "Berhasil", "Data diklat berhasil ditambahkan.");
+            if (selectedDiklat) {
+                await diklatService.updateDiklat(selectedDiklat.id, formData);
+                showPopup("checklist", "Berhasil", "Data diklat berhasil diupdate.");
+            } else {
+                await diklatService.createDiklat(formData);
+                showPopup("checklist", "Berhasil", "Data diklat berhasil ditambahkan.");
+            }
             setIsModalOpen(false);
+            setSelectedDiklat(null);
             if (onRefresh) {
                 await onRefresh();
             }
@@ -80,20 +92,24 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
             ) : (
                 <div className={styles.recordList}>
                     {diklatList.map((diklat) => (
-                        <CardDiklat key={diklat.id} data={diklat} />
+                        <CardDiklat
+                            key={diklat.id}
+                            data={diklat}
+                            onEdit={() => handleEditDiklat(diklat)}
+                        />
                     ))}
                 </div>
             )}
 
             {isModalOpen && (
                 <Modal
-                    title="Tambah Diklat"
+                    title={selectedDiklat ? "Edit Diklat" : "Tambah Diklat"}
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                 >
                     <FormLaporanDiklat
-                        initialData={null}
-                        isEdit={true}
+                        initialData={selectedDiklat || undefined}
+                        isEdit={!!selectedDiklat}
                         onCancel={() => setIsModalOpen(false)}
                         onSubmit={handleFormSubmit}
                         isLoading={isSubmitting}

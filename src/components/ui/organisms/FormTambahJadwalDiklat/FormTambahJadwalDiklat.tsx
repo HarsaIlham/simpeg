@@ -231,8 +231,8 @@ const FormTambahJadwalDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoa
                         id="jenis-pelaksana"
                         name="jenis-pelaksana"
                         label="Jenis Pelaksana"
-                        disabled={!isEdit || !!initialData}
-                        value={'internal'}
+                        disabled={!isEdit || !initialData}
+                        value={isInternal ? "internal" : "external"}
                         onChange={(e) => setJenisPelaksana(e.target.value)}
                         required
                         searchable

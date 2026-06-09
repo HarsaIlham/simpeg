@@ -29,7 +29,9 @@ export interface CardDiklatData {
     pegawaiNama?: string;
     pegawaiNik?: string;
     idJadwalDiklat?: number;
+    noSertifikat?: string;
     statusValidasi?: string;
+    statusVerifikasi?: string;
 }
 
 interface CardDiklatProps {
@@ -66,8 +68,19 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
             <div className={styles.header}>
                 <Text text={data.namaDiklat} weight="bold" color="default" fontSize="18px" />
                 <div className={styles.badgeGroup}>
-                    <Badge variant="success">{data.jenisDiklat}</Badge>
+                    <Badge variant="parent">{data.jenisDiklat}</Badge>
                     <Badge variant="info">{data.kategori}</Badge>
+                    {(() => {
+                        const status = data.statusValidasi?.toLowerCase();
+                        if (status?.includes("valid") && !status?.includes("menunggu")) {
+                            return <Badge variant="success">Valid</Badge>;
+                        } else if (status?.includes("tolak") || status?.includes("tidak")) {
+                            return <Badge variant="danger">Tidak Valid</Badge>;
+                        } else if (data.hasLaporan) {
+                            return <Badge variant="warning">Menunggu Validasi</Badge>;
+                        }
+                        return null;
+                    })()}
                 </div>
             </div>
 

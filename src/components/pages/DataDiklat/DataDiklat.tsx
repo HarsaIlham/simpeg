@@ -63,6 +63,7 @@ const mapRiwayatToCardDiklat = (item: RiwayatDiklatItem): CardDiklatData => ({
   hasLaporan: !!item.sertif_file_path,
   sertifikat: item.sertif_file_path || "",
   statusValidasi: item.status_validasi || "",
+  noSertifikat: item.no_sertif || "",
 })
 
 const JENIS_OPTIONS = [
@@ -269,12 +270,12 @@ const DataDiklat = () => {
     setIsUploading(true)
     try {
       const formData = new FormData()
-      formData.append("upload_sertif", uploadFile)
+      formData.append("upload_laporan", uploadFile)
       if (uploadNoSertif.trim()) {
         formData.append("no_sertif", uploadNoSertif.trim())
       }
 
-      await diklatService.updateDiklat(selectedDiklat.id, formData)
+      await diklatService.uploadLaporan(selectedDiklat.id, formData)
 
       setIsModalOpen(false)
       setSelectedDiklat(null)
@@ -428,9 +429,10 @@ const DataDiklat = () => {
               id="no-sertif"
               name="no-sertif"
               label="Nomor Sertifikat"
-              value={uploadNoSertif}
+              value={uploadNoSertif || selectedDiklat?.noSertifikat}
               onChange={(e) => setUploadNoSertif(e.target.value)}
               placeholder="Contoh: SERTIF/SDM/2026/001"
+              required
             />
             <Input
               id="upload-sertif"
@@ -440,6 +442,13 @@ const DataDiklat = () => {
               onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
               required
             />
+            {selectedDiklat?.sertifikat && !uploadFile && (
+              <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>
+                File Sertifikat sudah ada. Upload baru hanya jika ingin mengganti.
+              </span>
+            )}
+
+            {/* <FileUploader name="file" onChange={setUploadFile} /> */}
             <div className={styles.buttonGroup}>
               <Button
                 type="submit"

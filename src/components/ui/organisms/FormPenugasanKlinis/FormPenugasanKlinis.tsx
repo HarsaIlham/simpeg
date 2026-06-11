@@ -99,7 +99,7 @@ const FormPenugasanKlinis = ({ initialData, isSubmitting = false, serverErrors, 
                     setDokumenFile(file);
                 }}
                 error={getFieldError("dokumen_file")}
-                required={isPegawai}
+                required={isPegawai && !initialData?.linkDokumen}
             />
             {initialData?.linkDokumen && !dokumenFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

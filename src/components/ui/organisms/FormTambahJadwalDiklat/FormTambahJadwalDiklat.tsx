@@ -43,7 +43,7 @@ const FormTambahJadwalDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoa
     const [jenisBiaya, setJenisBiaya] = useState(initialData?.jenisBiaya ?? "");
     const [totalBiaya, setTotalBiaya] = useState(initialData?.totalBiaya ?? "");
     const [penyelenggara, setPenyelenggara] = useState(initialData?.penyelenggara ?? "");
-    const [jenisPelaksana, setJenisPelaksana] = useState(initialData?.jenisPelaksana ?? "");
+    const [jenisPelaksana, setJenisPelaksana] = useState(initialData?.jenisPelaksana ?? "internal");
     const [catatan, setCatatan] = useState(initialData?.catatan ?? "");
 
     const isInternal = jenisPelaksana === "internal";
@@ -231,8 +231,8 @@ const FormTambahJadwalDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoa
                         id="jenis-pelaksana"
                         name="jenis-pelaksana"
                         label="Jenis Pelaksana"
-                        disabled={!isEdit || !initialData}
-                        value={isInternal ? "internal" : "external"}
+                        disabled={true}
+                        value={isEdit ? jenisPelaksana : isInternal ? "internal" : "external"}
                         onChange={(e) => setJenisPelaksana(e.target.value)}
                         required
                         searchable

@@ -35,18 +35,40 @@ const BULAN_MAP: Record<string, string> = {
     januari: "01", februari: "02", maret: "03", april: "04",
     mei: "05", juni: "06", juli: "07", agustus: "08",
     september: "09", oktober: "10", november: "11", desember: "12",
+    january: "01", february: "02", march: "03", may: "05",
+    june: "06", july: "07", august: "08", october: "10",
+    december: "12",
 };
 
 export const parseLocalDateToISO = (dateStr: string): string => {
-    const parts = dateStr.trim().split(/\s+/);
+    if (!dateStr) return "";
+    const parts = dateStr.trim().split(/[\s\/\-\.]+/);
     if (parts.length !== 3) return "";
 
     const [day, month, year] = parts;
-    const mm = BULAN_MAP[month.toLowerCase()];
-    if (!mm) return "";
+    
+    let mm = "";
+    if (isNaN(Number(month))) {
+        mm = BULAN_MAP[month.toLowerCase()];
+    } else {
+        mm = month.padStart(2, "0");
+    }
+    
+    if (!mm || Number(mm) < 1 || Number(mm) > 12) return "";
 
-    const dd = day.padStart(2, "0");
-    return `${year}-${mm}-${dd}`;
+    let cleanDay = day;
+    let cleanYear = year;
+    if (day.length === 4) {
+        cleanDay = year;
+        cleanYear = day;
+    }
+    
+    const dd = cleanDay.padStart(2, "0");
+    const yyyy = cleanYear;
+    
+    if (yyyy.length !== 4) return "";
+
+    return `${yyyy}-${mm}-${dd}`;
 };
 
 export const calculateAge = (dateStr: string): string => {

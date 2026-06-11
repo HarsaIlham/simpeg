@@ -157,11 +157,11 @@ const FormPendidikan = ({
                     setIjazahFile(file);
                 }}
                 error={getFieldError("ijazah")}
-                required={isPegawai}
+                required={isPegawai && !initialData?.link_ijazah}
             />
             {initialData?.link_ijazah && !ijazahFile && (
                 <span className={styles.fileHint}>
-                    File ijazah sudah ada. Upload baru hanya jika ingin mengganti.
+                    File ijazah sudah ada, Upload baru hanya jika ingin mengganti.
                 </span>
             )}
 

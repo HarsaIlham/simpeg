@@ -1,7 +1,9 @@
+import { getGlobalToken } from "../contexts/AuthContext";
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-    const token = localStorage.getItem("simpeg_token");
+    const token = getGlobalToken();
 
     const isFormData = options.body instanceof FormData;
 

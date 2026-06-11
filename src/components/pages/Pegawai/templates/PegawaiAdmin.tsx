@@ -14,6 +14,7 @@ import FormEditRoleStatus from "../../../ui/organisms/FormEditRoleStatus";
 import FormTambahPegawai from "../components/FormTambahPegawai";
 import { pegawaiService } from "../../../../services/pegawaiService";
 import Button from "../../../ui/atoms/Button";
+import { useNavigate } from "react-router";
 
 export interface PegawaiItem {
     id: number;
@@ -39,6 +40,7 @@ const capitalize = (str: string) => {
 const ITEMS_PER_PAGE = 10;
 
 const PegawaiAdmin = () => {
+    const navigate = useNavigate();
     const [pegawaiList, setPegawaiList] = useState<PegawaiItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -196,6 +198,10 @@ const PegawaiAdmin = () => {
         return pegawaiList;
     }, [pegawaiList]);
 
+    const handleDetailClick = (id: number) => {
+        navigate(`/pegawai/${id}`);
+    };
+
     const columns = useMemo(() => [
         {
             key: "nama",
@@ -257,6 +263,19 @@ const PegawaiAdmin = () => {
                 >
                     <SquarePen size={18} />
                 </button>
+            )
+        },
+        {
+            key: "detail",
+            label: "Detail",
+            width: "8%",
+            render: (row: PegawaiItem) => (
+                <Button
+                    label="Detail"
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleDetailClick(row.id)}
+                />
             )
         }
     ], []);

@@ -19,7 +19,7 @@ import type { OrangTuaFormPayload } from "../../ui/organisms/FormDataKeluarga/Fo
 import FormKontakDarurat from "../../ui/organisms/FormDataKeluarga/FormKontakDarurat";
 import type { KontakDaruratFormPayload } from "../../ui/organisms/FormDataKeluarga/FormKontakDarurat/FormKontakDarurat";
 import Popup from "../../ui/molecules/Popup";
-import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal";
+// import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal";
 import { keluargaService } from "../../../services/keluargaService";
 import PdfViewerModal from "../../ui/molecules/PdfViewerModal";
 import type {
@@ -123,11 +123,11 @@ interface PopupState {
     message: string;
 }
 
-interface DeleteTarget {
-    id: number;
-    status: FamilyMemberData["status"];
-    nama: string;
-}
+// interface DeleteTarget {
+//     id: number;
+//     status: FamilyMemberData["status"];
+//     nama: string;
+// }
 
 const DataKeluarga = () => {
     const [keluargaData, setKeluargaData] = useState<KeluargaRingkasanResponse | null>(null);
@@ -144,7 +144,7 @@ const DataKeluarga = () => {
         message: "",
     });
 
-    const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+    // const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -321,40 +321,40 @@ const DataKeluarga = () => {
         }
     };
 
-    const handleDeleteRequest = (member: FamilyMemberData) => {
-        setDeleteTarget({ id: member.id, status: member.status, nama: member.nama });
-    };
+    // const handleDeleteRequest = (member: FamilyMemberData) => {
+    //     setDeleteTarget({ id: member.id, status: member.status, nama: member.nama });
+    // };
 
-    const handleDeleteConfirm = async () => {
-        if (!deleteTarget) return;
-        setIsMutating(true);
-        try {
-            switch (deleteTarget.status) {
-                case "Istri":
-                case "Suami":
-                    await keluargaService.deletePasangan(deleteTarget.id);
-                    break;
-                case "Anak":
-                    await keluargaService.deleteAnak(deleteTarget.id);
-                    break;
-                case "Orang Tua":
-                    await keluargaService.deleteOrangTua(deleteTarget.id);
-                    break;
-                case "Kontak Darurat":
-                    await keluargaService.deleteKontakDarurat(deleteTarget.id);
-                    break;
-            }
-            setDeleteTarget(null);
-            showPopup("success", "Berhasil", "Data keluarga berhasil dihapus.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            setDeleteTarget(null);
-            showPopup("error", "Gagal Menghapus", error?.message || "Terjadi kesalahan saat menghapus data.");
-        } finally {
-            setIsMutating(false);
-        }
-    };
+    // const handleDeleteConfirm = async () => {
+    //     if (!deleteTarget) return;
+    //     setIsMutating(true);
+    //     try {
+    //         switch (deleteTarget.status) {
+    //             case "Istri":
+    //             case "Suami":
+    //                 await keluargaService.deletePasangan(deleteTarget.id);
+    //                 break;
+    //             case "Anak":
+    //                 await keluargaService.deleteAnak(deleteTarget.id);
+    //                 break;
+    //             case "Orang Tua":
+    //                 await keluargaService.deleteOrangTua(deleteTarget.id);
+    //                 break;
+    //             case "Kontak Darurat":
+    //                 await keluargaService.deleteKontakDarurat(deleteTarget.id);
+    //                 break;
+    //         }
+    //         setDeleteTarget(null);
+    //         showPopup("success", "Berhasil", "Data keluarga berhasil dihapus.");
+    //         await fetchData();
+    //     } catch (err: unknown) {
+    //         const error = err as { message?: string };
+    //         setDeleteTarget(null);
+    //         showPopup("error", "Gagal Menghapus", error?.message || "Terjadi kesalahan saat menghapus data.");
+    //     } finally {
+    //         setIsMutating(false);
+    //     }
+    // };
 
     const renderEditForm = () => {
         if (!editingMember) return null;
@@ -486,7 +486,7 @@ const DataKeluarga = () => {
                             key={`${member.status}-${member.id}`}
                             data={member}
                             onEdit={() => handleEdit(member)}
-                            onDelete={() => handleDeleteRequest(member)}
+                            // onDelete={() => handleDeleteRequest(member)}
                             onViewDocument={(url, label) => setPreviewFile({ url, title: label })}
                         />
                     ))
@@ -519,7 +519,7 @@ const DataKeluarga = () => {
 
 
 
-                <ConfirmDeleteModal
+                {/* <ConfirmDeleteModal
                     isOpen={!!deleteTarget}
                     onClose={() => setDeleteTarget(null)}
                     title="Konfirmasi Hapus"
@@ -529,7 +529,7 @@ const DataKeluarga = () => {
                     onConfirm={handleDeleteConfirm}
                     onCancel={() => setDeleteTarget(null)}
                     isLoading={isMutating}
-                />
+                /> */}
 
                 <Popup
                     isOpen={popup.isOpen}

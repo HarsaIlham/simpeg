@@ -33,11 +33,11 @@ const FormJabatan = ({ initialData, onCancel, onSubmit, isPegawai = true }: Form
         }
         submitData.append("is_current", formData.isCurrent ? "1" : "0");
         submitData.append("tmt_mulai", formData.tmt_mulai);
-        
+
         if (formData.tmt_selesai) {
             submitData.append("tmt_selesai", formData.tmt_selesai);
         }
-        
+
         if (formData.note) {
             submitData.append("note", formData.note);
         }
@@ -139,9 +139,9 @@ const FormJabatan = ({ initialData, onCancel, onSubmit, isPegawai = true }: Form
                     const file = e.target.files?.[0] ?? null;
                     setSkFile(file);
                 }}
-                required={isPegawai}
+                required={isPegawai && !initialData?.link_sk}
             />
-            {initialData?.link_sk && (
+            {initialData?.link_sk && !skFile &&(
                 <span className={styles.fileHint} style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>
                     File SK sudah ada. Upload baru hanya jika ingin mengganti.
                 </span>

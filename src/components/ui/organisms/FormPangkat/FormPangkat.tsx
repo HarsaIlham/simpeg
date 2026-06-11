@@ -142,7 +142,7 @@ const FormPangkat = ({ initialData, isSubmitting = false, serverErrors, onCancel
                     setSkFile(file);
                 }}
                 error={getFieldError("sk_pangkat")}
-                required={isPegawai}
+                required={isPegawai && !initialData?.linkSk}
             />
             {initialData?.linkSk && !skFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

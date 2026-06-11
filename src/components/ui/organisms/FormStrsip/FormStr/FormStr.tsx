@@ -99,7 +99,7 @@ const FormStr = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
                     setSkFile(file);
                 }}
                 error={getFieldError("sk_str")}
-                required={isPegawai}
+                required={isPegawai && !initialData?.linkSk}
             />
             {initialData?.linkSk && !skFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>

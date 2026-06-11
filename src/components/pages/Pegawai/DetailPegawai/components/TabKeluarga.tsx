@@ -130,6 +130,10 @@ const TabKeluarga = ({ keluargaList, isAdmin, onRefresh }: TabKeluargaProps) => 
         }
     };
 
+    const handleEdit = (member: any) => {
+        console.log(member);
+    };
+
     return (
         <>
             {isAdmin && (
@@ -157,6 +161,7 @@ const TabKeluarga = ({ keluargaList, isAdmin, onRefresh }: TabKeluargaProps) => 
                             key={`${member.status}-${member.id}`}
                             data={member}
                             onViewDocument={(url, label) => setPreviewFile({ url, title: label })}
+                            onEdit={isAdmin ? () => handleEdit(member) : undefined}
                         />
                     ))
                 )}

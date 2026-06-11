@@ -32,6 +32,7 @@ export interface CardDiklatData {
     noSertifikat?: string;
     statusValidasi?: string;
     statusVerifikasi?: string;
+    uploadLaporan: boolean;
 }
 
 interface CardDiklatProps {
@@ -45,7 +46,7 @@ interface CardDiklatProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTambahPeserta, onVerifikasi, onViewDocument }: CardDiklatProps) => {
+const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTambahPeserta, onVerifikasi, onViewDocument}: CardDiklatProps) => {
     const fullUrl = getFileUrl(data.sertifikat);
     const isVerifikasiOrValidasi = Boolean(onValidasi || onVerifikasi);
     const isInternal = data.jenisPelaksana === "internal";
@@ -78,8 +79,9 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                             return <Badge variant="danger">Tidak Valid</Badge>;
                         } else if (data.hasLaporan) {
                             return <Badge variant="warning">Menunggu Validasi</Badge>;
+                        } else {
+                            return <Badge variant="warning">{data.statusValidasi ? data.statusValidasi : "Upload Laporan" }</Badge>;
                         }
-                        return null;
                     })()}
                 </div>
             </div>
@@ -174,7 +176,7 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
 
 
                 <div className={styles.footerRight}>
-                    {onUploadLaporan && data.statusValidasi !== "valid" && data.status === "selesai" && (
+                    {onUploadLaporan && data.uploadLaporan && (
                         <Button
                             label="Upload Laporan"
                             icon={<Upload size={14} />}

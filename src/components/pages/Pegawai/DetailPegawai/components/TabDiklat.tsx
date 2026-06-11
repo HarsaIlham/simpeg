@@ -95,7 +95,7 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
                         <CardDiklat
                             key={diklat.id}
                             data={diklat}
-                            onEdit={() => handleEditDiklat(diklat)}
+                            onEdit={isAdmin ? () => handleEditDiklat(diklat) : undefined}
                         />
                     ))}
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./Input.module.css";
-import { formatLongDate } from "../../../../utils/dateUtils";
+import { formatLongDate, parseLocalDateToISO } from "../../../../utils/dateUtils";
 
 interface propsType {
     label?: string;
@@ -43,11 +43,23 @@ const Input = ({label,type, name, id, placeholder, required, className, rightNod
                     {...(type !== 'file' ? { value: displayValue || "" } : {})}
                     inputMode={onlyNumbers && type === 'text' ? "numeric" : undefined}
                     onChange={(e) => {
+                        let val = e.target.value;
+                        if (isDateField && val) {
+                            if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                                const parsed = parseLocalDateToISO(val);
+                                if (parsed) {
+                                    val = parsed;
+                                }
+                            }
+                        }
                         if (onlyNumbers && type === 'text') {
-                            e.target.value = e.target.value.replace(/\D/g, "");
+                            val = val.replace(/\D/g, "");
                         }
                         if (isDesimal && type === 'text') {
-                            e.target.value = e.target.value.replace(/[^0-9.]/g, "");
+                            val = val.replace(/[^0-9.]/g, "");
+                        }
+                        if (type !== 'file') {
+                            e.target.value = val;
                         }
                         if (onChange) onChange(e);
                     }}

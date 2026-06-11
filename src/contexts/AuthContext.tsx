@@ -11,6 +11,30 @@ export interface User {
   nama: string;
 }
 
+let globalUser: User | null = null;
+let globalToken: string | null = null;
+
+export const getGlobalUser = (): User | null => {
+  if (!globalUser) {
+    const storedUser = localStorage.getItem("simpeg_user");
+    if (storedUser) {
+      try {
+        globalUser = JSON.parse(storedUser);
+      } catch {
+        globalUser = null;
+      }
+    }
+  }
+  return globalUser;
+};
+
+export const getGlobalToken = (): string | null => {
+  if (!globalToken) {
+    globalToken = localStorage.getItem("simpeg_token");
+  }
+  return globalToken;
+};
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -32,12 +56,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (storedUser && storedToken) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
         setToken(storedToken);
+        globalUser = parsedUser;
+        globalToken = storedToken;
       } catch (error) {
         console.error("Gagal membaca memori penyimpanan sesi:", error);
         localStorage.removeItem("simpeg_user");
         localStorage.removeItem("simpeg_token");
+        globalUser = null;
+        globalToken = null;
       }
     }
 
@@ -47,6 +76,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (userData: User, tokenData: string) => {
     setUser(userData);
     setToken(tokenData);
+    globalUser = userData;
+    globalToken = tokenData;
     localStorage.setItem("simpeg_user", JSON.stringify(userData));
     localStorage.setItem("simpeg_token", tokenData);
   };
@@ -54,6 +85,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    globalUser = null;
+    globalToken = null;
     localStorage.removeItem("simpeg_user");
     localStorage.removeItem("simpeg_token");
   };

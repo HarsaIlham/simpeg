@@ -11,7 +11,7 @@ import Select from "../../ui/atoms/Select"
 import CardDiklat from "../../ui/organisms/CardDiklat"
 import type { CardDiklatData } from "../../ui/organisms/CardDiklat/CardDiklat"
 import Modal from "../../ui/organisms/Modal"
-import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal"
+// import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal"
 import FormLaporanDiklat from "../../ui/organisms/FormLaporanDiklat"
 import Pagination from "../../ui/molecules/Pagination"
 import { diklatService } from "../../../services/diklatService"
@@ -22,6 +22,7 @@ import Popup from "../../ui/molecules/Popup"
 import { useMasterData } from "../../../hooks/useMasterData"
 import PdfViewerModal from "../../ui/molecules/PdfViewerModal"
 import { getProxiedFileUrl } from "../../../utils/api"
+import { useAuth } from "../../../contexts/AuthContext"
 
 const formatTanggal = (dateStr: string): string => {
   const date = new Date(dateStr)
@@ -64,6 +65,7 @@ const mapRiwayatToCardDiklat = (item: RiwayatDiklatItem): CardDiklatData => ({
   sertifikat: item.sertif_file_path || "",
   statusValidasi: item.status_validasi || "",
   noSertifikat: item.no_sertif || "",
+  uploadLaporan: item.uploadlaporan,
 })
 
 const JENIS_OPTIONS = [
@@ -82,6 +84,7 @@ const STATUS_OPTIONS = [
 const ITEMS_PER_PAGE = 7
 
 const DataDiklat = () => {
+  const { user } = useAuth()
   const { options: filterJenisOptions } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
   const [searchParams] = useSearchParams()
 
@@ -196,12 +199,12 @@ const DataDiklat = () => {
   }, [fetchDiklat, currentFilters])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<CardDiklatData | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  // const [deleteTarget, setDeleteTarget] = useState<CardDiklatData | null>(null)
+  // const [isDeleting, setIsDeleting] = useState(false)
 
   const handleEdit = (diklat: CardDiklatData) => {
-    if (diklat.jenisPelaksana === "internal") {
-      showPopup("warning", "Peringatan", "Tidak bisa mengedit diklat internal")
+    if (diklat.jenisPelaksana === "internal" && diklat.pencatat !== user?.nama) {
+      showPopup("warning", "Peringatan", "Anda hanya dapat mengedit diklat internal yang Anda buat sendiri.")
       return
     }
     setSelectedDiklat(diklat)
@@ -209,26 +212,26 @@ const DataDiklat = () => {
     setIsModalOpen(true)
   }
 
-  const handleDelete = (diklat: CardDiklatData) => {
-    setDeleteTarget(diklat)
-  }
+  // const handleDelete = (diklat: CardDiklatData) => {
+  //   setDeleteTarget(diklat)
+  // }
 
-  const handleConfirmDelete = async () => {
-    if (!deleteTarget) return
+  // const handleConfirmDelete = async () => {
+  //   if (!deleteTarget) return
 
-    setIsDeleting(true)
-    try {
-      await diklatService.deleteDiklat(deleteTarget.id)
-      setDeleteTarget(null)
-      await fetchDiklat(currentPage, currentFilters)
-      showPopup("checklist", "Berhasil", "Data diklat berhasil dihapus.")
-    } catch (err: unknown) {
-      const errorObj = err as { message?: string }
-      showPopup("error", "Gagal", errorObj?.message || "Gagal menghapus data diklat.")
-    } finally {
-      setIsDeleting(false)
-    }
-  }
+  //   setIsDeleting(true)
+  //   try {
+  //     await diklatService.deleteDiklat(deleteTarget.id)
+  //     setDeleteTarget(null)
+  //     await fetchDiklat(currentPage, currentFilters)
+  //     showPopup("checklist", "Berhasil", "Data diklat berhasil dihapus.")
+  //   } catch (err: unknown) {
+  //     const errorObj = err as { message?: string }
+  //     showPopup("error", "Gagal", errorObj?.message || "Gagal menghapus data diklat.")
+  //   } finally {
+  //     setIsDeleting(false)
+  //   }
+  // }
 
   const handleFormSubmit = async (formData: FormData) => {
     setIsSubmitting(true)
@@ -369,16 +372,19 @@ const DataDiklat = () => {
             </Card>
           )
             : diklatList.length > 0 ? (
-              diklatList.map((diklat) => (
-                <CardDiklat
-                  key={diklat.id}
-                  data={diklat}
-                  onEdit={() => handleEdit(diklat)}
-                  onDelete={() => handleDelete(diklat)}
-                  onUploadLaporan={() => handleUploadLaporan(diklat)}
-                  onViewDocument={(url) => handleViewDocument(url, diklat.namaDiklat)}
-                />
-              ))
+              diklatList.map((diklat) => {
+                const canEdit = diklat.jenisPelaksana !== "internal" || diklat.pencatat === user?.nama;
+                return (
+                  <CardDiklat
+                    key={diklat.id}
+                    data={diklat}
+                    onEdit={canEdit ? () => handleEdit(diklat) : undefined}
+                    // onDelete={() => handleDelete(diklat)}
+                    onUploadLaporan={() => handleUploadLaporan(diklat)}
+                    onViewDocument={(url) => handleViewDocument(url, diklat.namaDiklat)}
+                  />
+                )
+              })
             ) : (
               <Card className={styles.emptyState}>
                 <p className={styles.emptyText}>
@@ -467,7 +473,7 @@ const DataDiklat = () => {
         </Modal>
       )}
 
-      <ConfirmDeleteModal
+      {/* <ConfirmDeleteModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         title="Hapus Diklat"
@@ -475,7 +481,7 @@ const DataDiklat = () => {
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteTarget(null)}
         isLoading={isDeleting}
-      />
+      /> */}
 
       <Popup
         isOpen={popup.isOpen}

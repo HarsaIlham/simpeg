@@ -45,7 +45,7 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Diklat Pegawai",
     icon: GraduationCap,
     path: "/diklat-pegawai",
-    allowedRoles: ["hrd", "admin", "direktur"],
+    allowedRoles: ["hrd", "direktur"],
   },
   {
     id: "validasi-dokumen",

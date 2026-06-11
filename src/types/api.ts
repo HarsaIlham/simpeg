@@ -217,6 +217,7 @@ export interface RiwayatDiklatItem {
   no_sertif?: string | null;
   sertif_file_path?: string | null;
   status_validasi?: string | null;
+  uploadlaporan: boolean;
 }
 
 export interface DiklatRingkasan {

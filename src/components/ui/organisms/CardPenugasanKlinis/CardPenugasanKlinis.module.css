@@ -5,6 +5,10 @@
     margin-bottom: var(--spacing-sm);
 }
 
+.badge {
+    width: fit-content;
+}
+
 .grid {
     display: flex;
     gap: var(--spacing-lg);

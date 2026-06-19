@@ -37,6 +37,9 @@ const CardSip = ({ data, onEdit, onDelete, onViewDocument }: CardSipProps) => {
             <div className={styles.header}>
                 <Text text="Surat Izin Praktik (SIP)" weight="bold" color="default" fontSize="18px" />
                 <Text text={`No: ${data.nomorSip}`} variant="body" color="green" />
+                <Badge className={styles.badge} variant={data.isCurrent ? "success" : "danger"}>
+                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
+                </Badge>
             </div>
             {data.jenisSipNama && <DataField label="Jenis SIP" value={data.jenisSipNama} />}
             <div className={styles.dates}>
@@ -44,9 +47,6 @@ const CardSip = ({ data, onEdit, onDelete, onViewDocument }: CardSipProps) => {
                 <DataField label="Tanggal Akhir" value={data.tanggalKadaluarsa || "-"} isDate={true} />
             </div>
             <div className={styles.actionsBox}>
-                <Badge variant={data.isCurrent ? "success" : "danger"}>
-                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
-                </Badge>
                 {data.linkSk && onViewDocument && (
                     <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.linkSk))} />
                 )}

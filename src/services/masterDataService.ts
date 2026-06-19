@@ -1,10 +1,7 @@
 import { apiFetch } from "../utils/api";
 import type { ApiResponse, MasterDataResponse } from "../types/api";
 
-/**
- * Endpoint master data untuk dropdown form.
- * Setiap endpoint mengembalikan array { id, nama }.
- */
+
 const MASTER_DATA_ENDPOINTS = {
     kategoriDiklat: "/form/kategori-diklat",
     tipeDiklat: "/form/tipe-diklat",
@@ -18,9 +15,6 @@ const MASTER_DATA_ENDPOINTS = {
 
 export type MasterDataKey = keyof typeof MASTER_DATA_ENDPOINTS;
 
-/**
- * Fetch satu jenis master data berdasarkan key.
- */
 const fetchMasterData = async (key: MasterDataKey): Promise<MasterDataResponse> => {
     const endpoint = MASTER_DATA_ENDPOINTS[key];
     const response = await apiFetch(endpoint);

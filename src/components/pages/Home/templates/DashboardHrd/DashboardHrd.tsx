@@ -10,6 +10,7 @@ import TabDiklatNakes from "./TabDiklatNakes";
 import { dashboardService } from "../../../../../services/dashboardService";
 import type { DashboardHrdDashboard } from "../../../../../types/api";
 import styles from "./DashboardHrd.module.css";
+import { getGlobalUser } from "../../../../../contexts/AuthContext";
 
 const TAB_ITEMS = [
     { id: "pegawai", label: "Pegawai", icon: <Users size={16} /> },
@@ -18,6 +19,8 @@ const TAB_ITEMS = [
 ];
 
 const DashboardHrd = () => {
+    const user = getGlobalUser();
+    const role = user?.role;
     const [activeTab, setActiveTab] = useState("pegawai");
     const [dashboard, setDashboard] = useState<DashboardHrdDashboard | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -68,9 +71,9 @@ const DashboardHrd = () => {
 
     return (
         <>
-            <Topbar title="Dashboard HRD" />
+            <Topbar title={`Dashboard ${role === "hrd" ? "HRD" : "Direktur"}`} />
             <MainHeaderSection
-                title="Dashboard HRD"
+                title={`Dashboard ${role === "hrd" ? "HRD" : "Direktur"}`}
                 subtitle="Sistem Informasi Kepegawaian RS Kalisat"
             />
 

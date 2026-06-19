@@ -14,6 +14,7 @@ export interface CardRequestData {
     note: string | null;
     jumlahDetail: number;
     tanggalPengajuan: string;
+    nik: string | null;
 }
 
 interface CardRequestProps {

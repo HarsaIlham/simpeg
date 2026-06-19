@@ -1,4 +1,4 @@
-import { useAuth } from "../../../contexts/AuthContext";
+import { getGlobalUser } from "../../../contexts/AuthContext";
 import DashboardPegawai from "./templates/DashboardPegawai/DashboardPegawai";
 import DashboardHrd from "./templates/DashboardHrd/DashboardHrd";
 import DashboardAdmin from "./templates/DashboardAdmin/DashboardAdmin";
@@ -11,7 +11,7 @@ const DASHBOARD_MAP = {
 } as const;
 
 const Home = () => {
-  const { user } = useAuth();
+  const user = getGlobalUser();
 
   if (!user) return null;
 

@@ -11,8 +11,15 @@ Berikut adalah ringkasan perubahan dan perbaikan yang diimplementasikan pada pro
     *   Tombol edit (ikon pensil) pada `CardDiklat` akan disembunyikan secara otomatis untuk diklat internal yang dibuat oleh orang lain.
     *   Jika fungsi edit diakses secara paksa, sistem akan menampilkan popup peringatan: *"Anda hanya dapat mengedit diklat internal yang Anda buat sendiri."*
 
-## 2. Penyimpanan Global Nilai Auth (Memory Cache)
-*   **Komponen:** `src/contexts/AuthContext.tsx`, `src/utils/api.ts`
+## 2. Penyimpanan Global Nilai Auth (Zustand Store)
+*   **Komponen:** `src/store/useAuthStore.ts`, `src/contexts/AuthContext.tsx`, `src/utils/api.ts`
 *   **Perubahan:**
-    *   Menambahkan variabel global `globalUser` dan `globalToken` dalam `AuthContext.tsx` untuk menyimpan data autentikasi langsung di memory cache.
-    *   Mengekspos fungsi `getGlobalUser()` dan `getGlobalToken()` agar file non-React (seperti `api.ts`) dapat mengakses data token secara langsung tanpa overhead pembacaan `localStorage.getItem` secara berulang-ulang pada setiap pemanggilan API.
+    *   Membuat store Zustand `useAuthStore` untuk mengelola data user, token, dan inisialisasi sesi secara global dan terpusat.
+    *   Mengekspos helper `getGlobalUser()` dan `getGlobalToken()` dari store Zustand agar utility non-React (seperti `apiFetch` di `api.ts`) dan komponen-komponen React non-reaktif dapat langsung membaca data autentikasi dari memori tanpa overhead pembacaan disk (`localStorage`) secara terus menerus.
+    *   Menerapkan fungsi getter non-reaktif `getGlobalUser()` di berbagai komponen (`Pegawai.tsx`, `PegawaiHrd.tsx`, `Home.tsx`, `DashboardPegawai.tsx`, `DataDiklat.tsx`, `DetailPegawai.tsx`) untuk mengoptimalkan performa rendering.
+
+## 3. Integrasi DataTable pada DashboardAdmin
+*   **Komponen:** `src/components/pages/Home/templates/DashboardAdmin/DashboardAdmin.tsx`
+*   **Perubahan:**
+    *   Mengubah tampilan daftar pengajuan perubahan data pegawai dari model kartu (`CardRequest`) menjadi format tabel terstruktur menggunakan komponen `DataTable`.
+    *   Kolom yang disediakan mencakup: Pengirim (Nama & Role), Fitur / Bagian yang diubah, Jumlah field yang berubah, Tanggal pengajuan (format relatif), Badge Status, dan tombol aksi "Tinjau".

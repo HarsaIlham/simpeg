@@ -10,7 +10,7 @@ import StatCard from "../../../ui/molecules/StatCard";
 import Button from "../../../ui/atoms/Button";
 import DataTable from "../../../ui/organisms/DataTable";
 import Pagination from "../../../ui/molecules/Pagination";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { getGlobalUser } from "../../../../contexts/AuthContext";
 import { useMasterData } from "../../../../hooks/useMasterData";
 import { pegawaiService } from "../../../../services/pegawaiService";
 
@@ -68,7 +68,7 @@ const PROFESI_OPTIONS = [
 const ITEMS_PER_PAGE = 10;
 
 const PegawaiHrd = () => {
-    const { user } = useAuth();
+    const user = getGlobalUser();
     const navigate = useNavigate();
     const isAdmin = user?.role === "admin";
     const [pegawaiList, setPegawaiList] = useState<PegawaiItem[]>([]);

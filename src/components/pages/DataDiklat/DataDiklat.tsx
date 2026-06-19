@@ -22,7 +22,7 @@ import Popup from "../../ui/molecules/Popup"
 import { useMasterData } from "../../../hooks/useMasterData"
 import PdfViewerModal from "../../ui/molecules/PdfViewerModal"
 import { getProxiedFileUrl } from "../../../utils/api"
-import { useAuth } from "../../../contexts/AuthContext"
+import { getGlobalUser } from "../../../contexts/AuthContext"
 
 const formatTanggal = (dateStr: string): string => {
   const date = new Date(dateStr)
@@ -84,7 +84,7 @@ const STATUS_OPTIONS = [
 const ITEMS_PER_PAGE = 7
 
 const DataDiklat = () => {
-  const { user } = useAuth()
+  const user = getGlobalUser()
   const { options: filterJenisOptions } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
   const [searchParams] = useSearchParams()
 

@@ -6,6 +6,7 @@ import Card from "../../../../ui/atoms/Card";
 import Tabs from "../../../../ui/molecules/Tabs";
 import Modal from "../../../../ui/organisms/Modal";
 import Popup from "../../../../ui/molecules/Popup";
+import PdfViewerModal from "../../../../ui/molecules/PdfViewerModal";
 
 import CardPendidikan from "../../../../ui/organisms/CardPendidikan";
 import type { CardPendidikanData } from "../../../../ui/organisms/CardPendidikan/CardPendidikan";
@@ -98,6 +99,7 @@ const TabRiwayat = ({
     errorPangkat,
 }: TabRiwayatProps) => {
     const [activeTab, setActiveTab] = useState("pendidikan");
+    const [previewDoc, setPreviewDoc] = useState<{ label: string; url: string } | null>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -409,6 +411,7 @@ const TabRiwayat = ({
                                     data={item}
                                     onEdit={isAdmin ? () => handleEditPendidikan(item) : undefined}
                                     onDelete={() => void {}}
+                                    onViewDocument={(url) => setPreviewDoc({ label: "Ijazah Pendidikan", url })}
                                 />
                             )}
                         </div>
@@ -424,6 +427,7 @@ const TabRiwayat = ({
                                     data={item}
                                     onEdit={isAdmin ? () => handleEditJabatan(item) : undefined}
                                     onDelete={() => void {}}
+                                    onViewDocument={(url) => setPreviewDoc({ label: "SK Jabatan", url })}
                                 />
                             )}
                         </div>
@@ -439,6 +443,7 @@ const TabRiwayat = ({
                                     data={item}
                                     onEdit={isAdmin ? () => handleEditPangkat(item) : undefined}
                                     onDelete={() => void {}}
+                                    onViewDocument={(url) => setPreviewDoc({ label: "SK Pangkat", url })}
                                 />
                             )}
                         </div>
@@ -462,6 +467,7 @@ const TabRiwayat = ({
                                                 key={item.id}
                                                 data={item}
                                                 onEdit={isAdmin ? () => handleEditStr(item) : undefined}
+                                                onViewDocument={(url) => setPreviewDoc({ label: "STR", url })}
                                             />
                                         )}
                                     </div>
@@ -473,6 +479,7 @@ const TabRiwayat = ({
                                                 key={item.id}
                                                 data={item}
                                                 onEdit={isAdmin ? () => handleEditSip(item) : undefined}
+                                                onViewDocument={(url) => setPreviewDoc({ label: "SIP", url })}
                                             />
                                         )}
                                     </div>
@@ -490,6 +497,7 @@ const TabRiwayat = ({
                                     key={item.id}
                                     data={item}
                                     onEdit={isAdmin ? () => handleEditPenugasan(item) : undefined}
+                                    onViewDocument={(url) => setPreviewDoc({ label: "Penugasan Klinis", url })}
                                 />
                             )}
                         </div>
@@ -510,6 +518,14 @@ const TabRiwayat = ({
                 title={feedback.title}
                 message={feedback.message}
                 confirmLabel="OK"
+            />
+
+            <PdfViewerModal
+                isOpen={!!previewDoc}
+                onClose={() => setPreviewDoc(null)}
+                fileUrl={previewDoc ? previewDoc.url : null}
+                title={`Lihat ${previewDoc?.label || "Dokumen"}`}
+                fileName={previewDoc?.label || "Dokumen"}
             />
         </>
     );

@@ -55,7 +55,7 @@ const PegawaiAdmin = () => {
         totalPegawai: 0,
         hrdCount: 0,
         direkturCount: 0,
-        adminCount: 0,
+        pegawaiAktif: 0,
     });
 
     const [editingPegawai, setEditingPegawai] = useState<PegawaiItem | null>(null);
@@ -116,7 +116,7 @@ const PegawaiAdmin = () => {
                     totalPegawai: responseData.total_pegawai ?? 0,
                     hrdCount: responseData.jumlah_hrd ?? 0,
                     direkturCount: responseData.jumlah_direktur ?? 0,
-                    adminCount: responseData.jumlah_admin ?? 0,
+                    pegawaiAktif: responseData.jumlah_pegawai_aktif ?? 0,
                 });
             }
         } catch (err: any) {
@@ -306,8 +306,8 @@ const PegawaiAdmin = () => {
                 />
                 <StatCard
                     icon={<UsersRound size={24} />}
-                    value={String(statCounts.adminCount)}
-                    label="Admin"
+                    value={String(statCounts.pegawaiAktif)}
+                    label="Pegawai Aktif"
                     variant="amber"
                 />
             </div>

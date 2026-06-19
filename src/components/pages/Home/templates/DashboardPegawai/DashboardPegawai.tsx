@@ -16,13 +16,13 @@ import ScheduleItem from "../../../../ui/molecules/ScheduleItem";
 import DataField from "../../../../ui/molecules/DataField";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../../../contexts/AuthContext";
+import { getGlobalUser } from "../../../../../contexts/AuthContext";
 import { dashboardService } from "../../../../../services/dashboardService";
 import type { DashboardPegawaiData, Notifikasi } from "../../../../../types/api";
 
 const DashboardPegawai = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = getGlobalUser();
 
   const [dashboard, setDashboard] = useState<DashboardPegawaiData | null>(null);
   const [notifications, setNotifications] = useState<Notifikasi[]>([]);

@@ -6,11 +6,11 @@ export const formatRelativeDate = (dateString: string): string => {
     const targetMidnight = new Date(target.getFullYear(), target.getMonth(), target.getDate());
 
     const diffMs = nowMidnight.getTime() - targetMidnight.getTime();
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    // const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays <= 0) return "Hari ini";
-    if (diffDays === 1) return "1 hari yang lalu";
-    if (diffDays <= 7) return `${diffDays} hari yang lalu`;
+    // if (diffDays <= 0) return "Hari ini";
+    // if (diffDays === 1) return "1 hari yang lalu";
+    // if (diffDays <= 7) return `${diffDays} hari yang lalu`;
 
     return target.toLocaleDateString("id-ID", {
         day: "numeric",

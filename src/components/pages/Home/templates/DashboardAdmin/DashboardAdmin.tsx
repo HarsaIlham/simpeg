@@ -4,7 +4,6 @@ import StatCard from "../../../../ui/molecules/StatCard";
 import Topbar from "../../../../ui/organisms/Topbar/Topbar";
 import styles from "./DashboardAdmin.module.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import CardRequest from "./components/CardRequest";
 import type { CardRequestData } from "./components/CardRequest/CardRequest";
 import Card from "../../../../ui/atoms/Card";
 import Modal from "../../../../ui/organisms/Modal";
@@ -14,6 +13,8 @@ import Badge from "../../../../ui/atoms/Badge";
 import Popup from "../../../../ui/molecules/Popup";
 import Tabs from "../../../../ui/molecules/Tabs";
 import DataChangeCard from "../../../../ui/molecules/DataChangeCard";
+import DataTable, { type Column } from "../../../../ui/organisms/DataTable";
+import { formatRelativeDate } from "../../../../../utils/dateUtils";
 import { changeRequestService } from "../../../../../services/changeRequestService";
 import type { AdminChangeRequest, ChangeRequestDetail } from "../../../../../types/api";
 
@@ -27,6 +28,7 @@ const mapToCardRequestData = (item: AdminChangeRequest): CardRequestData => ({
   note: item.note,
   jumlahDetail: item.jumlah_detail,
   tanggalPengajuan: item.created_at,
+  nik: item.by_user.username,
 });
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -172,6 +174,71 @@ const DashboardAdmin = () => {
     { id: "rejected", label: `Ditolak (${rejectedCount})` },
   ];
 
+  const columns = useMemo<Column<CardRequestData>[]>(() => [
+    {
+      key: "pegawai",
+      label: "Pegawai",
+      width: "25%",
+      render: (row) => (
+        <div>
+          <strong style={{ fontWeight: 600, color: "var(--color-text)" }}>{row.sender}</strong>
+          <div style={{ color: "var(--color-text-secondary)", fontSize: "12px", textTransform: "capitalize" }}>
+            {row.senderRole}
+          </div>
+          <div style={{ color: "var(--color-text-secondary)", fontSize: "12px", textTransform: "capitalize" }}>
+            {row.nik ? `NIK : ${row.nik}` : ""}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "jenis",
+      label: "Jenis",
+      width: "20%",
+      render: (row) => <Badge variant="info">{row.fitur}</Badge>,
+    },
+    {
+      key: "deskripsi",
+      label: "Deskripsi",
+      width: "15%",
+      render: (row) => <span>{row.note}</span>,
+    },
+    {
+      key: "tanggalPengajuan",
+      label: "Tanggal Pengajuan",
+      width: "20%",
+      render: (row) => <span>{formatRelativeDate(row.tanggalPengajuan)}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      width: "10%",
+      render: (row) => {
+        const config =
+          row.status === "approved"
+            ? { label: "Disetujui", variant: "success" as const }
+            : row.status === "rejected"
+              ? { label: "Ditolak", variant: "danger" as const }
+              : { label: "Menunggu", variant: "warning" as const };
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
+    },
+    {
+      key: "aksi",
+      label: "Aksi",
+      width: "10%",
+      align: "center",
+      render: (row) => (
+        <Button
+          label="Detail"
+          variant="primary"
+          size="sm"
+          onClick={() => handleTinjau(row.id)}
+        />
+      ),
+    },
+  ], []);
+
   return (
     <>
       <Topbar title="Dashboard Admin" />
@@ -193,32 +260,24 @@ const DashboardAdmin = () => {
         </Card>
       </div>
 
-      <Card>
-        <div className={styles.requestList}>
-          {isLoading && (
-            <p className={styles.loadingState}>
-              Memuat data pengajuan...
-            </p>
-          )}
-          {error && (
-            <p className={styles.errorState}>
-              {error}
-            </p>
-          )}
-          {!isLoading && !error && filteredList.length === 0 && (
-            <p className={styles.emptyState}>
-              Belum ada pengajuan perubahan data.
-            </p>
-          )}
-          {!isLoading && !error && filteredList.map((req) => (
-            <CardRequest
-              key={req.id}
-              data={req}
-              onTinjau={() => handleTinjau(req.id)}
-            />
-          ))}
-        </div>
-      </Card>
+
+      {isLoading ? (
+        <p className={styles.loadingState}>
+          Memuat data pengajuan...
+        </p>
+      ) : error ? (
+        <p className={styles.errorState}>
+          {error}
+        </p>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={filteredList}
+          rowKey={(row) => row.id}
+          emptyMessage="Belum ada pengajuan perubahan data."
+          maxVisibleRows={10}
+        />
+      )}
 
       {isDetailOpen && (
         <Modal

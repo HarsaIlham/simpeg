@@ -22,7 +22,7 @@ import type { CardPendidikanData } from "../../../ui/organisms/CardPendidikan/Ca
 import type { CardPangkatData } from "../../../ui/organisms/CardPangkat/CardPangkat";
 
 import { pegawaiService } from "../../../../services/pegawaiService";
-import { useAuth } from "../../../../contexts/AuthContext";
+import { getGlobalUser } from "../../../../contexts/AuthContext";
 import styles from "./DetailPegawai.module.css";
 import TabKeluarga from "./components/TabKeluarga";
 import type { FamilyMemberData } from "../../../ui/organisms/FamilyMemberCard/FamilyMemberCard";
@@ -139,6 +139,7 @@ const mapToDiklatCards = (diklatList: any[]): CardDiklatData[] =>
         jenisBiaya: null,
         totalBiaya: null,
         penyelenggara: item.penyelenggara || "",
+        uploadLaporan: item.upload_laporan || "",
     }));
 
 const mapToJabatanCards = (jabatanList: any[]): CardJabatanData[] =>
@@ -150,6 +151,7 @@ const mapToJabatanCards = (jabatanList: any[]): CardJabatanData[] =>
         isCurrent: item.is_current,
         tmt_mulai: item.tanggal_mulai || "",
         tmt_selesai: item.tanggal_selesai || "",
+        link_sk: item.file_path || null,
     }));
 
 const mapToStrCards = (strList: any[]): CardStrData[] =>
@@ -159,7 +161,7 @@ const mapToStrCards = (strList: any[]): CardStrData[] =>
         tanggalTerbit: item.tanggal_terbit || "",
         tanggalKadaluarsa: item.tanggal_kadaluarsa || null,
         isCurrent: item.is_current,
-        linkSk: null,
+        linkSk: item.file_path || null,
     }));
 
 const mapToSipCards = (sipList: any[]): CardSipData[] =>
@@ -171,7 +173,7 @@ const mapToSipCards = (sipList: any[]): CardSipData[] =>
         tanggalTerbit: item.tanggal_terbit || "",
         tanggalKadaluarsa: item.tanggal_kadaluarsa || null,
         isCurrent: item.is_current,
-        linkSk: null,
+        linkSk: item.file_path || null,
     }));
 
 const mapToPenugasanCards = (pkList: any[]): CardPenugasanKlinisData[] =>
@@ -181,7 +183,7 @@ const mapToPenugasanCards = (pkList: any[]): CardPenugasanKlinisData[] =>
         tglMulai: item.tanggal_mulai || "",
         tglKadaluarsa: item.tanggal_kadaluarsa || null,
         isCurrent: item.is_current,
-        linkDokumen: null,
+        linkDokumen: item.file_path || null,
     }));
 
 const mapToPendidikanCards = (pendidikanList: any[]): CardPendidikanData[] =>
@@ -198,12 +200,12 @@ const mapToPendidikanCards = (pendidikanList: any[]): CardPendidikanData[] =>
 const mapToPangkatCards = (pangkatList: any[]): CardPangkatData[] =>
     pangkatList.map((item) => ({
         id: item.id,
-        namaPangkat: item.nama_pangkat || "",
+        namaPangkat: item.pangkat || "",
         isCurrent: item.is_current,
         pejabatPenetap: item.pejabat_penetap || null,
         tmtSk: item.tmt_sk || null,
-        startedAt: item.started_at || null,
-        endedAt: item.ended_at || null,
+        startedAt: item.tanggal_mulai || null,
+        endedAt: item.tanggal_selesai || null,
         linkSk: item.link_sk || null,
         note: item.note || "",
     }));
@@ -211,7 +213,7 @@ const mapToPangkatCards = (pangkatList: any[]): CardPangkatData[] =>
 const DetailPegawai = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const user = getGlobalUser();
     const isAdmin = user?.role === "admin" || user?.role === "hrd";
 
     const [activeTab, setActiveTab] = useState("pegawai");

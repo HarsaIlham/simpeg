@@ -12,6 +12,10 @@
     margin-bottom: var(--spacing-lg);
 }
 
+.badge {
+    width: fit-content;
+}
+
 .dates {
     display: flex;
     gap: var(--spacing-3xl);

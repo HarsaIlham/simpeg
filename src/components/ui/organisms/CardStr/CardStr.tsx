@@ -35,15 +35,15 @@ const CardStr = ({ data, onEdit, onDelete, onViewDocument }: CardStrProps) => {
             <div className={styles.header}>
                 <Text text="Surat Tanda Registrasi (STR)" weight="bold" color="default" fontSize="18px" />
                 <Text text={`No: ${data.nomorStr}`} variant="body" color="green" />
+                <Badge className={styles.badge} variant={data.isCurrent ? "success" : "danger"}>
+                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
+                </Badge>
             </div>
             <div className={styles.dates}>
                 <DataField label="Tanggal Terbit" value={data.tanggalTerbit} isDate={true} />
                 <DataField label="Tanggal Akhir" value={data.tanggalKadaluarsa || "-"} isDate={true} />
             </div>
             <div className={styles.actionsBox}>
-                <Badge variant={data.isCurrent ? "success" : "danger"}>
-                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
-                </Badge>
                 {data.linkSk && onViewDocument && (
                     <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.linkSk))} />
                 )}

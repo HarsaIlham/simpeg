@@ -1,107 +1,49 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { useAuthStore } from "../stores/useAuthStore";
+import type { User, UserRole } from "../stores/useAuthStore";
 
-
-export type UserRole = "admin" | "pegawai" | "hrd" | "direktur";
-
-export interface User {
-  id: number;
-  nik: string;
-  role: UserRole;
-  nama: string;
-}
-
-let globalUser: User | null = null;
-let globalToken: string | null = null;
+export type { User, UserRole };
 
 export const getGlobalUser = (): User | null => {
-  if (!globalUser) {
+  const user = useAuthStore.getState().user;
+  if (!user) {
     const storedUser = localStorage.getItem("simpeg_user");
     if (storedUser) {
       try {
-        globalUser = JSON.parse(storedUser);
+        return JSON.parse(storedUser);
       } catch {
-        globalUser = null;
+        return null;
       }
     }
   }
-  return globalUser;
+  return user;
 };
 
 export const getGlobalToken = (): string | null => {
-  if (!globalToken) {
-    globalToken = localStorage.getItem("simpeg_token");
+  const token = useAuthStore.getState().token;
+  if (!token) {
+    return localStorage.getItem("simpeg_token");
   }
-  return globalToken;
+  return token;
 };
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (userData: User, tokenData: string) => void;
-  logout: () => void;
-  isLoading: boolean; 
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const initialize = useAuthStore((state) => state.initialize);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("simpeg_user");
-    const storedToken = localStorage.getItem("simpeg_token");
+    initialize();
+  }, [initialize]);
 
-    if (storedUser && storedToken) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setToken(storedToken);
-        globalUser = parsedUser;
-        globalToken = storedToken;
-      } catch (error) {
-        console.error("Gagal membaca memori penyimpanan sesi:", error);
-        localStorage.removeItem("simpeg_user");
-        localStorage.removeItem("simpeg_token");
-        globalUser = null;
-        globalToken = null;
-      }
-    }
+  if (isLoading) {
+    return null;
+  }
 
-    setIsLoading(false);
-  }, []);
-
-  const login = (userData: User, tokenData: string) => {
-    setUser(userData);
-    setToken(tokenData);
-    globalUser = userData;
-    globalToken = tokenData;
-    localStorage.setItem("simpeg_user", JSON.stringify(userData));
-    localStorage.setItem("simpeg_token", tokenData);
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    globalUser = null;
-    globalToken = null;
-    localStorage.removeItem("simpeg_user");
-    localStorage.removeItem("simpeg_token");
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
-      {isLoading ? null : children}
-    </AuthContext.Provider>
-  );
+  return <>{children}</>;
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("Peringatan: useAuth harus digunakan di dalam cakupan komponen <AuthProvider>");
-  }
-  return context;
+  const { user, token, login, logout, isLoading } = useAuthStore();
+  return { user, token, login, logout, isLoading };
 };

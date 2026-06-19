@@ -1,4 +1,4 @@
-import { useAuth } from "../../../contexts/AuthContext";
+import { getGlobalUser } from "../../../contexts/AuthContext";
 import PegawaiAdmin from "./templates/PegawaiAdmin";
 import PegawaiHrd from "./templates/PegawaiHrd";
 
@@ -10,7 +10,7 @@ const PEGAWAI_MAP = {
 } as const;
 
 const Pegawai = () => {
-  const { user } = useAuth();
+  const user = getGlobalUser();
 
   if (!user) return null;
 

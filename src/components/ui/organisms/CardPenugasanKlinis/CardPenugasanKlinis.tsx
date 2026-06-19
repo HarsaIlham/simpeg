@@ -35,15 +35,15 @@ const CardPenugasanKlinis = ({ data, onEdit, onDelete, onViewDocument }: CardPen
             <div className={styles.header}>
                 <Text text="Penugasan Klinis" fontSize="18px" weight="bold" color="default" />
                 <Text text={`No: ${data.nomorSurat}`} color="green" variant="body" />
+                <Badge className={styles.badge} variant={data.isCurrent ? "success" : "danger"}>
+                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
+                </Badge>
             </div>
             <div className={styles.grid}>
                 <DataField label="Tanggal Mulai" value={data.tglMulai} isDate={true} />
                 <DataField label="Tanggal Kadaluarsa" value={data.tglKadaluarsa || "-"} isDate={true} />
             </div>
             <div className={styles.actionsBox}>
-                <Badge variant={data.isCurrent ? "success" : "danger"}>
-                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
-                </Badge>
                 {data.linkDokumen && onViewDocument && (
                     <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.linkDokumen))} />
                 )}

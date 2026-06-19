@@ -36,17 +36,17 @@ const CardPangkat = ({ data, onEdit, onDelete, onViewDocument }: CardPangkatProp
             icon={<Icon icon={Award} variant="soft" color="#218838" bgColor="#e6f4ea" rounded="md" sizeBox="lg" sizeIcon="sm" />}>
             <div className={styles.header}>
                 <Text text={data.namaPangkat} weight="bold" color="default" fontSize="18px" />
-            </div>
-            <div className={styles.grid}>
-                <DataField label="TMT SK" value={data.tmtSk || "-"} isDate={true} />
-                <DataField label="Mulai" value={data.startedAt || "-"} isDate={true} />
-                <DataField label="Selesai" value={data.endedAt || "-"} isDate={true} />
-                <DataField label="Pejabat Penetap" value={data.pejabatPenetap || "-"} />
-            </div>
-            <div className={styles.actionsBox}>
                 <Badge variant={data.isCurrent ? "success" : "danger"}>
                     {data.isCurrent ? "Aktif" : "Tidak Aktif"}
                 </Badge>
+            </div>
+            <div className={styles.grid}>
+                {data.tmtSk && <DataField key="tmt-sk" label="TMT SK" value={data.tmtSk || "-"} isDate={true} />}
+                <DataField key="startedAt" label="Mulai" value={data.startedAt || "-"} isDate={true} />
+                <DataField key="endedAt" label="Selesai" value={data.endedAt || "-"} isDate={true} />
+                <DataField key="pejabatPenetap" label="Pejabat Penetap" value={data.pejabatPenetap || "-"} />
+            </div>
+            <div className={styles.actionsBox}>
                 {data.linkSk && onViewDocument && (
                     <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.linkSk))} />
                 )}

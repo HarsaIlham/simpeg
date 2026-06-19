@@ -2,6 +2,10 @@
     margin-bottom: 4px;
 }
 
+.badge {
+    width: fit-content;
+}
+
 .dates {
     display: grid;
     grid-template-columns: repeat(2, 200px);

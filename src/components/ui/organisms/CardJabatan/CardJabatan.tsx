@@ -37,16 +37,15 @@ const CardJabatan = ({ data, onEdit, onDelete, onViewDocument }: CardJabatanProp
         >
             <div className={styles.header}>
                 <Text text={data.namaJabatan} weight="bold" color="default" fontSize="18px" />
-                <Text text={data.isCurrent ? "Aktif" : "Tidak Aktif"} variant="body" color="green" />
+                <Badge variant={data.isCurrent ? "success" : "danger"}>
+                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
+                </Badge>
             </div>
             <div className={styles.grid}>
                 <DataField label="Terhitung Mulai Tanggal" value={data.tmt_mulai} isDate={true} />
                 <DataField label="Tanggal Selesai" value={data.tmt_selesai || "-"} isDate={true} />
             </div>
             <div className={styles.actionsBox}>
-                <Badge variant={data.isCurrent ? "success" : "danger"}>
-                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
-                </Badge>
                 {data.link_sk && onViewDocument && (
                     <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.link_sk))} />
                 )}

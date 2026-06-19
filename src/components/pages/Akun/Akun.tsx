@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Topbar from "../../ui/organisms/Topbar/Topbar";
 import MainHeaderSection from "../../ui/molecules/MainHeaderSection/MainHeaderSection";
 import CardAkun from "./components/CardAkun/CardAkun";
@@ -7,9 +7,18 @@ import FormGantiPassword from "../../ui/organisms/FormGantiPassword/FormGantiPas
 import Modal from "../../ui/organisms/Modal";
 import Popup from "../../ui/molecules/Popup";
 import styles from "./Akun.module.css";
+import { getGlobalUser } from "../../../contexts/AuthContext";
 
 const Akun = () => {
-    const [username, setUsername] = useState("Username");
+    const user = getGlobalUser();
+    const [username, setUsername] = useState(user?.nik || "");
+
+    useEffect(() => {
+        if (user?.nik) {
+            setUsername(user.nik);
+        }
+    }, [user?.nik]);
+
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupConfig, setPopupConfig] = useState({

@@ -6,11 +6,12 @@ type BadgeVariant = "info" | "success" | "warning" | "danger" | "default" | "par
 interface BadgeProps {
     children: ReactNode;
     variant?: BadgeVariant;
+    className?: string;
 }
 
-const Badge = ({ children, variant = "default" }: BadgeProps) => {
+const Badge = ({ children, variant = "default", className }: BadgeProps) => {
     return (
-        <span className={`${styles.badge} ${styles[variant]}`}>
+        <span className={`${styles.badge} ${styles[variant]} ${className}`}>
             {children}
         </span>
     );

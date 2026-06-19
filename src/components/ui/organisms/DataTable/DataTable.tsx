@@ -43,7 +43,7 @@ const DataTable = <T,>({
                                     className={styles.th}
                                     style={{
                                         ...(col.width ? { width: col.width } : {}),
-                                        ...(col.align ? { textAlign: col.align } : {}),
+                                        // ...(col.align ? { textAlign: col.align } : {}),
                                     }}
                                 >
                                     {col.label}

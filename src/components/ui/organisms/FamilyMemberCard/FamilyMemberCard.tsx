@@ -9,7 +9,7 @@ import Button from "../../atoms/Button";
 import { getProxiedFileUrl } from "../../../../utils/api";
 import styles from "./FamilyMemberCard.module.css";
 
-export type FamilyMemberStatus = "Istri" | "Suami" | "Anak" | "Orang Tua" | "Kontak Darurat";
+export type FamilyMemberStatus = "Istri" | "Suami" | "Anak" | "Orang Tua" | "Kontak Darurat" | "Tanggungan Lain";
 
 export interface FamilyMemberData {
     id: number;
@@ -58,6 +58,8 @@ const getIconConfig = (status: string) => {
             return { icon: UsersRound, bgColor: "#e0d8f1", color: "#805ad5", badgeVariant: "parent" as const };
         case "Kontak Darurat":
             return { icon: Phone, bgColor: "#fff3e0", color: "#F97316", badgeVariant: "warning" as const };
+        case "Tanggungan Lain":
+            return { icon: Users, bgColor: "#e0f2f1", color: "#00796b", badgeVariant: "info" as const };
         default:
             return { icon: Users, bgColor: "#dc3545", color: "#dc3545", badgeVariant: "danger" as const };
     }

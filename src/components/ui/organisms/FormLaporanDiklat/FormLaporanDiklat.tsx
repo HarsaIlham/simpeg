@@ -96,7 +96,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         label="Nama Diklat"
                         value={namaDiklat}
                         onChange={(e) => setNamaDiklat(e.target.value)}
-                        disabled={!isEdit}
                         required
                     />
                 </div>
@@ -107,7 +106,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         label="Kategori Pegawai"
                         value={kategori}
                         onChange={(e) => setKategori(e.target.value)}
-                        disabled={!isEdit}
                         required
                         searchable
                         options={kategoriPegawaiOptions}
@@ -120,7 +118,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         id="penyelenggara"
                         name="penyelenggara"
                         label="Penyelenggara"
-                        disabled={!isEdit}
                         value={penyelenggara}
                         onChange={(e) => setPenyelenggara(e.target.value)}
                         required
@@ -133,7 +130,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         label="Jenis Diklat"
                         value={jenisDiklat}
                         onChange={(e) => setJenisDiklat(e.target.value)}
-                        disabled={!isEdit}
                         required
                         searchable
                         options={jenisDiklatOptions}
@@ -146,7 +142,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         id="jam-pelajaran"
                         name="jam-pelajaran"
                         label="Jumlah Jam Pelajaran"
-                        disabled={!isEdit}
                         value={jamPelajaran}
                         onChange={(e) => setJamPelajaran(e.target.value)}
                         onlyNumbers
@@ -158,7 +153,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         id="lokasi"
                         name="lokasi"
                         label="Lokasi"
-                        disabled={!isEdit}
                         value={tempat}
                         onChange={(e) => setTempat(e.target.value)}
                         required
@@ -172,7 +166,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         name="tanggal-mulai"
                         type="date"
                         label="Tanggal Mulai"
-                        disabled={!isEdit}
                         value={tanggalMulai}
                         onChange={(e) => setTanggalMulai(e.target.value)}
                         required
@@ -184,7 +177,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         name="tanggal-selesai"
                         type="date"
                         label="Tanggal Selesai"
-                        disabled={!isEdit}
                         value={tanggalSelesai}
                         onChange={(e) => setTanggalSelesai(e.target.value)}
                         required
@@ -198,7 +190,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         id="waktu"
                         name="waktu"
                         label="Waktu"
-                        disabled={!isEdit}
                         type="time"
                         value={waktu}
                         onChange={(e) => setWaktu(e.target.value)}
@@ -213,7 +204,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                             label="Jenis Biaya"
                             value={jenisBiaya}
                             onChange={(e) => setJenisBiaya(e.target.value)}
-                            disabled={!isEdit}
                             required
                             searchable
                             options={jenisBiayaOptions}
@@ -229,7 +219,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                     label="Total Biaya"
                     value={totalBiaya}
                     onChange={(e) => setTotalBiaya(e.target.value)}
-                    disabled={!isEdit}
                     type="text"
                     onlyNumbers
                     required
@@ -242,7 +231,7 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                         id="jenis-pelaksana"
                         name="jenis-pelaksana"
                         label="Jenis Pelaksana"
-                        disabled={!isEdit || !!initialData}
+                        disabled={!!initialData}
                         value={jenisPelaksana}
                         onChange={(e) => setJenisPelaksana(e.target.value)}
                         required

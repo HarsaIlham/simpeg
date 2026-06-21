@@ -6,6 +6,7 @@ import type {
   AnakItem,
   OrangTuaItem,
   KontakDaruratItem,
+  TanggunganLainItem,
 } from "../types/api";
 
 const BASE = "/keluarga";
@@ -149,6 +150,40 @@ export const keluargaService = {
 
   deleteKontakDarurat: async (id: number): Promise<ApiResponse<void>> => {
     const response = await apiFetch(`${BASE}/kontak-darurat/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    if (!response.ok) throw data;
+    return data;
+  },
+
+  createTanggunganLain: async (
+    payload: { nama: string; hubungan_keluarga: string; status_tanggungan?: boolean }
+  ): Promise<ApiResponse<TanggunganLainItem>> => {
+    const response = await apiFetch(`${BASE}/tanggungan-lain`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) throw data;
+    return data;
+  },
+
+  updateTanggunganLain: async (
+    id: number,
+    payload: { nama: string; hubungan_keluarga: string; status_tanggungan?: boolean }
+  ): Promise<ApiResponse<TanggunganLainItem>> => {
+    const response = await apiFetch(`${BASE}/tanggungan-lain/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) throw data;
+    return data;
+  },
+
+  deleteTanggunganLain: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await apiFetch(`${BASE}/tanggungan-lain/${id}`, {
       method: "DELETE",
     });
     const data = await response.json();

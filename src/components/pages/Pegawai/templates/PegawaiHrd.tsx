@@ -10,6 +10,8 @@ import StatCard from "../../../ui/molecules/StatCard";
 import Button from "../../../ui/atoms/Button";
 import DataTable from "../../../ui/organisms/DataTable";
 import Pagination from "../../../ui/molecules/Pagination";
+import Modal from "../../../ui/organisms/Modal";
+import Input from "../../../ui/atoms/Input";
 import { getGlobalUser } from "../../../../contexts/AuthContext";
 import { useMasterData } from "../../../../hooks/useMasterData";
 import { pegawaiService } from "../../../../services/pegawaiService";
@@ -81,6 +83,16 @@ const PegawaiHrd = () => {
     const [statusPegawai, setStatusPegawai] = useState("");
     const [profesi, setProfesi] = useState("");
 
+    // Date/Year entry filters
+    const [tahunMasuk, setTahunMasuk] = useState("");
+    const [tglMasukDari, setTglMasukDari] = useState("");
+    const [tglMasukSampai, setTglMasukSampai] = useState("");
+    const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+    const [tempTahunMasuk, setTempTahunMasuk] = useState("");
+    const [tempTglMasukDari, setTempTglMasukDari] = useState("");
+    const [tempTglMasukSampai, setTempTglMasukSampai] = useState("");
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
@@ -105,6 +117,9 @@ const PegawaiHrd = () => {
             pendidikan?: string;
             status_pegawai?: string;
             profesi?: string;
+            tahun_masuk?: string;
+            tgl_masuk_dari?: string;
+            tgl_masuk_sampai?: string;
         }
     ) => {
         setIsLoading(true);
@@ -119,6 +134,9 @@ const PegawaiHrd = () => {
                 pendidikan: filters?.pendidikan || undefined,
                 status_pegawai: filters?.status_pegawai || undefined,
                 profesi: filters?.profesi || undefined,
+                tahun_masuk: filters?.tahun_masuk || undefined,
+                tgl_masuk_dari: filters?.tgl_masuk_dari || undefined,
+                tgl_masuk_sampai: filters?.tgl_masuk_sampai || undefined,
             });
             if (response.success && response.data) {
                 const responseData = response.data as any;
@@ -166,7 +184,10 @@ const PegawaiHrd = () => {
         pendidikan: pendidikan || undefined,
         status_pegawai: statusPegawai || undefined,
         profesi: profesi || undefined,
-    }), [searchValue, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi]);
+        tahun_masuk: tahunMasuk || undefined,
+        tgl_masuk_dari: tglMasukDari || undefined,
+        tgl_masuk_sampai: tglMasukSampai || undefined,
+    }), [searchValue, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
 
     useEffect(() => {
         fetchPegawai(1);
@@ -354,10 +375,19 @@ const PegawaiHrd = () => {
 
                 <div className={styles.filterRight}>
                     <Button
-                        label="Tahun masuk"
-                        variant="primary"
+                        label={
+                            tahunMasuk || tglMasukDari || tglMasukSampai 
+                            ? "Filter Masuk: Aktif" 
+                            : "Tahun masuk"
+                        }
+                        variant={tahunMasuk || tglMasukDari || tglMasukSampai ? "success" : "primary"}
                         size="sm"
-                        onClick={() => { }}
+                        onClick={() => {
+                            setTempTahunMasuk(tahunMasuk);
+                            setTempTglMasukDari(tglMasukDari);
+                            setTempTglMasukSampai(tglMasukSampai);
+                            setIsDateModalOpen(true);
+                        }}
                     />
                 </div>
 
@@ -391,6 +421,91 @@ const PegawaiHrd = () => {
                     itemName="pegawai"
                 />
             </>
+
+            {isDateModalOpen && (
+                <Modal
+                    title="Filter Tanggal / Tahun Masuk Pegawai"
+                    isOpen={isDateModalOpen}
+                    onClose={() => setIsDateModalOpen(false)}
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div>
+                            <Input
+                                id="filter-tahun-masuk"
+                                name="tahun_masuk"
+                                label="Berdasarkan Tahun Masuk"
+                                placeholder="Contoh: 2026"
+                                type="text"
+                                onlyNumbers={true}
+                                value={tempTahunMasuk}
+                                onChange={(e) => {
+                                    setTempTahunMasuk(e.target.value);
+                                    if (e.target.value) {
+                                        setTempTglMasukDari("");
+                                        setTempTglMasukSampai("");
+                                    }
+                                }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <div style={{ flex: 1 }}>
+                                <Input
+                                    id="filter-tgl-masuk-dari"
+                                    name="tgl_masuk_dari"
+                                    label="Dari Tanggal"
+                                    type="date"
+                                    value={tempTglMasukDari}
+                                    onChange={(e) => {
+                                        setTempTglMasukDari(e.target.value);
+                                        if (e.target.value) {
+                                            setTempTahunMasuk("");
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <Input
+                                    id="filter-tgl-masuk-sampai"
+                                    name="tgl_masuk_sampai"
+                                    label="Sampai Tanggal"
+                                    type="date"
+                                    value={tempTglMasukSampai}
+                                    onChange={(e) => {
+                                        setTempTglMasukSampai(e.target.value);
+                                        if (e.target.value) {
+                                            setTempTahunMasuk("");
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                            <Button
+                                label="Reset Filter"
+                                variant="secondary"
+                                type="button"
+                                onClick={() => {
+                                    setTahunMasuk("");
+                                    setTglMasukDari("");
+                                    setTglMasukSampai("");
+                                    setIsDateModalOpen(false);
+                                }}
+                            />
+                            <Button
+                                label="Terapkan"
+                                variant="primary"
+                                type="button"
+                                onClick={() => {
+                                    setTahunMasuk(tempTahunMasuk);
+                                    setTglMasukDari(tempTglMasukDari);
+                                    setTglMasukSampai(tempTglMasukSampai);
+                                    setIsDateModalOpen(false);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </>
     );
 };

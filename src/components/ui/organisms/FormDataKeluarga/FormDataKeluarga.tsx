@@ -10,6 +10,7 @@ import type { PasanganFormPayload } from "./FormPasangan/FormPasangan";
 import type { AnakFormPayload } from "./FormAnak/FormAnak";
 import type { OrangTuaFormPayload } from "./FormOrangTua/FormOrangTua";
 import type { KontakDaruratFormPayload } from "./FormKontakDarurat/FormKontakDarurat";
+import type { TanggunganLainFormPayload } from "./FormTanggunganLain/FormTanggunganLain";
 
 type JenisKeluarga = "" | "Suami" | "Istri" | "Orang Tua" | "Anak" | "Kontak Darurat" | "Tanggungan Lain";
 
@@ -17,7 +18,8 @@ export type FormKeluargaSubmitPayload =
     | { type: "pasangan"; data: PasanganFormPayload }
     | { type: "anak"; data: AnakFormPayload }
     | { type: "orang_tua"; data: OrangTuaFormPayload }
-    | { type: "kontak_darurat"; data: KontakDaruratFormPayload };
+    | { type: "kontak_darurat"; data: KontakDaruratFormPayload }
+    | { type: "tanggungan_lain"; data: TanggunganLainFormPayload };
 
 interface FormDataKeluargaProps {
     onCancel: () => void;
@@ -61,6 +63,10 @@ const FormDataKeluarga = ({ onCancel, onSubmit, onTypeChange, isLoading }: FormD
         if (onSubmit) onSubmit({ type: "kontak_darurat", data });
     };
 
+    const handleTanggunganLainSubmit = (data: TanggunganLainFormPayload) => {
+        if (onSubmit) onSubmit({ type: "tanggungan_lain", data });
+    };
+
     return (
         <div className={styles.form}>
             <Select
@@ -90,7 +96,7 @@ const FormDataKeluarga = ({ onCancel, onSubmit, onTypeChange, isLoading }: FormD
                 <FormKontakDarurat onCancel={onCancel} onSubmit={handleKontakDaruratSubmit} isLoading={isLoading} />
             )}
             {jenisKeluarga === "Tanggungan Lain" && (
-                <FormTanggunganLain onCancel={onCancel} onSubmit={(e) => { e.preventDefault(); }} />
+                <FormTanggunganLain onCancel={onCancel} onSubmit={handleTanggunganLainSubmit} isLoading={isLoading} />
             )}
         </div>
     )

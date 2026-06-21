@@ -55,5 +55,26 @@ export const authService = {
 
         const responseData = await response.json();
         return responseData;
+    },
+
+    changeNik: async (newNik: string) => {
+        try {
+            const response = await apiFetch("/auth/change-nik", {
+                method: "PATCH",
+                body: JSON.stringify({
+                    nik: newNik
+                }),
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw responseData;
+            }
+
+            return responseData;
+        } catch (error) {
+            throw error;
+        }
     }
 };

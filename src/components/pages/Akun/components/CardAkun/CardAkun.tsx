@@ -12,7 +12,7 @@ export interface CardAkunData {
 
 interface CardAkunProps {
     initialData: CardAkunData;
-    onSubmit?: (data: CardAkunData) => void;
+    onSubmit?: (data: CardAkunData) => Promise<void> | void;
     onUbahPasswordClick?: () => void;
     readOnly?: boolean;
 }
@@ -39,11 +39,17 @@ const CardAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false
         setIsEditing(false);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (onSubmit) {
-            onSubmit(formData);
+            try {
+                await onSubmit(formData);
+                setIsEditing(false);
+            } catch (error) {
+                // Keep editing so user can fix the input
+            }
+        } else {
+            setIsEditing(false);
         }
-        setIsEditing(false);
     };
 
     return (

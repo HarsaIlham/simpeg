@@ -13,6 +13,9 @@ export const pegawaiService = {
     pendidikan?: string;
     status_pegawai?: string;
     profesi?: string;
+    tahun_masuk?: string;
+    tgl_masuk_dari?: string;
+    tgl_masuk_sampai?: string;
   }): Promise<ApiResponse<PegawaiListResponse>> => {
     try {
       const query = new URLSearchParams();
@@ -24,6 +27,9 @@ export const pegawaiService = {
       if (params?.pendidikan) query.set("pendidikan", params.pendidikan);
       if (params?.status_pegawai) query.set("status_pegawai", params.status_pegawai);
       if (params?.profesi) query.set("profesi", params.profesi);
+      if (params?.tahun_masuk) query.set("tahun_masuk", params.tahun_masuk);
+      if (params?.tgl_masuk_dari) query.set("tgl_masuk_dari", params.tgl_masuk_dari);
+      if (params?.tgl_masuk_sampai) query.set("tgl_masuk_sampai", params.tgl_masuk_sampai);
       const qs = query.toString();
       const url = qs ? `${BASE_URL}?${qs}` : BASE_URL;
 

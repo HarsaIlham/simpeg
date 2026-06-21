@@ -18,6 +18,8 @@ import FormOrangTua from "../../ui/organisms/FormDataKeluarga/FormOrangTua";
 import type { OrangTuaFormPayload } from "../../ui/organisms/FormDataKeluarga/FormOrangTua/FormOrangTua";
 import FormKontakDarurat from "../../ui/organisms/FormDataKeluarga/FormKontakDarurat";
 import type { KontakDaruratFormPayload } from "../../ui/organisms/FormDataKeluarga/FormKontakDarurat/FormKontakDarurat";
+import FormTanggunganLain from "../../ui/organisms/FormDataKeluarga/FormTanggunganLain";
+import type { TanggunganLainFormPayload } from "../../ui/organisms/FormDataKeluarga/FormTanggunganLain/FormTanggunganLain";
 import Popup from "../../ui/molecules/Popup";
 // import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal";
 import { keluargaService } from "../../../services/keluargaService";
@@ -28,6 +30,7 @@ import type {
     AnakItem,
     OrangTuaItem,
     KontakDaruratItem,
+    TanggunganLainItem,
 } from "../../../types/api";
 
 const transformPasangan = (item: PasanganItem): FamilyMemberData => ({
@@ -82,6 +85,14 @@ const transformKontakDarurat = (item: KontakDaruratItem): FamilyMemberData => ({
     hubunganKeluarga: item.hubungan_keluarga,
     nomorHp: item.nomor_hp,
     alamat: item.alamat || undefined,
+});
+
+const transformTanggunganLain = (item: TanggunganLainItem): FamilyMemberData => ({
+    id: item.id,
+    nama: item.nama,
+    status: "Tanggungan Lain",
+    tanggungan: !!item.status_tanggungan,
+    hubunganKeluarga: item.hubungan_keluarga,
 });
 
 const buildPasanganFormData = (payload: PasanganFormPayload): FormData => {
@@ -181,6 +192,7 @@ const DataKeluarga = () => {
             ...(rincian.anak ?? []).map(transformAnak),
             ...(rincian.orang_tua ?? []).map(transformOrangTua),
             ...(rincian.kontak_darurat ?? []).map(transformKontakDarurat),
+            ...(rincian.tanggungan_lain ?? []).map(transformTanggunganLain),
         ]
         : [];
 
@@ -223,6 +235,15 @@ const DataKeluarga = () => {
                     if (nomor_hp) jsonPayload.nomor_hp = nomor_hp;
                     if (alamat) jsonPayload.alamat = alamat;
                     await keluargaService.createKontakDarurat(jsonPayload);
+                    break;
+                }
+                case "tanggungan_lain": {
+                    const { nama, hubungan_keluarga, status_tanggungan } = payload.data;
+                    await keluargaService.createTanggunganLain({
+                        nama,
+                        hubungan_keluarga,
+                        status_tanggungan,
+                    });
                     break;
                 }
             }
@@ -312,6 +333,26 @@ const DataKeluarga = () => {
             await keluargaService.updateKontakDarurat(editingMember.id, jsonPayload);
             setEditingMember(null);
             showPopup("success", "Berhasil", "Data kontak darurat berhasil diperbarui.");
+            await fetchData();
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            showPopup("error", "Gagal Memperbarui", error?.message || "Terjadi kesalahan saat memperbarui data.");
+        } finally {
+            setIsMutating(false);
+        }
+    };
+
+    const handleEditTanggunganLain = async (payload: TanggunganLainFormPayload) => {
+        if (!editingMember) return;
+        setIsMutating(true);
+        try {
+            await keluargaService.updateTanggunganLain(editingMember.id, {
+                nama: payload.nama,
+                hubungan_keluarga: payload.hubungan_keluarga,
+                status_tanggungan: payload.status_tanggungan,
+            });
+            setEditingMember(null);
+            showPopup("success", "Berhasil", "Data tanggungan lain berhasil diperbarui.");
             await fetchData();
         } catch (err: unknown) {
             const error = err as { message?: string };
@@ -430,6 +471,20 @@ const DataKeluarga = () => {
                         }}
                         onCancel={handleCloseEdit}
                         onSubmit={handleEditKontakDarurat}
+                        isLoading={isMutating}
+                    />
+                );
+
+            case "Tanggungan Lain":
+                return (
+                    <FormTanggunganLain
+                        initialData={{
+                            nama: editingMember.nama,
+                            hubungan_keluarga: editingMember.hubunganKeluarga || "",
+                            status_tanggungan: editingMember.tanggungan,
+                        }}
+                        onCancel={handleCloseEdit}
+                        onSubmit={handleEditTanggunganLain}
                         isLoading={isMutating}
                     />
                 );

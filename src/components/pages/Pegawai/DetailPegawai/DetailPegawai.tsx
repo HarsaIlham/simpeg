@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { User, GraduationCap, TrendingUp, ArrowLeft, ContactRound } from "lucide-react";
 
@@ -115,6 +115,14 @@ const transformKontakDarurat = (item: any): FamilyMemberData => ({
     hubunganKeluarga: item.hubungan_keluarga || "",
     nomorHp: item.nomor_hp || item.no_hp || "",
     alamat: item.alamat || undefined,
+});
+
+const transformTanggunganLain = (item: any): FamilyMemberData => ({
+    id: item.id,
+    nama: item.nama || "",
+    status: "Tanggungan Lain",
+    tanggungan: !!item.status_tanggungan,
+    hubunganKeluarga: item.hubungan || item.hubungan_keluarga || "",
 });
 
 
@@ -236,9 +244,14 @@ const DetailPegawai = () => {
     const [pendidikanList, setPendidikanList] = useState<CardPendidikanData[]>([]);
     const [pangkatList, setPangkatList] = useState<CardPangkatData[]>([]);
 
-    const fetchDetail = useCallback(async () => {
+    const hasLoadedRef = useRef(false);
+
+    const fetchDetail = useCallback(async (silent: boolean = false) => {
         if (!id) return;
-        setIsLoading(true);
+        const shouldShowLoading = !silent && !hasLoadedRef.current;
+        if (shouldShowLoading) {
+            setIsLoading(true);
+        }
         setError(null);
         try {
             const response = await pegawaiService.getById(Number(id));
@@ -274,13 +287,17 @@ const DetailPegawai = () => {
                     ...(keluarga.anak || []).map(transformAnak),
                     ...(keluarga.pasangan || []).map(transformPasangan),
                     ...(keluarga.orang_tua || []).map(transformOrangTua),
+                    ...(keluarga.tanggungan_lain || []).map(transformTanggunganLain),
                 ]);
+                hasLoadedRef.current = true;
             }
         } catch (err: unknown) {
             const errorObj = err as { message?: string };
             setError(errorObj?.message || "Gagal mengambil data pegawai.");
         } finally {
-            setIsLoading(false);
+            if (shouldShowLoading) {
+                setIsLoading(false);
+            }
         }
     }, [id]);
 
@@ -333,13 +350,15 @@ const DetailPegawai = () => {
                                 statusPegawai={statusPegawai}
                                 pegawaiMeta={pegawaiMeta}
                                 isAdmin={isAdmin}
+                                pegawaiId={Number(id)}
+                                onRefresh={fetchDetail}
                             />
                         )}
                         {activeTab === "diklat" && (
                             <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={fetchDetail} />
                         )}
                         {activeTab === "keluarga" && (
-                            <TabKeluarga keluargaList={keluargaList} isAdmin={isAdmin} onRefresh={fetchDetail} />
+                            <TabKeluarga keluargaList={keluargaList} isAdmin={isAdmin} pegawaiId={Number(id)} onRefresh={fetchDetail} />
                         )}
                         {activeTab === "riwayat" && (
                             <TabRiwayat
@@ -350,6 +369,7 @@ const DetailPegawai = () => {
                                 penugasanList={penugasanList}
                                 pendidikanList={pendidikanList}
                                 isAdmin={isAdmin}
+                                pegawaiId={Number(id)}
                                 onRefresh={fetchDetail}
                             />
                         )}

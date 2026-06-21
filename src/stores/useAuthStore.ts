@@ -17,6 +17,7 @@ interface AuthState {
   login: (userData: User, tokenData: string) => void;
   logout: () => void;
   initialize: () => void;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -27,6 +28,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem("simpeg_user", JSON.stringify(userData));
     localStorage.setItem("simpeg_token", tokenData);
     set({ user: userData, token: tokenData });
+  },
+  updateUser: (userData) => {
+    set((state) => {
+      if (!state.user) return {};
+      const updatedUser = { ...state.user, ...userData };
+      localStorage.setItem("simpeg_user", JSON.stringify(updatedUser));
+      return { user: updatedUser };
+    });
   },
   logout: async () => {
     try {

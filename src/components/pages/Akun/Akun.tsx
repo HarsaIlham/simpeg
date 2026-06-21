@@ -9,6 +9,7 @@ import Popup from "../../ui/molecules/Popup";
 import styles from "./Akun.module.css";
 import { getGlobalUser } from "../../../contexts/AuthContext";
 import { authService } from "../../../services/authService";
+import { useAuthStore } from "../../../stores/useAuthStore";
 
 const Akun = () => {
     const user = getGlobalUser();
@@ -28,14 +29,31 @@ const Akun = () => {
         message: "",
     });
 
-    const handleFormSubmit = (data: CardAkunData) => {
-        setUsername(data.username);
-        setPopupConfig({
-            variant: "success",
-            title: "Data Akun Diperbarui",
-            message: "Username berhasil diperbarui secara lokal.",
-        });
-        setIsPopupOpen(true);
+    const handleFormSubmit = async (data: CardAkunData) => {
+        if (data.username === (user?.nik || "")) {
+            return;
+        }
+
+        try {
+            await authService.changeNik(data.username);
+            useAuthStore.getState().updateUser({ nik: data.username });
+            setUsername(data.username);
+            setPopupConfig({
+                variant: "success",
+                title: "Data Akun Diperbarui",
+                message: "Username (NIK) berhasil diperbarui.",
+            });
+            setIsPopupOpen(true);
+        } catch (error: any) {
+            setPopupConfig({
+                variant: "error",
+                title: "Gagal Memperbarui Akun",
+                message: error?.message || "Terjadi kesalahan saat memperbarui username.",
+            });
+            setIsPopupOpen(true);
+            // Re-throw so CardAkun can keep the editing state open for the user to correct it
+            throw error;
+        }
     };
 
     const handleUbahPasswordClick = () => {

@@ -84,13 +84,18 @@ const pendidikanOptions = [
 ];
 
 const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading = false, readOnly = false, isAdd = false }: FormProfileProps) => {
-    const { options: golonganRuangOptions } = useMasterData("golonganRuang", undefined, [
+    const { options: golonganRuangOptions, items: golonganRuangItems } = useMasterData("golonganRuang", "Pilih Golongan Ruang", [
         { value: "Golongan I", label: "Golongan I" },
         { value: "Golongan II", label: "Golongan II" },
         { value: "Golongan III", label: "Golongan III" },
         { value: "Golongan IV", label: "Golongan IV" },
-    ]);
+    ], true);
+    const { options: jenisPegawaiOptions, items: jenisPegawaiItems } = useMasterData("jenisPegawai", "Pilih Jenis Pegawai", [], true);
+    const { options: profesiOptions, items: profesiItems } = useMasterData("profesi", "Pilih Profesi", [], true);
+    const { options: unitKerjaOptions, items: unitKerjaItems } = useMasterData("unitKerja", "Pilih Unit Kerja", [], true);
+
     const [isEditing, setIsEditing] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState<propsType>(initialData);
     const [previewDoc, setPreviewDoc] = useState<{ label: string; url: string; fieldName: string } | null>(null);
     const [uploadDoc, setUploadDoc] = useState<{ label: string; fieldName: string } | null>(null);
@@ -98,8 +103,21 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
     const docFileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        setFormData(initialData);
-    }, [initialData]);
+        const mapToId = (val: string, itemsList: any[]) => {
+            if (!val) return "";
+            if (/^\d+$/.test(val)) return val;
+            const found = itemsList.find(item => item.nama.toLowerCase() === val.toLowerCase());
+            return found ? String(found.id) : val;
+        };
+
+        setFormData({
+            ...initialData,
+            jenisPegawai: mapToId(initialData.jenisPegawai, jenisPegawaiItems),
+            profesi: mapToId(initialData.profesi, profesiItems),
+            golonganRuang: mapToId(initialData.golonganRuang, golonganRuangItems),
+            unitKerja: mapToId(initialData.unitKerja, unitKerjaItems),
+        });
+    }, [initialData, jenisPegawaiItems, profesiItems, golonganRuangItems, unitKerjaItems]);
 
     const masaKerja = useMemo(() => hitungMasaKerja(formData.tanggalMasuk), [formData.tanggalMasuk]);
 
@@ -127,11 +145,20 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
         setIsEditing(false);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (onSubmit) {
-            onSubmit(formData);
+            setIsSubmitting(true);
+            try {
+                await onSubmit(formData);
+                setIsEditing(false);
+            } catch (err) {
+                console.error("Gagal menyimpan profil:", err);
+            } finally {
+                setIsSubmitting(false);
+            }
+        } else {
+            setIsEditing(false);
         }
-        setIsEditing(false);
     };
 
     const handleDocUploadClick = () => {
@@ -160,16 +187,18 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                         {isEditing ? (
                             <>
                                 <Button
-                                    label={isAdd ? "Simpan" : "Ajukan Perubahan"}
+                                    label={isSubmitting ? "Menyimpan..." : (isAdd ? "Simpan" : "Ajukan Perubahan")}
                                     icon={<Send size={16} />}
                                     variant="primary"
                                     onClick={handleSubmit}
+                                    disabled={isSubmitting}
                                 />
                                 <Button
                                     label="Batal"
                                     icon={<X size={16} />}
                                     variant="light"
                                     onClick={handleCancel}
+                                    disabled={isSubmitting}
                                 />
                             </>
                         ) : (
@@ -371,13 +400,14 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     disabled
                 />
 
-                <Input
+                <Select
                     bgColor="#E6F4EE"
                     label="Profesi"
                     name="profesi"
                     id="profesi"
+                    options={profesiOptions}
                     value={formData.profesi}
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                     disabled={!isEditing}
                 />
 
@@ -392,33 +422,35 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                 />
 
                 <Select
-                    bgColor={isEditing ? undefined : "#E6F4EE"}
+                    bgColor="#E6F4EE"
                     label="Golongan Ruang"
                     name="golonganRuang"
                     id="golonganRuang"
                     options={golonganRuangOptions}
                     value={formData.golonganRuang}
                     onChange={handleSelectChange}
-                    disabled
+                    disabled={!isEditing || !isAdd}
                 />
 
-                <Input
+                <Select
                     bgColor="#E6F4EE"
                     label="Unit Kerja"
                     name="unitKerja"
                     id="unitKerja"
+                    options={unitKerjaOptions}
                     value={formData.unitKerja}
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                     disabled={!isEditing}
                 />
 
-                <Input
+                <Select
                     bgColor="#E6F4EE"
                     label="Jenis Pegawai"
                     name="jenisPegawai"
                     id="jenisPegawai"
+                    options={jenisPegawaiOptions}
                     value={formData.jenisPegawai}
-                    onChange={handleInputChange}
+                    onChange={handleSelectChange}
                     disabled={!isEditing}
                 />
 

@@ -17,6 +17,7 @@ import Textarea from "../../ui/atoms/Textarea";
 import PhotoPreview from "../../ui/molecules/PhotoPreview";
 import { profileService } from "../../../services/profileService";
 import type { ProfileData, UpdateProfileRequest } from "../../../types/api";
+import { useMasterData } from "../../../hooks/useMasterData";
 
 const mapProfileToFormData = (profile: ProfileData): propsType => ({
     namaLengkap: profile.nama,
@@ -67,7 +68,20 @@ const unmapStatusKawin = (status: string | null | undefined): string => {
     return statusMap[status] || status.toLowerCase();
 };
 
-const unmapFormDataToProfile = (formData: propsType): Partial<ProfileData> => ({
+const translateIdToName = (idVal: string, itemsList: any[]) => {
+    if (!idVal) return "";
+    if (!/^\d+$/.test(idVal)) return idVal; // already a label
+    const found = itemsList.find(item => String(item.id) === idVal);
+    return found ? found.nama : idVal;
+};
+
+const unmapFormDataToProfile = (
+    formData: propsType,
+    jenisPegawaiList: any[],
+    profesiList: any[],
+    golonganRuangList: any[],
+    unitKerjaList: any[]
+): Partial<ProfileData> => ({
     nama: formData.namaLengkap,
     nip: formData.nip,
     nik: formData.nik,
@@ -80,10 +94,10 @@ const unmapFormDataToProfile = (formData: propsType): Partial<ProfileData> => ({
     pendidikan_terakhir: formData.pendidikanTerakhir,
     jabatan_sekarang: formData.jabatan,
     pangkat: formData.pangkat,
-    profesi: formData.profesi,
-    unit_kerja: formData.unitKerja,
-    golongan_ruang: formData.golonganRuang,
-    jenis_pegawai: formData.jenisPegawai,
+    profesi: translateIdToName(formData.profesi, profesiList),
+    unit_kerja: translateIdToName(formData.unitKerja, unitKerjaList),
+    golongan_ruang: translateIdToName(formData.golonganRuang, golonganRuangList),
+    jenis_pegawai: translateIdToName(formData.jenisPegawai, jenisPegawaiList),
     alamat: formData.alamat,
     tgl_masuk: formData.tanggalMasuk,
     tmt_cpns: formData.tmtCpns,
@@ -93,10 +107,17 @@ const unmapFormDataToProfile = (formData: propsType): Partial<ProfileData> => ({
     link_kk: formData.kartuKeluarga || undefined,
 });
 
-const getChangedFields = (initial: propsType, current: propsType): Partial<ProfileData> => {
+const getChangedFields = (
+    initial: propsType,
+    current: propsType,
+    jenisPegawaiList: any[],
+    profesiList: any[],
+    golonganRuangList: any[],
+    unitKerjaList: any[]
+): Partial<ProfileData> => {
     const changes: Partial<ProfileData> = {};
-    const unmappedCurrent = unmapFormDataToProfile(current);
-    const unmappedInitial = unmapFormDataToProfile(initial);
+    const unmappedCurrent = unmapFormDataToProfile(current, jenisPegawaiList, profesiList, golonganRuangList, unitKerjaList);
+    const unmappedInitial = unmapFormDataToProfile(initial, jenisPegawaiList, profesiList, golonganRuangList, unitKerjaList);
 
     (Object.keys(unmappedCurrent) as Array<keyof typeof unmappedCurrent>).forEach((key) => {
         if (unmappedCurrent[key] !== unmappedInitial[key]) {
@@ -112,6 +133,11 @@ const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 const Profil = () => {
+    const { items: golonganRuangItems } = useMasterData("golonganRuang", undefined, [], true);
+    const { items: jenisPegawaiItems } = useMasterData("jenisPegawai", undefined, [], true);
+    const { items: profesiItems } = useMasterData("profesi", undefined, [], true);
+    const { items: unitKerjaItems } = useMasterData("unitKerja", undefined, [], true);
+
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupConfig, setPopupConfig] = useState({
         variant: "success" as "success" | "error" | "warning",
@@ -238,7 +264,14 @@ const Profil = () => {
     const handleSubmitChange = (newData: propsType) => {
         if (!profileData) return;
 
-        const changedFields = getChangedFields(profileData, newData);
+        const changedFields = getChangedFields(
+            profileData,
+            newData,
+            jenisPegawaiItems,
+            profesiItems,
+            golonganRuangItems,
+            unitKerjaItems
+        );
 
         if (Object.keys(changedFields).length === 0) {
             setPopupConfig({

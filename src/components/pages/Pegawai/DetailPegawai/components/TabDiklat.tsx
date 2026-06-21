@@ -41,6 +41,7 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
     };
 
     const handleTambahDiklat = () => {
+        setSelectedDiklat(null);
         setIsModalOpen(true);
     };
 

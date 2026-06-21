@@ -529,11 +529,22 @@ export interface KontakDaruratItem {
   alamat: string | null;
 }
 
+export interface TanggunganLainItem {
+  id: number;
+  pegawai_pribadi_id: number;
+  nama: string;
+  hubungan_keluarga: string;
+  status_tanggungan: number | boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface KeluargaRincian {
   pasangan: PasanganItem[];
   anak: AnakItem[];
   orang_tua: OrangTuaItem[];
   kontak_darurat: KontakDaruratItem[];
+  tanggungan_lain: TanggunganLainItem[];
 }
 
 export interface KeluargaRingkasanResponse {

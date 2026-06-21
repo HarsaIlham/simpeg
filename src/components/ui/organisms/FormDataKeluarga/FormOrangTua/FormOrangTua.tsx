@@ -20,7 +20,6 @@ interface FormOrangTuaProps {
 }
 
 const statusOptions = [
-    { value: "", label: "Pilih Status" },
     { value: "Hidup", label: "Masih Hidup" },
     { value: "Meninggal", label: "Meninggal" },
 ];

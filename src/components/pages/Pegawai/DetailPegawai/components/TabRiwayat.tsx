@@ -33,6 +33,7 @@ import { pangkatService } from "../../../../../services/pangkatService";
 import { strService } from "../../../../../services/strService";
 import { sipService } from "../../../../../services/sipService";
 import { penugasanKlinisService } from "../../../../../services/penugasanKlinisService";
+import { hrdPegawaiService } from "../../../../../services/hrdPegawaiService";
 
 import styles from "../DetailPegawai.module.css";
 
@@ -54,6 +55,7 @@ interface TabRiwayatProps {
     pendidikanList: CardPendidikanData[];
     pangkatList?: CardPangkatData[];
     isAdmin?: boolean;
+    pegawaiId?: number;
     onRefresh?: () => void;
     isLoadingJabatan?: boolean;
     isLoadingStr?: boolean;
@@ -84,6 +86,7 @@ const TabRiwayat = ({
     pendidikanList,
     pangkatList = [],
     isAdmin = false,
+    pegawaiId,
     onRefresh,
     isLoadingJabatan,
     isLoadingStr,
@@ -209,12 +212,22 @@ const TabRiwayat = ({
     const handleSubmitPendidikan = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            if (selectedPendidikan) {
-                await pendidikanService.update(selectedPendidikan.id, formData);
-                showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil diupdate.");
+            if (pegawaiId) {
+                if (selectedPendidikan) {
+                    await hrdPegawaiService.updatePendidikan(pegawaiId, selectedPendidikan.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil diupdate.");
+                } else {
+                    await hrdPegawaiService.createPendidikan(pegawaiId, formData);
+                    showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil ditambahkan.");
+                }
             } else {
-                await pendidikanService.create(formData);
-                showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil ditambahkan.");
+                if (selectedPendidikan) {
+                    await pendidikanService.update(selectedPendidikan.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil diupdate.");
+                } else {
+                    await pendidikanService.create(formData);
+                    showFeedback("success", "Berhasil", "Riwayat pendidikan berhasil ditambahkan.");
+                }
             }
             setIsModalOpen(false);
             clearSelections();
@@ -229,12 +242,22 @@ const TabRiwayat = ({
     const handleSubmitJabatan = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            if (selectedJabatan) {
-                await jabatanService.update(selectedJabatan.id, formData);
-                showFeedback("success", "Berhasil", "Riwayat jabatan berhasil diupdate.");
+            if (pegawaiId) {
+                if (selectedJabatan) {
+                    await hrdPegawaiService.updateJabatan(pegawaiId, selectedJabatan.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat jabatan berhasil diupdate.");
+                } else {
+                    await hrdPegawaiService.createJabatan(pegawaiId, formData);
+                    showFeedback("success", "Berhasil", "Riwayat jabatan berhasil ditambahkan.");
+                }
             } else {
-                await jabatanService.create(formData);
-                showFeedback("success", "Berhasil", "Riwayat jabatan berhasil ditambahkan.");
+                if (selectedJabatan) {
+                    await jabatanService.update(selectedJabatan.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat jabatan berhasil diupdate.");
+                } else {
+                    await jabatanService.create(formData);
+                    showFeedback("success", "Berhasil", "Riwayat jabatan berhasil ditambahkan.");
+                }
             }
             setIsModalOpen(false);
             clearSelections();
@@ -249,12 +272,22 @@ const TabRiwayat = ({
     const handleSubmitPangkat = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            if (selectedPangkat) {
-                await pangkatService.update(selectedPangkat.id, formData);
-                showFeedback("success", "Berhasil", "Riwayat pangkat berhasil diupdate.");
+            if (pegawaiId) {
+                if (selectedPangkat) {
+                    await hrdPegawaiService.updatePangkat(pegawaiId, selectedPangkat.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat pangkat berhasil diupdate.");
+                } else {
+                    await hrdPegawaiService.createPangkat(pegawaiId, formData);
+                    showFeedback("success", "Berhasil", "Riwayat pangkat berhasil ditambahkan.");
+                }
             } else {
-                await pangkatService.create(formData);
-                showFeedback("success", "Berhasil", "Riwayat pangkat berhasil ditambahkan.");
+                if (selectedPangkat) {
+                    await pangkatService.update(selectedPangkat.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat pangkat berhasil diupdate.");
+                } else {
+                    await pangkatService.create(formData);
+                    showFeedback("success", "Berhasil", "Riwayat pangkat berhasil ditambahkan.");
+                }
             }
             setIsModalOpen(false);
             clearSelections();
@@ -270,21 +303,41 @@ const TabRiwayat = ({
         setIsSubmitting(true); setServerErrors(undefined);
         const isStr = strsipType === "STR" || !!selectedStr;
         try {
-            if (isStr) {
-                if (selectedStr) {
-                    await strService.update(selectedStr.id, formData);
-                    showFeedback("success", "Berhasil", "Riwayat STR berhasil diupdate.");
+            if (pegawaiId) {
+                if (isStr) {
+                    if (selectedStr) {
+                        await hrdPegawaiService.updateStr(pegawaiId, selectedStr.id, formData);
+                        showFeedback("success", "Berhasil", "Riwayat STR berhasil diupdate.");
+                    } else {
+                        await hrdPegawaiService.createStr(pegawaiId, formData);
+                        showFeedback("success", "Berhasil", "Riwayat STR berhasil ditambahkan.");
+                    }
                 } else {
-                    await strService.create(formData);
-                    showFeedback("success", "Berhasil", "Riwayat STR berhasil ditambahkan.");
+                    if (selectedSip) {
+                        await hrdPegawaiService.updateSip(pegawaiId, selectedSip.id, formData);
+                        showFeedback("success", "Berhasil", "Riwayat SIP berhasil diupdate.");
+                    } else {
+                        await hrdPegawaiService.createSip(pegawaiId, formData);
+                        showFeedback("success", "Berhasil", "Riwayat SIP berhasil ditambahkan.");
+                    }
                 }
             } else {
-                if (selectedSip) {
-                    await sipService.update(selectedSip.id, formData);
-                    showFeedback("success", "Berhasil", "Riwayat SIP berhasil diupdate.");
+                if (isStr) {
+                    if (selectedStr) {
+                        await strService.update(selectedStr.id, formData);
+                        showFeedback("success", "Berhasil", "Riwayat STR berhasil diupdate.");
+                    } else {
+                        await strService.create(formData);
+                        showFeedback("success", "Berhasil", "Riwayat STR berhasil ditambahkan.");
+                    }
                 } else {
-                    await sipService.create(formData);
-                    showFeedback("success", "Berhasil", "Riwayat SIP berhasil ditambahkan.");
+                    if (selectedSip) {
+                        await sipService.update(selectedSip.id, formData);
+                        showFeedback("success", "Berhasil", "Riwayat SIP berhasil diupdate.");
+                    } else {
+                        await sipService.create(formData);
+                        showFeedback("success", "Berhasil", "Riwayat SIP berhasil ditambahkan.");
+                    }
                 }
             }
             setIsModalOpen(false);
@@ -300,12 +353,22 @@ const TabRiwayat = ({
     const handleSubmitPenugasan = async (formData: FormData) => {
         setIsSubmitting(true); setServerErrors(undefined);
         try {
-            if (selectedPenugasan) {
-                await penugasanKlinisService.update(selectedPenugasan.id, formData);
-                showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil diupdate.");
+            if (pegawaiId) {
+                if (selectedPenugasan) {
+                    await hrdPegawaiService.updatePenugasanKlinis(pegawaiId, selectedPenugasan.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil diupdate.");
+                } else {
+                    await hrdPegawaiService.createPenugasanKlinis(pegawaiId, formData);
+                    showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil ditambahkan.");
+                }
             } else {
-                await penugasanKlinisService.create(formData);
-                showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil ditambahkan.");
+                if (selectedPenugasan) {
+                    await penugasanKlinisService.update(selectedPenugasan.id, formData);
+                    showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil diupdate.");
+                } else {
+                    await penugasanKlinisService.create(formData);
+                    showFeedback("success", "Berhasil", "Riwayat penugasan klinis berhasil ditambahkan.");
+                }
             }
             setIsModalOpen(false);
             clearSelections();

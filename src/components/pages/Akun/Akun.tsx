@@ -8,6 +8,7 @@ import Modal from "../../ui/organisms/Modal";
 import Popup from "../../ui/molecules/Popup";
 import styles from "./Akun.module.css";
 import { getGlobalUser } from "../../../contexts/AuthContext";
+import { authService } from "../../../services/authService";
 
 const Akun = () => {
     const user = getGlobalUser();
@@ -41,14 +42,19 @@ const Akun = () => {
         setIsPasswordModalOpen(true);
     };
 
-    const handlePasswordSubmit = (oldPw: string, newPw: string, confirmPw: string) => {
-        setIsPasswordModalOpen(false);
-        setPopupConfig({
-            variant: "success",
-            title: "Kata Sandi Diperbarui",
-            message: "Kata sandi Anda berhasil diperbarui secara lokal.",
-        });
-        setIsPopupOpen(true);
+    const handlePasswordSubmit = async (oldPw: string, newPw: string, confirmPw: string) => {
+        try {
+            await authService.changePassword(oldPw, newPw, confirmPw);
+            setIsPasswordModalOpen(false);
+            setPopupConfig({
+                variant: "success",
+                title: "Kata Sandi Diperbarui",
+                message: "Kata sandi Anda berhasil diperbarui.",
+            });
+            setIsPopupOpen(true);
+        } catch (error: any) {
+            throw error;
+        }
     };
 
     return (

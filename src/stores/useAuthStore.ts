@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { authService } from "../services/authService";
 
 export type UserRole = "admin" | "pegawai" | "hrd" | "direktur";
 
@@ -27,10 +28,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.setItem("simpeg_token", tokenData);
     set({ user: userData, token: tokenData });
   },
-  logout: () => {
-    localStorage.removeItem("simpeg_user");
-    localStorage.removeItem("simpeg_token");
-    set({ user: null, token: null });
+  logout: async () => {
+    try {
+      await authService.logout();
+    } finally {
+      localStorage.removeItem("simpeg_user");
+      localStorage.removeItem("simpeg_token");
+      set({ user: null, token: null });
+    }
   },
   initialize: () => {
     const storedUser = localStorage.getItem("simpeg_user");

@@ -2,6 +2,7 @@ import { useState } from "react";
 import Input from "../../atoms/Input";
 import Button from "../../atoms/Button";
 import styles from "./FormGantiPassword.module.css";
+import { Eye, EyeOff } from "lucide-react";
 
 interface FormGantiPasswordProps {
     onSubmit: (oldPw: string, newPw: string, confirmPw: string) => Promise<void> | void;
@@ -9,6 +10,8 @@ interface FormGantiPasswordProps {
 }
 
 const FormGantiPassword = ({ onSubmit, onCancel }: FormGantiPasswordProps) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPassword2, setShowPassword2] = useState(false);
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,8 +27,8 @@ const FormGantiPassword = ({ onSubmit, onCancel }: FormGantiPasswordProps) => {
             return;
         }
 
-        if (newPassword.length < 6) {
-            setPasswordError("Kata sandi baru minimal 6 karakter.");
+        if (newPassword.length < 8) {
+            setPasswordError("Kata sandi baru minimal 8 karakter.");
             return;
         }
 
@@ -76,11 +79,17 @@ const FormGantiPassword = ({ onSubmit, onCancel }: FormGantiPasswordProps) => {
                     label="Kata Sandi Baru"
                     name="newPassword"
                     id="newPassword"
-                    type="password"
-                    placeholder="Minimal 6 karakter"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Minimal 8 karakter"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
+                    rightNode={
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className={styles.eyeBtn}>
+                            {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                        </button>
+                    }
+
                 />
             </div>
 
@@ -90,11 +99,16 @@ const FormGantiPassword = ({ onSubmit, onCancel }: FormGantiPasswordProps) => {
                     label="Konfirmasi Kata Sandi Baru"
                     name="confirmPassword"
                     id="confirmPassword"
-                    type="password"
+                    type={showPassword2 ? 'text' : 'password'}
                     placeholder="Ulangi kata sandi baru"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    rightNode={
+                        <button type="button" onClick={() => setShowPassword2(!showPassword2)} className={styles.eyeBtn}>
+                            {showPassword2 ? <Eye size={18} /> : <EyeOff size={18} />}
+                        </button>
+                    }
                 />
             </div>
 

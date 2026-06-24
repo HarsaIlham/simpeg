@@ -8,6 +8,7 @@ import type { NotifVariant } from "../../molecules/NotificationItem/Notification
 import { notificationService } from "../../../../services/notificationService";
 import { useSidebar } from "../../../../contexts/SidebarContext";
 import type { Notifikasi } from "../../../../types/api";
+import { getGlobalUser } from "../../../../contexts/AuthContext";
 
 interface propsType {
   title: string;
@@ -46,6 +47,8 @@ const formatRelativeTime = (dateStr: string): string => {
 };
 
 const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
+  const user = getGlobalUser();
+  const isAdmin = user?.role.toLowerCase() === "admin";
   const { openMobile } = useSidebar();
   const [isOpen, setIsOpen] = useState(false);
   const [localNotifs, setLocalNotifs] = useState<Notifikasi[]>([]);
@@ -97,14 +100,16 @@ const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
       </div>
 
       <div className={styles.notifContainer} ref={dropdownRef}>
-        <button
-          className={styles.notifBtn}
-          aria-label="Notifications"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <Bell size={20} />
-          {unreadCount > 0 && <span className={styles.notifBadge}>{unreadCount}</span>}
-        </button>
+        {!isAdmin && (
+          <button
+            className={styles.notifBtn}
+            aria-label="Notifications"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && <span className={styles.notifBadge}>{unreadCount}</span>}
+          </button>
+        )}
 
         {isOpen && (
           <div className={styles.dropdown}>

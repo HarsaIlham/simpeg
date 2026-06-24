@@ -18,6 +18,8 @@ import PhotoPreview from "../../ui/molecules/PhotoPreview";
 import { profileService } from "../../../services/profileService";
 import type { ProfileData, UpdateProfileRequest } from "../../../types/api";
 import { useMasterData } from "../../../hooks/useMasterData";
+import FormGantiPassword from "../../ui/organisms/FormGantiPassword";
+import { authService } from "../../../services/authService";
 
 const mapProfileToFormData = (profile: ProfileData): propsType => ({
     namaLengkap: profile.nama,
@@ -157,6 +159,8 @@ const Profil = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [myChangeRequests, setMyChangeRequests] = useState<ChangeRequestData[]>([]);
 
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
     const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
     const [isDocUploading, setIsDocUploading] = useState(false);
 
@@ -206,6 +210,10 @@ const Profil = () => {
 
     const handleUploadClick = () => {
         fileInputRef.current?.click();
+    };
+
+    const handleChangePasswordClick = () => {
+        setIsPasswordModalOpen(true);
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -361,6 +369,21 @@ const Profil = () => {
         }
     };
 
+    const handlePasswordSubmit = async (oldPw: string, newPw: string, confirmPw: string) => {
+        try {
+            await authService.changePassword(oldPw, newPw, confirmPw);
+            setIsPasswordModalOpen(false);
+            setPopupConfig({
+                variant: "success",
+                title: "Kata Sandi Diperbarui",
+                message: "Kata sandi Anda berhasil diperbarui.",
+            });
+            setIsPopupOpen(true);
+        } catch (error: any) {
+            throw error;
+        }
+    };
+
     const submitChangeRequest = async () => {
         if (!noteText.trim()) return;
 
@@ -467,6 +490,12 @@ const Profil = () => {
                     />
 
                     <ChangeRequestCard requests={myChangeRequests} />
+                    <Button
+                        className={styles.passwordButton}
+                        label="Ubah Password"
+                        variant="transparant"
+                        onClick={handleChangePasswordClick}
+                    />
                 </div>
 
 
@@ -532,6 +561,17 @@ const Profil = () => {
                         />
                     </div>
                 </div>
+            </Modal>
+
+            <Modal
+                isOpen={isPasswordModalOpen}
+                onClose={() => setIsPasswordModalOpen(false)}
+                title="Ubah Password"
+            >
+                <FormGantiPassword
+                    onSubmit={handlePasswordSubmit}
+                    onCancel={() => setIsPasswordModalOpen(false)}
+                />
             </Modal>
 
             <Popup

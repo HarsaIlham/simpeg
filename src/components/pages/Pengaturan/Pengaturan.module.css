@@ -1,0 +1,233 @@
+.settingsLayout {
+    width: 100%;
+    margin-top: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* WhatsApp Card */
+.waCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.waCardHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.waCardIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.waCardHeaderText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.waCardTitle {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.waCardSubtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+/* Status Badge */
+.statusRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.statusConnected {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.statusDisconnected {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.statusUnconfigured {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.statusDotGreen {
+    background-color: #10B981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.statusDotRed {
+    background-color: #EF4444;
+}
+
+.statusDotYellow {
+    background-color: #F59E0B;
+}
+
+.deviceInfo {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.expDate {
+    font-size: var(--font-size-sm);
+    color: #F59E0B;
+}
+
+/* Token Form */
+.tokenForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.tokenInputGroup {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-end;
+}
+
+.tokenInputWrapper {
+    flex: 1;
+}
+
+.tokenActions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+}
+
+.eyeBtn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.helpText {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.helpLink {
+    color: var(--color-primary);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.helpLink:hover {
+    color: #0f5a3a;
+}
+
+/* Info Box */
+.infoBox {
+    display: flex;
+    gap: var(--spacing-md);
+    background-color: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.infoBoxIcon {
+    color: #3B82F6;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.infoBoxContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.infoBoxTitle {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: #1E40AF;
+    margin: 0;
+}
+
+.infoBoxText {
+    font-size: var(--font-size-xs);
+    color: #1E40AF;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.loadingState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-md);
+}
+
+.errorState {
+    color: #EF4444;
+    font-size: var(--font-size-md);
+    padding: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .tokenInputGroup {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tokenActions {
+        justify-content: flex-end;
+    }
+
+    .statusRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

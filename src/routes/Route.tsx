@@ -15,6 +15,7 @@ import ValidasiDokumen from "../components/pages/ValidasiDokumen";
 import VerifikasiKelayakan from "../components/pages/VerifikasiKelayakan";
 import Pegawai from "../components/pages/Pegawai";
 import DetailPegawai from "../components/pages/Pegawai/DetailPegawai";
+import Pengaturan from "../components/pages/Pengaturan";
 
 const routes: RouteObject[] = [
     {
@@ -75,6 +76,10 @@ const routes: RouteObject[] = [
                     {
                         path: "pegawai/:id",
                         element: <DetailPegawai />,
+                    },
+                    {
+                        path: "pengaturan",
+                        element: <Pengaturan />,
                     },
                 ],
             }

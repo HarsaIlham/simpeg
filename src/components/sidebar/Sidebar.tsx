@@ -9,11 +9,13 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useSidebar } from "../../contexts/SidebarContext";
 import { profileService } from "../../services/profileService";
 import { getProxiedFileUrl } from "../../utils/api";
+import Popup from "../ui/molecules/Popup";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const { isCollapsed, isMobileOpen, toggleCollapse, closeMobile } = useSidebar();
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   
   useEffect(() => {
     if (!user) return;
@@ -71,7 +73,7 @@ const Sidebar = () => {
           ))}
         </nav>
         <div className={styles.footer}>
-          <button className={styles.footerBtn} onClick={logout}>
+          <button className={styles.footerBtn} onClick={() => setShowLogoutConfirm(true)}>
             <LogOut size={18} />
             {!isCollapsed && <span>Keluar</span>}
           </button>
@@ -89,6 +91,18 @@ const Sidebar = () => {
           </button>
         </div>
       </aside>
+
+      <Popup
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        variant="warning"
+        title="Konfirmasi Keluar"
+        message="Apakah Anda yakin ingin keluar dari aplikasi SIMPEG?"
+        confirmLabel="Keluar"
+        cancelLabel="Batal"
+        onConfirm={logout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </>
   );
 };

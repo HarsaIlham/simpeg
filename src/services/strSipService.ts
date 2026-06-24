@@ -1,5 +1,5 @@
 import { apiFetch } from "../utils/api";
-import type { ApiResponse } from "../types/api";
+import type { ApiResponse, PaginatedResponse } from "../types/api";
 
 export interface StrSipHrdItem {
     id: number;
@@ -26,14 +26,56 @@ export interface StrSipHrdSummary {
 
 export interface StrSipHrdResponseData {
     summary: StrSipHrdSummary;
-    items: StrSipHrdItem[];
+    items: PaginatedResponse<StrSipHrdItem>;
 }
 
 export const strSipService = {
-    getStrSipData: async (): Promise<ApiResponse<StrSipHrdResponseData>> => {
+    getStrSipData: async (params?: {
+        page?: number;
+        per_page?: number;
+        search?: string;
+        jenis?: string;
+        status?: string;
+    }): Promise<ApiResponse<StrSipHrdResponseData>> => {
         try {
-            const response = await apiFetch("/str-sip", {
+            const queryParams = new URLSearchParams();
+            if (params?.page) queryParams.append("page", String(params.page));
+            if (params?.per_page) queryParams.append("per_page", String(params.per_page));
+            if (params?.search) queryParams.append("search", params.search);
+            if (params?.jenis) queryParams.append("jenis", params.jenis);
+            if (params?.status) queryParams.append("status", params.status);
+
+            const queryString = queryParams.toString();
+            const url = `/str-sip${queryString ? `?${queryString}` : ""}`;
+
+            const response = await apiFetch(url, {
                 method: "GET",
+            });
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw responseData;
+            }
+
+            return responseData;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    sendReminderStrSip: async (
+        pegawaiId: number,
+        tipeDokumen: "str" | "sip",
+        dokumenId: number
+    ): Promise<ApiResponse> => {
+        try {
+            const response = await apiFetch(`/hrd/pegawai/${pegawaiId}/reminder/str-sip`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    tipe_dokumen: tipeDokumen,
+                    dokumen_id: dokumenId,
+                }),
             });
             const responseData = await response.json();
 

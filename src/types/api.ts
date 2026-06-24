@@ -558,6 +558,7 @@ export type StrSipStatus = "aktif" | "hampir_habis" | "tidak_aktif";
 
 export interface StrSipRecord {
   id: number;
+  pegawaiId: number;
   nama: string;
   nip: string;
   profesi: string;

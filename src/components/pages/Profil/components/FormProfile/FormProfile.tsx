@@ -141,7 +141,20 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
     };
 
     const handleCancel = () => {
-        setFormData(initialData);
+        const mapToId = (val: string, itemsList: any[]) => {
+            if (!val) return "";
+            if (/^\d+$/.test(val)) return val;
+            const found = itemsList.find(item => item.nama.toLowerCase() === val.toLowerCase());
+            return found ? String(found.id) : val;
+        };
+
+        setFormData({
+            ...initialData,
+            jenisPegawai: mapToId(initialData.jenisPegawai, jenisPegawaiItems),
+            profesi: mapToId(initialData.profesi, profesiItems),
+            golonganRuang: mapToId(initialData.golonganRuang, golonganRuangItems),
+            unitKerja: mapToId(initialData.unitKerja, unitKerjaItems),
+        });
         setIsEditing(false);
     };
 
@@ -429,7 +442,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     options={golonganRuangOptions}
                     value={formData.golonganRuang}
                     onChange={handleSelectChange}
-                    disabled={!isEditing || !isAdd}
+                    disabled={!isEditing}
                 />
 
                 <Select

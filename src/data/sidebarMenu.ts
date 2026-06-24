@@ -8,6 +8,7 @@ import {
   GraduationCap,
   NotebookPen,
   Wrench,
+  Settings,
 } from "lucide-react";
 import type { SidebarMenuItem } from "../types/sidebar";
 
@@ -31,6 +32,13 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     label: "Akun",
     icon: Wrench,
     path: "/akun",
+    allowedRoles: ["admin"],
+  },
+  {
+    id: "pengaturan",
+    label: "Pengaturan",
+    icon: Settings,
+    path: "/pengaturan",
     allowedRoles: ["admin"],
   },
   {
@@ -98,3 +106,4 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
   // },
 
 ];
+

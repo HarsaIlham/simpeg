@@ -131,7 +131,7 @@ const RiwayatKarir = () => {
 
 
   const [pendidikanList, setPendidikanList] = useState<CardPendidikanData[]>([]);
-  const [isLoadingPendidikan, setIsLoadingPendidikan] = useState(true);
+  const [isLoadingPendidikan, setIsLoadingPendidikan] = useState(false);
   const [errorPendidikan, setErrorPendidikan] = useState<string | null>(null);
   const [selectedPendidikan, setSelectedPendidikan] = useState<CardPendidikanData | null>(null);
 
@@ -154,8 +154,6 @@ const RiwayatKarir = () => {
     }
   }, []);
 
-  useEffect(() => { fetchPendidikan(); }, [fetchPendidikan]);
-
   const handleSubmitPendidikan = async (formData: FormData) => {
     setIsSubmitting(true); setServerErrors(undefined);
     try {
@@ -175,7 +173,7 @@ const RiwayatKarir = () => {
   };
 
   const [jabatanList, setJabatanList] = useState<CardJabatanData[]>([]);
-  const [isLoadingJabatan, setIsLoadingJabatan] = useState(true);
+  const [isLoadingJabatan, setIsLoadingJabatan] = useState(false);
   const [errorJabatan, setErrorJabatan] = useState<string | null>(null);
   const [selectedJabatan, setSelectedJabatan] = useState<CardJabatanData | null>(null);
 
@@ -191,8 +189,6 @@ const RiwayatKarir = () => {
       setErrorJabatan(errorObj?.message || "Terjadi kesalahan saat mengambil data jabatan.");
     } finally { setIsLoadingJabatan(false); }
   }, []);
-
-  useEffect(() => { fetchJabatan(); }, [fetchJabatan]);
 
   const handleSubmitJabatan = async (formData: FormData) => {
     setIsSubmitting(true); setServerErrors(undefined);
@@ -214,7 +210,7 @@ const RiwayatKarir = () => {
 
 
   const [pangkatList, setPangkatList] = useState<CardPangkatData[]>([]);
-  const [isLoadingPangkat, setIsLoadingPangkat] = useState(true);
+  const [isLoadingPangkat, setIsLoadingPangkat] = useState(false);
   const [errorPangkat, setErrorPangkat] = useState<string | null>(null);
   const [selectedPangkat, setSelectedPangkat] = useState<CardPangkatData | null>(null);
 
@@ -230,8 +226,6 @@ const RiwayatKarir = () => {
       setErrorPangkat(errorObj?.message || "Terjadi kesalahan saat mengambil data pangkat.");
     } finally { setIsLoadingPangkat(false); }
   }, []);
-
-  useEffect(() => { fetchPangkat(); }, [fetchPangkat]);
 
   const handleSubmitPangkat = async (formData: FormData) => {
     setIsSubmitting(true); setServerErrors(undefined);
@@ -254,7 +248,7 @@ const RiwayatKarir = () => {
   //STR
 
   const [strList, setStrList] = useState<CardStrData[]>([]);
-  const [isLoadingStr, setIsLoadingStr] = useState(true);
+  const [isLoadingStr, setIsLoadingStr] = useState(false);
   const [errorStr, setErrorStr] = useState<string | null>(null);
   const [selectedStr, setSelectedStr] = useState<CardStrData | null>(null);
 
@@ -274,7 +268,7 @@ const RiwayatKarir = () => {
   //SIP
 
   const [sipList, setSipList] = useState<CardSipData[]>([]);
-  const [isLoadingSip, setIsLoadingSip] = useState(true);
+  const [isLoadingSip, setIsLoadingSip] = useState(false);
   const [errorSip, setErrorSip] = useState<string | null>(null);
   const [selectedSip, setSelectedSip] = useState<CardSipData | null>(null);
 
@@ -290,8 +284,6 @@ const RiwayatKarir = () => {
       setErrorSip(errorObj?.message || "Terjadi kesalahan saat mengambil data SIP.");
     } finally { setIsLoadingSip(false); }
   }, []);
-
-  useEffect(() => { fetchStr(); fetchSip(); }, [fetchStr, fetchSip]);
 
   const handleSubmitStrSip = async (formData: FormData) => {
     setIsSubmitting(true); setServerErrors(undefined);
@@ -325,7 +317,7 @@ const RiwayatKarir = () => {
   };
 
   const [penugasanList, setPenugasanList] = useState<CardPenugasanKlinisData[]>([]);
-  const [isLoadingPenugasan, setIsLoadingPenugasan] = useState(true);
+  const [isLoadingPenugasan, setIsLoadingPenugasan] = useState(false);
   const [errorPenugasan, setErrorPenugasan] = useState<string | null>(null);
   const [selectedPenugasan, setSelectedPenugasan] = useState<CardPenugasanKlinisData | null>(null);
 
@@ -342,7 +334,23 @@ const RiwayatKarir = () => {
     } finally { setIsLoadingPenugasan(false); }
   }, []);
 
-  useEffect(() => { fetchPenugasan(); }, [fetchPenugasan]);
+  const [fetchedTabs, setFetchedTabs] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (fetchedTabs[activeTab]) return;
+
+    if (activeTab === "pendidikan") {
+      fetchPendidikan().then(() => setFetchedTabs((prev) => ({ ...prev, pendidikan: true })));
+    } else if (activeTab === "jabatan") {
+      fetchJabatan().then(() => setFetchedTabs((prev) => ({ ...prev, jabatan: true })));
+    } else if (activeTab === "pangkat") {
+      fetchPangkat().then(() => setFetchedTabs((prev) => ({ ...prev, pangkat: true })));
+    } else if (activeTab === "str-sip") {
+      Promise.all([fetchStr(), fetchSip()]).then(() => setFetchedTabs((prev) => ({ ...prev, "str-sip": true })));
+    } else if (activeTab === "penugasan") {
+      fetchPenugasan().then(() => setFetchedTabs((prev) => ({ ...prev, penugasan: true })));
+    }
+  }, [activeTab, fetchPendidikan, fetchJabatan, fetchPangkat, fetchStr, fetchSip, fetchPenugasan, fetchedTabs]);
 
   const handleSubmitPenugasan = async (formData: FormData) => {
     setIsSubmitting(true); setServerErrors(undefined);

@@ -56,7 +56,7 @@ const FormPendidikan = ({
         const formData = new FormData();
         formData.append("jenjang", jenjang);
         formData.append("institusi", institusi);
-        formData.append("jurusan", jurusanEnabled ? jurusan : "");
+        formData.append("jurusan", jurusanEnabled ? jurusan : "-");
         formData.append("tahun_lulus", tahunLulus);
 
         if (nomorIjazah) {
@@ -83,7 +83,7 @@ const FormPendidikan = ({
                         onChange={(e) => {
                             const val = e.target.value;
                             setJenjang(val);
-                            if (val === "SD" || val === "SMP") {
+                            if (val === "SD" || val === "SMP" || val === "SMA") {
                                 setJurusan("-");
                             } else if (jurusan === "-") {
                                 setJurusan("");

@@ -364,21 +364,6 @@ const StrSip = () => {
         },
     ], [filterJenis, filterStatus]);
 
-    if (isLoading) {
-        return (
-            <>
-                <Topbar title="STR/SIP" />
-                <MainHeaderSection
-                    title="STR/SIP"
-                    subtitle="Manajemen STR (Surat Tanda Registrasi) dan SIP (Surat Izin Praktik)"
-                />
-                <Card>
-                    <p style={{ color: "#6b7280", fontSize: "16px" }}>Memuat data STR/SIP...</p>
-                </Card>
-            </>
-        );
-    }
-
     if (error) {
         return (
             <>
@@ -438,14 +423,22 @@ const StrSip = () => {
                     variant="red"
                 />
             </div>
-
-            <DataTable
-                columns={columns}
-                data={allData}
-                rowKey={(row) => `${row.jenis}-${row.id}`}
-                emptyMessage={`Tidak ada data ${filterJenis ? `"${filterJenis}"` : "STR/SIP"} yang ${filterStatus ? `statusnya "${filterStatus}"` : ""}.`}
-                maxVisibleRows={10}
-            />
+            <div>
+                {(isLoading ? (
+                    <div className={styles.centeredState}>
+                        <div className={styles.spinner} />
+                        <p className={styles.stateText}>Memuat data STR/SIP...</p>
+                    </div>
+                ) : (
+                    <DataTable
+                        columns={columns}
+                        data={allData}
+                        rowKey={(row) => `${row.jenis}-${row.id}`}
+                        emptyMessage={`Tidak ada data ${filterJenis ? `"${filterJenis}"` : "STR/SIP"} yang ${filterStatus ? `statusnya "${filterStatus}"` : ""}.`}
+                        maxVisibleRows={10}
+                    />
+                ))}
+            </div>
 
             <Pagination
                 currentPage={currentPage}

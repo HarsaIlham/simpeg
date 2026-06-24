@@ -48,6 +48,35 @@
     font-size: var(--font-size-sm);
 }
 
+.centeredState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 0;
+    gap: var(--spacing-md);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--color-border, #e0e0e0);
+    border-top-color: var(--color-primary, #16a34a);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.stateText {
+    color: var(--color-text-secondary, #6b7280);
+    font-size: var(--font-size-sm, 0.875rem);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @media (max-width: 1024px) {
     .statsRow {
         grid-template-columns: repeat(2, 1fr);

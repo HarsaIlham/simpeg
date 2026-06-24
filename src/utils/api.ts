@@ -25,7 +25,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     if (response.status === 401) {
         localStorage.removeItem("simpeg_user");
         localStorage.removeItem("simpeg_token");
-        
+
         if (window.location.pathname !== "/login") {
             window.location.href = "/login";
         }

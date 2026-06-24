@@ -391,7 +391,7 @@ const PegawaiHrd = () => {
                     />
                 </div>
 
-                <div className={styles.tableWrapper}>
+                <div>
                     {isLoading ? (
                         <div className={styles.centeredState}>
                             <div className={styles.spinner} />

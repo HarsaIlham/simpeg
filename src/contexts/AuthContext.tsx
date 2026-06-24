@@ -44,6 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAuth = () => {
-  const { user, token, login, logout, isLoading } = useAuthStore();
-  return { user, token, login, logout, isLoading };
+  const { user, token, login, logout, isLoading, updateUser, profile, setProfile } = useAuthStore();
+  return { user, token, login, logout, isLoading, updateUser, profile, setProfile };
 };

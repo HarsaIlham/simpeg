@@ -20,6 +20,7 @@ import type { ProfileData, UpdateProfileRequest } from "../../../types/api";
 import { useMasterData } from "../../../hooks/useMasterData";
 import FormGantiPassword from "../../ui/organisms/FormGantiPassword";
 import { authService } from "../../../services/authService";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const mapProfileToFormData = (profile: ProfileData): propsType => ({
     namaLengkap: profile.nama,
@@ -135,6 +136,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 const Profil = () => {
+    const { updateUser, profile, setProfile } = useAuth();
     const { items: golonganRuangItems } = useMasterData("golonganRuang", undefined, [], true);
     const { items: jenisPegawaiItems } = useMasterData("jenisPegawai", undefined, [], true);
     const { items: profesiItems } = useMasterData("profesi", undefined, [], true);
@@ -168,22 +170,25 @@ const Profil = () => {
 
     const fetchProfile = async () => {
         try {
-            setIsLoading(true);
+            if (!profile) {
+                setIsLoading(true);
+            }
             setError(null);
             const response = await profileService.getProfile();
 
             if (response.success && response.data) {
-                const { profile } = response.data;
-                setProfileData(mapProfileToFormData(profile));
-                setPhotoUrl(profile.link_photo_profile);
-                setStatusPegawai(profile.status_pegawai);
+                const fetchedProfile = response.data.profile;
+                setProfile(fetchedProfile);
+                setProfileData(mapProfileToFormData(fetchedProfile));
+                setPhotoUrl(fetchedProfile.link_photo_profile);
+                setStatusPegawai(fetchedProfile.status_pegawai);
 
-                if (profile.status_perubahan && profile.status_perubahan.status) {
-                    const statusStr = profile.status_perubahan.status;
+                if (fetchedProfile.status_perubahan && fetchedProfile.status_perubahan.status) {
+                    const statusStr = fetchedProfile.status_perubahan.status;
                     setMyChangeRequests([{
-                        id: `req-${profile.status_perubahan.last_update}`,
-                        title: `Pengajuan ${profile.status_perubahan.fitur}`,
-                        date: profile.status_perubahan.last_update,
+                        id: `req-${fetchedProfile.status_perubahan.last_update}`,
+                        title: `Pengajuan ${fetchedProfile.status_perubahan.fitur}`,
+                        date: fetchedProfile.status_perubahan.last_update,
                         statusLabel: statusStr.charAt(0).toUpperCase() + statusStr.slice(1),
                         statusVariant: statusStr === "pending" ? "warning" : statusStr === "approved" ? "success" : "danger",
                     }]);
@@ -193,7 +198,9 @@ const Profil = () => {
             }
         } catch (err: unknown) {
             const apiError = err as { message?: string };
-            setError(apiError.message || "Gagal memuat data profil.");
+            if (!profile) {
+                setError(apiError.message || "Gagal memuat data profil.");
+            }
             console.error("Error fetching profile:", err);
         } finally {
             setIsLoading(false);
@@ -201,6 +208,25 @@ const Profil = () => {
     };
 
     useEffect(() => {
+        if (profile) {
+            setProfileData(mapProfileToFormData(profile));
+            setPhotoUrl(profile.link_photo_profile);
+            setStatusPegawai(profile.status_pegawai);
+
+            if (profile.status_perubahan && profile.status_perubahan.status) {
+                const statusStr = profile.status_perubahan.status;
+                setMyChangeRequests([{
+                    id: `req-${profile.status_perubahan.last_update}`,
+                    title: `Pengajuan ${profile.status_perubahan.fitur}`,
+                    date: profile.status_perubahan.last_update,
+                    statusLabel: statusStr.charAt(0).toUpperCase() + statusStr.slice(1),
+                    statusVariant: statusStr === "pending" ? "warning" : statusStr === "approved" ? "success" : "danger",
+                }]);
+            } else {
+                setMyChangeRequests([]);
+            }
+            setIsLoading(false);
+        }
         fetchProfile();
     }, []);
 
@@ -246,8 +272,13 @@ const Profil = () => {
             setIsUploading(true);
             const response = await profileService.uploadProfilePhoto(file);
 
-            if (response.success && response.data) {
-                setPhotoUrl(response.data.link_photo_profile);
+             if (response.success && response.data) {
+                const newPhotoUrl = response.data.link_photo_profile;
+                setPhotoUrl(newPhotoUrl);
+                updateUser({ avatarUrl: newPhotoUrl });
+                if (profile) {
+                    setProfile({ ...profile, link_photo_profile: newPhotoUrl });
+                }
                 setPopupConfig({
                     variant: "success",
                     title: "Foto Berhasil Diperbarui",

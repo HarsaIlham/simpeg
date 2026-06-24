@@ -34,7 +34,11 @@ const CardPendidikan = ({ data, onEdit, onDelete, onViewDocument }: CardPendidik
             onEdit={onEdit} onDelete={onDelete} enableDelete={false}
         >
             <div className={styles.header}>
-                <Text text={`${data.jenjang} - ${data.jurusan}`} weight="bold" color="default" fontSize="18px" />
+                {data.jenjang && /[a-zA-Z]/.test(data.jurusan) ? (
+                    <Text text={`${data.jenjang} - ${data.jurusan}`} weight="bold" color="default" fontSize="18px" />
+                ) : (
+                    <Text text={data.jenjang || ""} weight="bold" color="default" fontSize="18px" />
+                )}
             </div>
             <DataField label="Institusi" value={data.institusi} />
             <div className={styles.grid}>
@@ -46,7 +50,7 @@ const CardPendidikan = ({ data, onEdit, onDelete, onViewDocument }: CardPendidik
                     <Button label="Lihat Dokumen" variant="primary" onClick={() => onViewDocument(getProxiedFileUrl(data.link_ijazah))} />
                 </div>
             )}
-            
+
         </RecordCard>
     )
 }

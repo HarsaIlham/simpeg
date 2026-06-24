@@ -35,13 +35,6 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     allowedRoles: ["admin"],
   },
   {
-    id: "pengaturan",
-    label: "Pengaturan",
-    icon: Settings,
-    path: "/pengaturan",
-    allowedRoles: ["admin"],
-  },
-  {
     id: "manajemen-pegawai",
     label: "Pegawai",
     icon: Users2,
@@ -96,6 +89,13 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     icon: FileText,
     path: "/perizinan",
     allowedRoles: ["hrd", "direktur"],
+  },
+  {
+    id: "pengaturan",
+    label: "Pengaturan",
+    icon: Settings,
+    path: "/pengaturan",
+    allowedRoles: ["admin"],
   },
   // {
   //   id: "laporan-akreditasi",

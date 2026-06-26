@@ -5,6 +5,7 @@ import FormStr from "./FormStr/FormStr";
 import FormSip from "./FormSip/FormSip";
 import type { CardStrData } from "../../organisms/CardStr/CardStr";
 import type { CardSipData } from "../../organisms/CardSip/CardSip";
+import { getGlobalUser } from "../../../../contexts/AuthContext";
 
 interface FormStrsipProps {
     onCancel: () => void;
@@ -29,9 +30,10 @@ const FormStrsip = ({
     isSubmitting,
     serverErrors,
     forceType,
-    isPegawai = true,
 }: FormStrsipProps) => {
     const [formType, setFormType] = useState<"" | "STR" | "SIP">(forceType || "STR");
+    const user = getGlobalUser();
+    const isPegawai = user?.role.toLowerCase() === "pegawai";
 
     useEffect(() => {
         if (onTypeChange) {

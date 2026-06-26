@@ -6,7 +6,7 @@ import Button from '../../../../ui/atoms/Button';
 import styles from './LoginForm.module.css';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { authService } from '../../../../../services/authService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -87,7 +87,7 @@ const LoginForm = () => {
 
       <div className={styles.options}>
         <Checkbox id="remember" name="remember" label="Ingat Saya" />
-        <a href="#forgot" className={styles.forgotLink}>Lupa Password?</a>
+        <Link to="/forgot-password" className={styles.forgotLink}>Lupa Password?</Link>
       </div>
       <div className={styles.submitWrapper}>
         <Button

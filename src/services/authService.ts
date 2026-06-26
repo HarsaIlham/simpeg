@@ -76,5 +76,48 @@ export const authService = {
         } catch (error) {
             throw error;
         }
-    }
+    },
+
+    requestOtp: async (nik: string) => {
+        try {
+            const response = await apiFetch("/forgot-password/request-otp", {
+                method: "POST",
+                body: JSON.stringify({ nik }),
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw responseData;
+            }
+
+            return responseData;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    resetPassword: async (nik: string, otp: string, password: string, passwordConfirmation: string) => {
+        try {
+            const response = await apiFetch("/forgot-password/reset", {
+                method: "POST",
+                body: JSON.stringify({
+                    nik,
+                    otp,
+                    password,
+                    password_confirmation: passwordConfirmation,
+                }),
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw responseData;
+            }
+
+            return responseData;
+        } catch (error) {
+            throw error;
+        }
+    },
 };

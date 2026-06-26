@@ -7,6 +7,7 @@ const Home = lazy(() => import("../components/pages/Home"));
 const Profil = lazy(() => import("../components/pages/Profil"));
 const Akun = lazy(() => import("../components/pages/Akun"));
 const Login = lazy(() => import("../components/pages/Login/Login"));
+const ForgotPassword = lazy(() => import("../components/pages/ForgotPassword"));
 const DataDiklat = lazy(() => import("../components/pages/DataDiklat"));
 const DataKeluarga = lazy(() => import("../components/pages/DataKeluarga"));
 const RiwayatKarir = lazy(() => import("../components/pages/RiwayatKarir"));
@@ -93,6 +94,10 @@ const routes: RouteObject[] = [
             {
                 path: "/login",
                 element: <Login />,
+            },
+            {
+                path: "/forgot-password",
+                element: <ForgotPassword />,
             },
             // {
             //     path: "/str-sip",

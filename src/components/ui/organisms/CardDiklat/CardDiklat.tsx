@@ -46,7 +46,7 @@ interface CardDiklatProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTambahPeserta, onVerifikasi, onViewDocument}: CardDiklatProps) => {
+const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTambahPeserta, onVerifikasi, onViewDocument }: CardDiklatProps) => {
     const fullUrl = getFileUrl(data.sertifikat);
     const isVerifikasiOrValidasi = Boolean(onValidasi || onVerifikasi);
     const isInternal = data.jenisPelaksana === "internal";
@@ -73,7 +73,7 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                     <Badge variant="info">{data.kategori}</Badge>
                     {(() => {
                         const status = data.statusValidasi?.toLowerCase();
-                        if (status?.includes("valid") && !status?.includes("menunggu")) {
+                        if (status?.includes("valid") && !status?.includes("menunggu") && !status?.includes("tolak")) {
                             return <Badge variant="success">Valid</Badge>;
                         } else if (status?.includes("tolak") || status?.includes("tidak")) {
                             return <Badge variant="danger">Tidak Valid</Badge>;
@@ -89,8 +89,6 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                             return <Badge variant="success">Layak</Badge>;
                         } else if (status?.includes("tidak layak") || status?.includes("tidak")) {
                             return <Badge variant="danger">Tidak Layak</Badge>;
-                        } else if (data.hasLaporan) {
-                            return <Badge variant="warning">Menunggu Verifikasi</Badge>;
                         } else {
                             return undefined;
                         }

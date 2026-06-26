@@ -8,8 +8,6 @@ import Button from "../../../../ui/atoms/Button";
 import CardHeader from "../../../../ui/molecules/CardHeader";
 import DocumentField from "../../../../ui/molecules/DocumentField";
 import PdfViewerModal from "../../../../ui/molecules/PdfViewerModal";
-import Modal from "../../../../ui/organisms/Modal";
-import DocumentPreview from "../../../../ui/molecules/DocumentPreview";
 import { hitungMasaKerja } from "../../../../../utils/dateUtils";
 import { useMasterData } from "../../../../../hooks/useMasterData";
 import { getProxiedFileUrl } from "../../../../../utils/api";
@@ -101,6 +99,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
     const [uploadDoc, setUploadDoc] = useState<{ label: string; fieldName: string } | null>(null);
 
     const docFileInputRef = useRef<HTMLInputElement>(null);
+    const uploadTargetRef = useRef<{ label: string; fieldName: string } | null>(null);
 
     useEffect(() => {
         const mapToId = (val: string, itemsList: any[]) => {
@@ -174,19 +173,17 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
         }
     };
 
-    const handleDocUploadClick = () => {
-        docFileInputRef.current?.click();
-    };
-
     const handleDocFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !uploadDoc) return;
+        const target = uploadTargetRef.current || uploadDoc;
+        if (!file || !target) return;
         e.target.value = "";
 
         if (onDocumentUpload) {
-            const success = await onDocumentUpload(uploadDoc.fieldName, file);
+            const success = await onDocumentUpload(target.fieldName, file);
             if (success) {
                 setUploadDoc(null);
+                uploadTargetRef.current = null;
             }
         }
     };
@@ -544,8 +541,11 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                             variant="primary"
                             onClick={() => {
                                 if (previewDoc) {
-                                    setUploadDoc({ label: previewDoc.label, fieldName: previewDoc.fieldName });
+                                    uploadTargetRef.current = { label: previewDoc.label, fieldName: previewDoc.fieldName };
                                     setPreviewDoc(null);
+                                    setTimeout(() => {
+                                        docFileInputRef.current?.click();
+                                    }, 0);
                                 }
                             }}
                             disabled={isDocUploading}
@@ -553,19 +553,6 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     ) : undefined
                 }
             />
-
-            <Modal
-                isOpen={!!uploadDoc}
-                onClose={() => setUploadDoc(null)}
-                title={`Upload ${uploadDoc?.label || "Dokumen"}`}
-            >
-                <DocumentPreview
-                    imgSrc={null}
-                    altText={uploadDoc?.label}
-                    onUploadClick={handleDocUploadClick}
-                    isUploading={isDocUploading}
-                />
-            </Modal>
         </div>
     );
 };

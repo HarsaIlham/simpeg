@@ -1,0 +1,129 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.errorBox {
+    padding: 10px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.otpInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background-color: #ecfdf5;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #065f46;
+}
+
+.otpInfoIcon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.otpContainer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.otpBox {
+    width: 48px;
+    height: 56px;
+    border: 2px solid #d1d5db;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1b7a5a;
+    background-color: #f9fafc;
+    outline: none;
+    transition: all 0.2s ease;
+    caret-color: #1b7a5a;
+}
+
+.otpBox:focus {
+    border-color: #1b7a5a;
+    box-shadow: 0 0 0 3px rgba(27, 122, 90, 0.15);
+    background-color: #fff;
+}
+
+.otpBoxFilled {
+    border-color: #1b7a5a;
+    background-color: #fff;
+}
+
+.otpBox:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.timerSection {
+    text-align: center;
+}
+
+.expiryText {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.expiredText {
+    font-size: 13px;
+    color: #b91c1c;
+    font-weight: 500;
+}
+
+.submitWrapper {
+    margin-top: 4px;
+}
+
+.resendSection {
+    text-align: center;
+}
+
+.resendWait {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.resendButton {
+    background: none;
+    border: none;
+    color: #1b7a5a;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s ease;
+}
+
+.resendButton:hover {
+    color: #145e44;
+    text-decoration: underline;
+}
+
+.resendButton:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Responsive: smaller OTP boxes on narrow screens */
+@media (max-width: 400px) {
+    .otpBox {
+        width: 40px;
+        height: 48px;
+        font-size: 18px;
+    }
+
+    .otpContainer {
+        gap: 6px;
+    }
+}

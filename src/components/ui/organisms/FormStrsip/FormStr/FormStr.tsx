@@ -72,6 +72,7 @@ const FormStr = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
                         value={tanggalKadaluarsa}
                         onChange={(e) => setTanggalKadaluarsa(e.target.value)}
                         error={getFieldError("tanggal_kadaluarsa")}
+                        required={!isCurrent}
                     />
                 </div>
             </div>

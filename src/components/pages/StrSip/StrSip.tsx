@@ -58,16 +58,6 @@ const formatDate = (dateStr: string) => {
     }
 };
 
-const matchesSearch = (record: StrSipRecord, query: string) => {
-    const q = query.toLowerCase();
-    return (
-        record.nama.toLowerCase().includes(q) ||
-        record.nip.toLowerCase().includes(q) ||
-        record.nomor.toLowerCase().includes(q) ||
-        record.profesi.toLowerCase().includes(q)
-    );
-};
-
 const buildColumns = (
     onViewDocument: (docPath: string) => void,
     onSendNotification: (row: StrSipRecord) => void,

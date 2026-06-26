@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import styles from "./DataDiklat.module.css"
 import Topbar from "../../ui/organisms/Topbar/Topbar"

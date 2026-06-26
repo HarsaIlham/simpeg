@@ -15,6 +15,15 @@ export default defineConfig({
           });
         },
       },
+      // '/dokumen': {
+      //   target: 'http://be-simpeg-rskalisat.test',
+      //   changeOrigin: true,
+      //   configure: (proxy) => {
+      //     proxy.on('proxyRes', (proxyRes) => {
+      //       delete proxyRes.headers['content-disposition'];
+      //     });
+      //   },
+      // },
     },
   },
 })

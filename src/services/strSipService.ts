@@ -36,14 +36,18 @@ export const strSipService = {
         search?: string;
         jenis?: string;
         status?: string;
+        tanggal_dari?: string;
+        tanggal_sampai?: string;
     }): Promise<ApiResponse<StrSipHrdResponseData>> => {
         try {
             const queryParams = new URLSearchParams();
             if (params?.page) queryParams.append("page", String(params.page));
             if (params?.per_page) queryParams.append("per_page", String(params.per_page));
             if (params?.search) queryParams.append("search", params.search);
-            if (params?.jenis) queryParams.append("jenis", params.jenis);
+            if (params?.jenis) queryParams.append("tipe", params.jenis);
             if (params?.status) queryParams.append("status", params.status);
+            if (params?.tanggal_dari) queryParams.append("tanggal_dari", params.tanggal_dari);
+            if (params?.tanggal_sampai) queryParams.append("tanggal_sampai", params.tanggal_sampai);
 
             const queryString = queryParams.toString();
             const url = `/str-sip${queryString ? `?${queryString}` : ""}`;

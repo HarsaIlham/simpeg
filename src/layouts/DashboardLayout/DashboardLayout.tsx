@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/sidebar";
 import styles from "./DashboardLayout.module.css";
 import { SidebarProvider, useSidebar } from "../../contexts/SidebarContext";
+import PageLoader from "../../components/ui/atoms/PageLoader";
 
 const DashboardContent = () => {
   const { isCollapsed } = useSidebar();
@@ -14,7 +16,9 @@ const DashboardContent = () => {
         className={`${styles.main} ${isCollapsed ? styles.mainCollapsed : ""}`}
       >
         <div className={styles.content}>
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </div>
       </div>
     </div>

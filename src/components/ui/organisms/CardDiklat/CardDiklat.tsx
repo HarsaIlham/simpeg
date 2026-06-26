@@ -80,7 +80,19 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                         } else if (data.hasLaporan) {
                             return <Badge variant="warning">Menunggu Validasi</Badge>;
                         } else {
-                            return <Badge variant="warning">{data.statusValidasi ? data.statusValidasi : "Upload Laporan" }</Badge>;
+                            return undefined;
+                        }
+                    })()}
+                    {(() => {
+                        const status = data.statusVerifikasi?.toLowerCase();
+                        if (status?.includes("layak") && !status?.includes("menunggu")) {
+                            return <Badge variant="success">Layak</Badge>;
+                        } else if (status?.includes("tidak layak") || status?.includes("tidak")) {
+                            return <Badge variant="danger">Tidak Layak</Badge>;
+                        } else if (data.hasLaporan) {
+                            return <Badge variant="warning">Menunggu Verifikasi</Badge>;
+                        } else {
+                            return undefined;
                         }
                     })()}
                 </div>

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { NavLink } from "react-router-dom";
 import type { SidebarMenuItem } from "../../../../types/sidebar";
 import styles from "./SidebarNavItem.module.css";
@@ -7,7 +8,7 @@ interface SidebarNavItemProps {
   item: SidebarMenuItem;
 }
 
-const SidebarNavItem = ({ item }: SidebarNavItemProps) => {
+const SidebarNavItem = memo(({ item }: SidebarNavItemProps) => {
   const { isCollapsed } = useSidebar();
   const IconComponent = item.icon;
 
@@ -30,6 +31,6 @@ const SidebarNavItem = ({ item }: SidebarNavItemProps) => {
       )}
     </NavLink>
   );
-};
+});
 
 export default SidebarNavItem;

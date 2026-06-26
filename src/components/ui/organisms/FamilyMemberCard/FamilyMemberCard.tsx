@@ -1,4 +1,4 @@
-
+import { memo } from "react";
 import { Heart, Phone, UserRound, Users, UsersRound } from "lucide-react";
 import RecordCard from "../../molecules/RecordCard";
 import DataField from "../../molecules/DataField";
@@ -72,7 +72,7 @@ const formatJenisKelamin = (jk?: string) => {
     return jk;
 };
 
-const FamilyMemberCard = ({ data, onEdit, onDelete, onViewDocument }: FamilyMemberCardProps) => {
+const FamilyMemberCard = memo(({ data, onEdit, onDelete, onViewDocument }: FamilyMemberCardProps) => {
     const config = getIconConfig(data.status);
 
     let docPath: string | null = null;
@@ -124,6 +124,6 @@ const FamilyMemberCard = ({ data, onEdit, onDelete, onViewDocument }: FamilyMemb
             )}
         </RecordCard>
     );
-};
+});
 
 export default FamilyMemberCard;

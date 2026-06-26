@@ -226,9 +226,10 @@ const Profil = () => {
                 setMyChangeRequests([]);
             }
             setIsLoading(false);
+            return;
         }
         fetchProfile();
-    }, []);
+    }, [profile]);
 
     const handlePhotoClick = () => {
         setIsPhotoViewerOpen(true);
@@ -416,8 +417,6 @@ const Profil = () => {
     };
 
     const submitChangeRequest = async () => {
-        if (!noteText.trim()) return;
-
         try {
             setIsSubmitting(true);
             const payload: UpdateProfileRequest = {
@@ -565,13 +564,13 @@ const Profil = () => {
             >
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                     <p style={{ fontSize: "0.875rem", color: "#4B5563" }}>
-                        Silakan berikan catatan atau alasan untuk perubahan data profil ini.
+                        Silakan berikan catatan atau alasan untuk perubahan data profil ini (opsional).
                         Catatan ini akan dibaca oleh Admin/HRD.
                     </p>
                     <Textarea
                         id="noteText"
                         name="noteText"
-                        label="Catatan"
+                        label="Catatan (Opsional)"
                         value={noteText}
                         onChange={(e) => setNoteText(e.target.value)}
                         rows={4}
@@ -588,7 +587,7 @@ const Profil = () => {
                             label={isSubmitting ? "Mengirim..." : "Kirim Pengajuan"}
                             variant="primary"
                             onClick={submitChangeRequest}
-                            disabled={isSubmitting || !noteText.trim()}
+                            disabled={isSubmitting}
                         />
                     </div>
                 </div>

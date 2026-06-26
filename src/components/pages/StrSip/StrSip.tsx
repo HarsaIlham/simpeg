@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { FileText, CheckCircle, AlertTriangle, XCircle, Bell, Send } from "lucide-react";
+import { FileText, CheckCircle, AlertTriangle, XCircle, Send } from "lucide-react";
 import Topbar from "../../ui/organisms/Topbar/Topbar";
 import MainHeaderSection from "../../ui/molecules/MainHeaderSection";
 import FilterBar from "../../ui/molecules/FilterBar";
@@ -77,7 +77,7 @@ const buildColumns = (
         {
             key: "nama",
             label: "Nama/NIP",
-            width: "25%",
+            width: "20%",
             render: (row) => (
                 <div className={styles.nameCell}>
                     <span className={styles.nameText}>{row.nama}</span>
@@ -89,7 +89,7 @@ const buildColumns = (
         {
             key: "jenis",
             label: "Tipe",
-            width: "8%",
+            width: "7%",
             render: (row) => {
                 const { variant } = JENIS_BADGE_MAP[row.jenis];
                 return <Badge variant={variant}>{row.jenis}</Badge>;
@@ -98,8 +98,8 @@ const buildColumns = (
         {
             key: "nomor",
             label: "Nomor Dokumen",
-            width: "15%",
-            align: "left",
+            width: "25%",
+            align: "center",
             render: (row) => <span>{row.nomor}</span>,
         },
         {
@@ -194,10 +194,12 @@ const StrSip = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterJenis, setFilterJenis] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
-
+    const [filterDateFrom, setFilterDateFrom] = useState("");
+    const [filterDateTo, setFilterDateTo] = useState("");
     const [allData, setAllData] = useState<StrSipRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
     const [previewFile, setPreviewFile] = useState<{ url: string; title: string } | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -273,7 +275,14 @@ const StrSip = () => {
         }
     }, [confirmNotify.record]);
 
-    const fetchStrSipData = useCallback(async (page: number, search: string, jenis: string, status: string) => {
+    const fetchStrSipData = useCallback(async (
+        page: number,
+        search: string,
+        jenis: string,
+        status: string,
+        tanggalDari: string,
+        tanggalSampai: string
+    ) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -283,6 +292,8 @@ const StrSip = () => {
                 search: search || undefined,
                 jenis: jenis || undefined,
                 status: status || undefined,
+                tanggal_dari: tanggalDari || undefined,
+                tanggal_sampai: tanggalSampai || undefined,
             });
             if (response.success && response.data) {
                 const paginatedItems = response.data.items;
@@ -326,15 +337,12 @@ const StrSip = () => {
         };
     }, [searchQuery]);
 
-    // Reset to page 1 when filter options change
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterJenis, filterStatus]);
-
-    // Trigger fetch when dependency states change
+    }, [filterJenis, filterStatus, filterDateFrom, filterDateTo]);
     useEffect(() => {
-        fetchStrSipData(currentPage, debouncedSearch, filterJenis, filterStatus);
-    }, [currentPage, debouncedSearch, filterJenis, filterStatus, fetchStrSipData]);
+        fetchStrSipData(currentPage, debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo);
+    }, [currentPage, debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo, fetchStrSipData]);
 
     const handleViewDocument = useCallback((docPath: string) => {
         if (!docPath) return;
@@ -389,12 +397,45 @@ const StrSip = () => {
             />
 
             <Card>
-                <FilterBar
-                    searchValue={searchQuery}
-                    onSearchChange={setSearchQuery}
-                    searchPlaceholder="Cari Pegawai, NIP, Nomor STR/SIP..."
-                    filters={filters}
-                />
+                <div className={styles.filterContainer}>
+                    <FilterBar
+                        searchValue={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        searchPlaceholder="Cari Pegawai, NIP, Nomor STR/SIP..."
+                        filters={filters}
+                    />
+                    <div className={styles.dateFilters}>
+                        <div className={styles.dateInputGroup}>
+                            <span className={styles.dateLabel}>Kadaluarsa Dari:</span>
+                            <input
+                                type="date"
+                                className={styles.dateInput}
+                                value={filterDateFrom}
+                                onChange={(e) => setFilterDateFrom(e.target.value)}
+                            />
+                        </div>
+                        <div className={styles.dateInputGroup}>
+                            <span className={styles.dateLabel}>Sampai:</span>
+                            <input
+                                type="date"
+                                className={styles.dateInput}
+                                value={filterDateTo}
+                                onChange={(e) => setFilterDateTo(e.target.value)}
+                            />
+                        </div>
+                        {(filterDateFrom || filterDateTo) && (
+                            <button
+                                className={styles.clearDatesBtn}
+                                onClick={() => {
+                                    setFilterDateFrom("");
+                                    setFilterDateTo("");
+                                }}
+                            >
+                                Hapus Filter Tanggal
+                            </button>
+                        )}
+                    </div>
+                </div>
             </Card>
 
             <div className={styles.statsRow}>

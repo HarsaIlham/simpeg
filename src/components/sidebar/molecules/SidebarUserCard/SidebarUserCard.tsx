@@ -1,6 +1,4 @@
-import { User } from "lucide-react";
 import styles from "./SidebarUserCard.module.css";
-import Icon from "../../../ui/atoms/Icon";
 import { useSidebar } from "../../../../contexts/SidebarContext";
 
 interface SidebarUserCardProps {
@@ -15,10 +13,24 @@ const SidebarUserCard = ({ name, role, avatarSrc }: SidebarUserCardProps) => {
   return (
     <div className={styles.userCard}>
       <div className={styles.avatarBox}>
-        {avatarSrc ? (
+        {role.toLowerCase() === "admin" ? (
+          <div className={styles.initials}>
+            {name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()}
+          </div>
+        ) : avatarSrc ? (
           <img src={avatarSrc} alt={name} className={styles.avatarImg} />
         ) : (
-          <Icon icon={User} sizeBox="lg" sizeIcon="xs" variant="primary" rounded="full" />
+          <div className={styles.initials}>
+            {name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()}
+          </div>
         )}
       </div>
       {!isCollapsed && (

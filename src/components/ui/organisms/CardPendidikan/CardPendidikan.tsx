@@ -1,4 +1,4 @@
-
+import { memo } from "react"
 import { GraduationCap } from "lucide-react"
 import RecordCard from "../../molecules/RecordCard"
 import Icon from "../../atoms/Icon"
@@ -26,7 +26,7 @@ interface CardPendidikanProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardPendidikan = ({ data, onEdit, onDelete, onViewDocument }: CardPendidikanProps) => {
+const CardPendidikan = memo(({ data, onEdit, onDelete, onViewDocument }: CardPendidikanProps) => {
 
     return (
         <RecordCard
@@ -53,6 +53,6 @@ const CardPendidikan = ({ data, onEdit, onDelete, onViewDocument }: CardPendidik
 
         </RecordCard>
     )
-}
+});
 
 export default CardPendidikan

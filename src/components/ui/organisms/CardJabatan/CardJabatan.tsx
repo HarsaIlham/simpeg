@@ -1,4 +1,4 @@
-
+import { memo } from "react"
 import { Briefcase } from "lucide-react"
 import Badge from "../../atoms/Badge"
 import RecordCard from "../../molecules/RecordCard"
@@ -28,7 +28,7 @@ interface CardJabatanProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardJabatan = ({ data, onEdit, onDelete, onViewDocument }: CardJabatanProps) => {
+const CardJabatan = memo(({ data, onEdit, onDelete, onViewDocument }: CardJabatanProps) => {
 
     return (
         <RecordCard
@@ -52,6 +52,6 @@ const CardJabatan = ({ data, onEdit, onDelete, onViewDocument }: CardJabatanProp
             </div>
         </RecordCard>
     )
-}
+});
 
 export default CardJabatan

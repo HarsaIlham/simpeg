@@ -1,21 +1,23 @@
+import { Suspense } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import PageLoader from "../components/ui/atoms/PageLoader";
 
 export const ProtectedRoute = () => {
     const { user, isLoading } = useAuth();
 
     if (isLoading) {
-        return (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                <span>Memuat sesi...</span>
-            </div>
-        );
+        return <PageLoader />;
     }
 
     if (!user) {
         return <Navigate to="/login" replace />;
     }
-    return <Outlet />;
+    return (
+        <Suspense fallback={<PageLoader />}>
+            <Outlet />
+        </Suspense>
+    );
 };
 
 export const PublicRoute = () => {
@@ -28,5 +30,9 @@ export const PublicRoute = () => {
         return <Navigate to="/" replace />;
     }
 
-    return <Outlet />;
+    return (
+        <Suspense fallback={<PageLoader />}>
+            <Outlet />
+        </Suspense>
+    );
 };

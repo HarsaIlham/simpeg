@@ -1,7 +1,18 @@
 import { apiFetch } from "../utils/api";
-import type { ApiResponse, ProfileResponse, UploadPhotoResponse, UploadKtpResponse, UploadKkResponse, UpdateProfileRequest, UpdateProfileResponse } from "../types/api";
+import type { ApiResponse, ProfileResponse, UploadPhotoResponse, UploadKtpResponse, UploadKkResponse, UpdateProfileRequest, UpdateProfileResponse, MeResponse } from "../types/api";
 
 export const profileService = {
+
+  getMe: async (): Promise<ApiResponse<MeResponse>> => {
+    const response = await apiFetch("/me");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
+  },
 
   getProfile: async (): Promise<ApiResponse<ProfileResponse>> => {
     const response = await apiFetch("/profile");

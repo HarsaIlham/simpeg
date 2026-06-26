@@ -3,6 +3,59 @@ import type { ApiResponse } from "../types/api";
 
 const getBaseUrl = (pegawaiId: number) => `/hrd/pegawai/${pegawaiId}`;
 
+const createCrudService = (subPath: string) => {
+  return {
+    get: async (pegawaiId: number): Promise<ApiResponse<any>> => {
+      const response = await apiFetch(`${getBaseUrl(pegawaiId)}/${subPath}`);
+      const data = await response.json();
+      if (!response.ok) throw data;
+      return data;
+    },
+    create: async (pegawaiId: number, payload: any): Promise<ApiResponse<any>> => {
+      const response = await apiFetch(`${getBaseUrl(pegawaiId)}/${subPath}`, {
+        method: "POST",
+        body: payload instanceof FormData ? payload : JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) throw data;
+      return data;
+    },
+    update: async (pegawaiId: number, id: number, payload: any): Promise<ApiResponse<any>> => {
+      const isForm = payload instanceof FormData;
+      if (isForm) {
+        payload.append("_method", "PATCH");
+      }
+      const response = await apiFetch(`${getBaseUrl(pegawaiId)}/${subPath}/${id}`, {
+        method: isForm ? "POST" : "PATCH",
+        body: isForm ? payload : JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) throw data;
+      return data;
+    },
+    delete: async (pegawaiId: number, id: number): Promise<ApiResponse<any>> => {
+      const response = await apiFetch(`${getBaseUrl(pegawaiId)}/${subPath}/${id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+      if (!response.ok) throw data;
+      return data;
+    },
+  };
+};
+
+const pasangan = createCrudService("keluarga/pasangan");
+const anak = createCrudService("keluarga/anak");
+const orangTua = createCrudService("keluarga/orang-tua");
+const kontakDarurat = createCrudService("keluarga/kontak-darurat");
+const tanggunganLain = createCrudService("keluarga/tanggungan-lain");
+const jabatan = createCrudService("riwayat-karir/jabatan");
+const str = createCrudService("riwayat-karir/str");
+const sip = createCrudService("riwayat-karir/sip");
+const penugasanKlinis = createCrudService("riwayat-karir/penugasan-klinis");
+const pangkat = createCrudService("riwayat-karir/pangkat");
+const pendidikan = createCrudService("riwayat-karir/pendidikan");
+
 export const hrdPegawaiService = {
   // ==========================================
   // 21.1 Update Data Inti Pegawai
@@ -47,393 +100,69 @@ export const hrdPegawaiService = {
     return data;
   },
 
-  // ==========================================
-  // 21.3 Data Keluarga Pegawai (HRD)
-  // ==========================================
-
   // Pasangan
-  getPasangan: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/pasangan`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createPasangan: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/pasangan`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updatePasangan: async (pegawaiId: number, keluargaId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/pasangan/${keluargaId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deletePasangan: async (pegawaiId: number, keluargaId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/pasangan/${keluargaId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getPasangan: pasangan.get,
+  createPasangan: pasangan.create,
+  updatePasangan: pasangan.update,
+  deletePasangan: pasangan.delete,
 
   // Anak
-  getAnak: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/anak`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createAnak: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/anak`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateAnak: async (pegawaiId: number, keluargaId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/anak/${keluargaId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteAnak: async (pegawaiId: number, keluargaId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/anak/${keluargaId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getAnak: anak.get,
+  createAnak: anak.create,
+  updateAnak: anak.update,
+  deleteAnak: anak.delete,
 
   // Orang Tua
-  getOrangTua: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/orang-tua`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createOrangTua: async (pegawaiId: number, payload: any): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/orang-tua`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateOrangTua: async (pegawaiId: number, keluargaId: number, payload: any): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/orang-tua/${keluargaId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteOrangTua: async (pegawaiId: number, keluargaId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/orang-tua/${keluargaId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getOrangTua: orangTua.get,
+  createOrangTua: orangTua.create,
+  updateOrangTua: orangTua.update,
+  deleteOrangTua: orangTua.delete,
 
   // Kontak Darurat
-  getKontakDarurat: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/kontak-darurat`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createKontakDarurat: async (pegawaiId: number, payload: any): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/kontak-darurat`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateKontakDarurat: async (pegawaiId: number, keluargaId: number, payload: any): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/kontak-darurat/${keluargaId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteKontakDarurat: async (pegawaiId: number, keluargaId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/kontak-darurat/${keluargaId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getKontakDarurat: kontakDarurat.get,
+  createKontakDarurat: kontakDarurat.create,
+  updateKontakDarurat: kontakDarurat.update,
+  deleteKontakDarurat: kontakDarurat.delete,
 
   // Tanggungan Lain
-  getTanggunganLain: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/tanggungan-lain`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createTanggunganLain: async (pegawaiId: number, payload: any): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/tanggungan-lain`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateTanggunganLain: async (pegawaiId: number, keluargaId: number, payload: any): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/tanggungan-lain/${keluargaId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteTanggunganLain: async (pegawaiId: number, keluargaId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/keluarga/tanggungan-lain/${keluargaId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-
-  // ==========================================
-  // 21.4 Riwayat Karir Pegawai (HRD)
-  // ==========================================
+  getTanggunganLain: tanggunganLain.get,
+  createTanggunganLain: tanggunganLain.create,
+  updateTanggunganLain: tanggunganLain.update,
+  deleteTanggunganLain: tanggunganLain.delete,
 
   // Jabatan
-  getJabatan: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/jabatan`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createJabatan: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/jabatan`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateJabatan: async (pegawaiId: number, riwayatId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/jabatan/${riwayatId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteJabatan: async (pegawaiId: number, riwayatId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/jabatan/${riwayatId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getJabatan: jabatan.get,
+  createJabatan: jabatan.create,
+  updateJabatan: jabatan.update,
+  deleteJabatan: jabatan.delete,
 
   // STR
-  getStr: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/str`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createStr: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/str`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateStr: async (pegawaiId: number, riwayatId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/str/${riwayatId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteStr: async (pegawaiId: number, riwayatId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/str/${riwayatId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getStr: str.get,
+  createStr: str.create,
+  updateStr: str.update,
+  deleteStr: str.delete,
 
   // SIP
-  getSip: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/sip`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createSip: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/sip`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updateSip: async (pegawaiId: number, riwayatId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/sip/${riwayatId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deleteSip: async (pegawaiId: number, riwayatId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/sip/${riwayatId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getSip: sip.get,
+  createSip: sip.create,
+  updateSip: sip.update,
+  deleteSip: sip.delete,
 
   // Penugasan Klinis
-  getPenugasanKlinis: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/penugasan-klinis`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createPenugasanKlinis: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/penugasan-klinis`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updatePenugasanKlinis: async (pegawaiId: number, riwayatId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/penugasan-klinis/${riwayatId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deletePenugasanKlinis: async (pegawaiId: number, riwayatId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/penugasan-klinis/${riwayatId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getPenugasanKlinis: penugasanKlinis.get,
+  createPenugasanKlinis: penugasanKlinis.create,
+  updatePenugasanKlinis: penugasanKlinis.update,
+  deletePenugasanKlinis: penugasanKlinis.delete,
 
   // Pangkat
-  getPangkat: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pangkat`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createPangkat: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pangkat`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updatePangkat: async (pegawaiId: number, riwayatId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pangkat/${riwayatId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deletePangkat: async (pegawaiId: number, riwayatId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pangkat/${riwayatId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getPangkat: pangkat.get,
+  createPangkat: pangkat.create,
+  updatePangkat: pangkat.update,
+  deletePangkat: pangkat.delete,
 
   // Pendidikan
-  getPendidikan: async (pegawaiId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pendidikan`);
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  createPendidikan: async (pegawaiId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pendidikan`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  updatePendidikan: async (pegawaiId: number, riwayatId: number, formData: FormData): Promise<ApiResponse<any>> => {
-    formData.append("_method", "PATCH");
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pendidikan/${riwayatId}`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
-  deletePendidikan: async (pegawaiId: number, riwayatId: number): Promise<ApiResponse<any>> => {
-    const response = await apiFetch(`${getBaseUrl(pegawaiId)}/riwayat-karir/pendidikan/${riwayatId}`, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-    if (!response.ok) throw data;
-    return data;
-  },
+  getPendidikan: pendidikan.get,
+  createPendidikan: pendidikan.create,
+  updatePendidikan: pendidikan.update,
+  deletePendidikan: pendidikan.delete,
 };

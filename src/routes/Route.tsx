@@ -1,21 +1,23 @@
+import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
-import Home from "../components/pages/Home";
-import Profil from "../components/pages/Profil";
-import Akun from "../components/pages/Akun";
-import Login from "../components/pages/Login/Login";
-import DataDiklat from "../components/pages/DataDiklat";
-import DataKeluarga from "../components/pages/DataKeluarga";
-import RiwayatKarir from "../components/pages/RiwayatKarir";
 import { ProtectedRoute, PublicRoute } from "./ProtectedRoute";
-import StrSip from "../components/pages/StrSip";
-import DiklatPegawai from "../components/pages/DiklatPegawai";
-import PesertaDiklat from "../components/pages/DiklatPegawai/PesertaDiklat";
-import ValidasiDokumen from "../components/pages/ValidasiDokumen";
-import VerifikasiKelayakan from "../components/pages/VerifikasiKelayakan";
-import Pegawai from "../components/pages/Pegawai";
-import DetailPegawai from "../components/pages/Pegawai/DetailPegawai";
-import Pengaturan from "../components/pages/Pengaturan";
+
+const Home = lazy(() => import("../components/pages/Home"));
+const Profil = lazy(() => import("../components/pages/Profil"));
+const Akun = lazy(() => import("../components/pages/Akun"));
+const Login = lazy(() => import("../components/pages/Login/Login"));
+const DataDiklat = lazy(() => import("../components/pages/DataDiklat"));
+const DataKeluarga = lazy(() => import("../components/pages/DataKeluarga"));
+const RiwayatKarir = lazy(() => import("../components/pages/RiwayatKarir"));
+const StrSip = lazy(() => import("../components/pages/StrSip"));
+const DiklatPegawai = lazy(() => import("../components/pages/DiklatPegawai"));
+const PesertaDiklat = lazy(() => import("../components/pages/DiklatPegawai/PesertaDiklat"));
+const ValidasiDokumen = lazy(() => import("../components/pages/ValidasiDokumen"));
+const VerifikasiKelayakan = lazy(() => import("../components/pages/VerifikasiKelayakan"));
+const Pegawai = lazy(() => import("../components/pages/Pegawai"));
+const DetailPegawai = lazy(() => import("../components/pages/Pegawai/DetailPegawai"));
+const Pengaturan = lazy(() => import("../components/pages/Pengaturan"));
 
 const routes: RouteObject[] = [
     {

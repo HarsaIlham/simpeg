@@ -1,4 +1,4 @@
-
+import { memo } from "react"
 import RecordCard from "../../molecules/RecordCard"
 import Icon from "../../atoms/Icon"
 import Text from "../../atoms/Text"
@@ -25,7 +25,7 @@ interface CardStrProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardStr = ({ data, onEdit, onDelete, onViewDocument }: CardStrProps) => {
+const CardStr = memo(({ data, onEdit, onDelete, onViewDocument }: CardStrProps) => {
 
     return (
         <RecordCard
@@ -50,6 +50,6 @@ const CardStr = ({ data, onEdit, onDelete, onViewDocument }: CardStrProps) => {
             </div>
         </RecordCard>
     )
-}
+});
 
 export default CardStr

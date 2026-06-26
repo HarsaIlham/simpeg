@@ -177,8 +177,17 @@ const PegawaiHrd = () => {
         }
     }, []);
 
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchValue);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchValue]);
+
     const currentFilters = useMemo(() => ({
-        search: searchValue || undefined,
+        search: debouncedSearch || undefined,
         status_kelengkapan: statusdata || undefined,
         jenis_pegawai: jenisPegawai || undefined,
         pendidikan: pendidikan || undefined,
@@ -187,24 +196,18 @@ const PegawaiHrd = () => {
         tahun_masuk: tahunMasuk || undefined,
         tgl_masuk_dari: tglMasukDari || undefined,
         tgl_masuk_sampai: tglMasukSampai || undefined,
-    }), [searchValue, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
+    }), [debouncedSearch, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
 
     useEffect(() => {
-        fetchPegawai(1);
-    }, [fetchPegawai]);
-
+        setCurrentPage(1);
+    }, [debouncedSearch, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentPage(1);
-            fetchPegawai(1, currentFilters);
-        }, 700);
-        return () => clearTimeout(timer);
-    }, [currentFilters, fetchPegawai]);
+        fetchPegawai(currentPage, currentFilters);
+    }, [currentPage, currentFilters, fetchPegawai]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
-        fetchPegawai(page, currentFilters);
-    }, [fetchPegawai, currentFilters]);
+    }, []);
 
     const handleRoleChange = useCallback(async (id: number, newRole: "admin" | "hrd" | "direktur" | "pegawai") => {
         try {

@@ -126,21 +126,25 @@ const PegawaiAdmin = () => {
         }
     }, []);
 
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
     useEffect(() => {
-        fetchPegawai(1);
-    }, [fetchPegawai]);
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchValue);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchValue]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch]);
+    useEffect(() => {
+        fetchPegawai(currentPage, debouncedSearch);
+    }, [currentPage, debouncedSearch, fetchPegawai]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
-        fetchPegawai(page, searchValue);
-    }, [fetchPegawai, searchValue]);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentPage(1);
-            fetchPegawai(1, searchValue);
-        }, 700);
-        return () => clearTimeout(timer);
-    }, [searchValue, fetchPegawai]);
+    }, []);
 
     const handleEditClick = (pegawai: PegawaiItem) => {
         setEditingPegawai(pegawai);
@@ -163,7 +167,7 @@ const PegawaiAdmin = () => {
             if (response.success) {
                 handleModalClose();
                 showPopup("checklist", "Berhasil", `Role dan status ${editingPegawai.nama} berhasil diperbarui.`);
-                fetchPegawai(currentPage, searchValue);
+                fetchPegawai(currentPage, debouncedSearch);
             }
         } catch (err: any) {
             showPopup("error", "Gagal", err?.message || "Gagal memperbarui hak akses dan status.");
@@ -179,7 +183,7 @@ const PegawaiAdmin = () => {
             if (response.success) {
                 setIsAddModalOpen(false);
                 showPopup("checklist", "Berhasil", `Pegawai ${payload.nama} berhasil ditambahkan.`);
-                fetchPegawai(1);
+                fetchPegawai(1, debouncedSearch);
             }
         } catch (err: any) {
             let errorMsg = "Gagal menambahkan pegawai.";

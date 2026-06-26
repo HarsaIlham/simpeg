@@ -20,6 +20,13 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+export interface MeResponse {
+  nama: string | null;
+  nik: string | null;
+  foto_profil: string | null;
+  role: string;
+}
+
 export interface LoginResponse {
   token_type: string;
   access_token: string;
@@ -186,7 +193,7 @@ export interface UploadKkResponse {
 }
 
 export type UpdateProfileRequest = Partial<Omit<ProfileData, 'link_photo_profile'>> & {
-  note: string;
+  note?: string;
 };
 
 export interface UpdateProfileResponse {

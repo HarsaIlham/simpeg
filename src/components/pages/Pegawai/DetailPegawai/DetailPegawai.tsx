@@ -148,6 +148,8 @@ const mapToDiklatCards = (diklatList: any[]): CardDiklatData[] =>
         totalBiaya: null,
         penyelenggara: item.penyelenggara || "",
         uploadLaporan: item.upload_laporan || "",
+        statusValidasi: item.status_validasi || "",
+        statusVerifikasi: item.status_kelayakan || "",
     }));
 
 const mapToJabatanCards = (jabatanList: any[]): CardJabatanData[] =>
@@ -197,12 +199,12 @@ const mapToPenugasanCards = (pkList: any[]): CardPenugasanKlinisData[] =>
 const mapToPendidikanCards = (pendidikanList: any[]): CardPendidikanData[] =>
     pendidikanList.map((item) => ({
         id: item.id,
-        jenjang: item.jenjang_id || "",
-        institusi: item.institusi_id || "",
+        jenjang: item.jenjang || "",
+        institusi: item.institusi || "",
         jurusan: item.jurusan || "",
         tahun_lulus: item.tahun_lulus || "",
         nomor_ijazah: item.nomor_ijazah || "",
-        link_ijazah: item.link_ijazah || "",
+        link_ijazah: item.ijazah_file_path || "",
     }));
 
 const mapToPangkatCards = (pangkatList: any[]): CardPangkatData[] =>

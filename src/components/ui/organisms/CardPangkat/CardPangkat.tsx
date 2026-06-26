@@ -1,4 +1,4 @@
-
+import { memo } from "react";
 import { Award } from "lucide-react";
 import RecordCard from "../../molecules/RecordCard"
 import Icon from "../../atoms/Icon";
@@ -29,7 +29,7 @@ interface CardPangkatProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardPangkat = ({ data, onEdit, onDelete, onViewDocument }: CardPangkatProps) => {
+const CardPangkat = memo(({ data, onEdit, onDelete, onViewDocument }: CardPangkatProps) => {
 
     return (
         <RecordCard onDelete={onDelete} onEdit={onEdit} enableDelete={false}
@@ -53,6 +53,6 @@ const CardPangkat = ({ data, onEdit, onDelete, onViewDocument }: CardPangkatProp
             </div>
         </RecordCard>
     )
-}
+});
 
 export default CardPangkat

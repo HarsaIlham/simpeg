@@ -1,4 +1,4 @@
-
+import { memo } from "react"
 import RecordCard from "../../molecules/RecordCard"
 import Icon from "../../atoms/Icon"
 import Text from "../../atoms/Text"
@@ -27,7 +27,7 @@ interface CardSipProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardSip = ({ data, onEdit, onDelete, onViewDocument }: CardSipProps) => {
+const CardSip = memo(({ data, onEdit, onDelete, onViewDocument }: CardSipProps) => {
 
     return (
         <RecordCard
@@ -53,6 +53,6 @@ const CardSip = ({ data, onEdit, onDelete, onViewDocument }: CardSipProps) => {
             </div>
         </RecordCard>
     )
-}
+});
 
 export default CardSip

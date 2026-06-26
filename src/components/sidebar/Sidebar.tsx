@@ -14,22 +14,29 @@ import Popup from "../ui/molecules/Popup";
 let isFetchingProfileGlobal = false;
 
 const Sidebar = () => {
-  const { user, logout, profile, setProfile } = useAuth();
+  const { user, logout, profile, updateUser } = useAuth();
   const { isCollapsed, isMobileOpen, toggleCollapse, closeMobile } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const avatarUrl = profile?.link_photo_profile ? getProxiedFileUrl(profile.link_photo_profile) : undefined;
+  const avatarUrl = profile?.link_photo_profile
+    ? getProxiedFileUrl(profile.link_photo_profile)
+    : user?.avatarUrl
+    ? getProxiedFileUrl(user.avatarUrl)
+    : undefined;
   
   useEffect(() => {
-    if (!user || profile || isFetchingProfileGlobal) return;
+    if (!user || user.avatarUrl !== undefined || isFetchingProfileGlobal) return;
 
     isFetchingProfileGlobal = true;
 
     const fetchAvatar = async () => {
       try {
-        const response = await profileService.getProfile();
+        const response = await profileService.getMe();
         if (response.success && response.data) {
-          setProfile(response.data.profile);
+          updateUser({
+            avatarUrl: response.data.foto_profil,
+            nama: response.data.nama || user.nama,
+          });
         }
       } catch (err) {
         console.error("Gagal mengambil foto profil di sidebar:", err);
@@ -38,7 +45,7 @@ const Sidebar = () => {
       }
     };
     fetchAvatar();
-  }, [user, profile, setProfile]);
+  }, [user, updateUser]);
 
   if (!user) return null;
 

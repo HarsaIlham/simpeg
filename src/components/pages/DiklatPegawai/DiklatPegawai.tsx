@@ -22,6 +22,7 @@ import FormCetakRekap from "./components/FormCetakRekap"
 import type { CetakRekapPayload } from "./components/FormCetakRekap/FormCetakRekap"
 import { generateRekapDiklatExcel } from "../../../utils/generateRekapDiklatPdf"
 import { useMasterData } from "../../../hooks/useMasterData"
+import { getGlobalUser } from "../../../contexts/AuthContext"
 
 interface PopupState {
     isOpen: boolean
@@ -35,7 +36,8 @@ const ITEMS_PER_PAGE = 7
 const DiklatPegawai = () => {
     const { options: filterJenisOptions, refetch: refetchTipeDiklat } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
     const navigate = useNavigate()
-    const [search, setSearch] = useState("")
+    const [searchQuery, setSearchQuery] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
     const [filterJenis, setFilterJenis] = useState("")
     const [diklatList, setDiklatList] = useState<CardDiklatData[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -62,6 +64,9 @@ const DiklatPegawai = () => {
         message: "",
     })
 
+    const user = getGlobalUser();
+    const role = user?.role.toLowerCase();
+
     const showPopup = (variant: PopupState["variant"], title: string, message: string) => {
         setPopup({ isOpen: true, variant, title, message })
     }
@@ -70,14 +75,10 @@ const DiklatPegawai = () => {
         setPopup(prev => ({ ...prev, isOpen: false }))
     }
 
-    const currentFilters = useMemo(() => ({
-        search: search || undefined,
-        jenis: filterJenis || undefined,
-    }), [search, filterJenis])
-
     const fetchDiklat = useCallback(async (
         page: number = 1,
-        filters?: { search?: string; jenis?: string }
+        searchVal?: string,
+        jenisVal?: string
     ) => {
         setIsLoading(true)
         setError(null)
@@ -86,8 +87,8 @@ const DiklatPegawai = () => {
             const response = await hrdDiklatService.getAll({
                 page,
                 per_page: ITEMS_PER_PAGE,
-                search: filters?.search,
-                jenis: filters?.jenis,
+                search: searchVal,
+                jenis: jenisVal,
             })
             if (response.success && response.data) {
                 const responseData = response.data as any
@@ -114,21 +115,23 @@ const DiklatPegawai = () => {
     }, [])
 
     useEffect(() => {
-        fetchDiklat(1)
-    }, [fetchDiklat])
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery)
+            setCurrentPage(1)
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [searchQuery])
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentPage(1)
-            fetchDiklat(1, currentFilters)
-        }, 700)
-        return () => clearTimeout(timer)
-    }, [currentFilters, fetchDiklat])
+        setCurrentPage(1)
+    }, [filterJenis])
+    useEffect(() => {
+        fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined)
+    }, [currentPage, debouncedSearch, filterJenis, fetchDiklat])
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page)
-        fetchDiklat(page, currentFilters)
-    }, [fetchDiklat, currentFilters])
+    }, [])
 
     const handleTambahDropdown = () => {
         setServerErrorsJenis(undefined)
@@ -232,7 +235,7 @@ const DiklatPegawai = () => {
             await hrdDiklatService.createMasterDiklat(payload)
             setIsModalOpen(false)
             showPopup("checklist", "Berhasil", "Jadwal diklat berhasil ditambahkan.")
-            await fetchDiklat(currentPage, currentFilters)
+            await fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined)
         } catch (err: unknown) {
             const errorObj = err as { message?: string }
             showPopup("error", "Gagal", errorObj?.message || "Gagal menambahkan jadwal diklat.")
@@ -291,8 +294,8 @@ const DiklatPegawai = () => {
                 <div className={styles.cardHeader}>
                     <div className={styles.searchWrapper}>
                         <SearchInput
-                            value={search}
-                            onChange={setSearch}
+                            value={searchQuery}
+                            onChange={setSearchQuery}
                             placeholder="Cari Diklat..."
                         />
                     </div>
@@ -310,12 +313,15 @@ const DiklatPegawai = () => {
                             size="md"
                             onClick={handleTambahDropdown}
                         />
-                        <Button
-                            label="Cetak Rekap"
-                            variant="primary"
-                            size="md"
-                            onClick={handleCetakRekap}
-                        />
+                        {role !== 'direktur' && (
+                            <Button
+                                label="Cetak Rekap"
+                                variant="primary"
+                                size="md"
+                                onClick={handleCetakRekap}
+                            />
+                        )}
+
                         <Button
                             label="Tambah Jadwal Diklat"
                             variant="primary"

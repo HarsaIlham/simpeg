@@ -1,4 +1,4 @@
-
+import { memo } from "react";
 import { FileText } from "lucide-react";
 import Icon from "../../atoms/Icon";
 import RecordCard from "../../molecules/RecordCard";
@@ -25,7 +25,7 @@ interface CardPenugasanKlinisProps {
     onViewDocument?: (url: string) => void;
 }
 
-const CardPenugasanKlinis = ({ data, onEdit, onDelete, onViewDocument }: CardPenugasanKlinisProps) => {
+const CardPenugasanKlinis = memo(({ data, onEdit, onDelete, onViewDocument }: CardPenugasanKlinisProps) => {
 
     return (
         <RecordCard
@@ -50,6 +50,6 @@ const CardPenugasanKlinis = ({ data, onEdit, onDelete, onViewDocument }: CardPen
             </div>
         </RecordCard>
     )
-}
+});
 
 export default CardPenugasanKlinis

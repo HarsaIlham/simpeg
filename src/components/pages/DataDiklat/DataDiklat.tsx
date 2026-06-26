@@ -91,7 +91,8 @@ const DataDiklat = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<string>("")
   const [selectedDiklat, setSelectedDiklat] = useState<CardDiklatData | null>(null)
-  const [search, setSearch] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
   const [filterJenis, setFilterJenis] = useState("")
   const [filterStatus, setFilterStatus] = useState(searchParams.get("status") ?? "")
 
@@ -132,15 +133,11 @@ const DataDiklat = () => {
     setPreviewFile({ url: proxied, namaDiklat })
   }
 
-  const currentFilters = useMemo(() => ({
-    search: search || undefined,
-    jenis: filterJenis || undefined,
-    status: filterStatus || undefined,
-  }), [search, filterJenis, filterStatus])
-
   const fetchDiklat = useCallback(async (
     page: number = 1,
-    filters?: { search?: string; jenis?: string; status?: string }
+    searchVal?: string,
+    jenisVal?: string,
+    statusVal?: string
   ) => {
     setIsLoading(true)
     setError(null)
@@ -149,9 +146,9 @@ const DataDiklat = () => {
       const response = await diklatService.getDiklat({
         page,
         per_page: ITEMS_PER_PAGE,
-        search: filters?.search,
-        jenis: filters?.jenis,
-        status: filters?.status,
+        search: searchVal,
+        jenis: jenisVal,
+        status: statusVal,
       })
 
       if (response.success && response.data) {
@@ -182,21 +179,23 @@ const DataDiklat = () => {
   }, [])
 
   useEffect(() => {
-    fetchDiklat(1)
-  }, [fetchDiklat])
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery)
+      setCurrentPage(1)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentPage(1)
-      fetchDiklat(1, currentFilters)
-    }, 700)
-    return () => clearTimeout(timer)
-  }, [currentFilters, fetchDiklat])
+    setCurrentPage(1)
+  }, [filterJenis, filterStatus])
+  useEffect(() => {
+    fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined, filterStatus || undefined)
+  }, [currentPage, debouncedSearch, filterJenis, filterStatus, fetchDiklat])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
-    fetchDiklat(page, currentFilters)
-  }, [fetchDiklat, currentFilters])
+  }, [])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   // const [deleteTarget, setDeleteTarget] = useState<CardDiklatData | null>(null)
@@ -245,7 +244,7 @@ const DataDiklat = () => {
       }
       setIsModalOpen(false)
       setSelectedDiklat(null)
-      await fetchDiklat(currentPage, currentFilters)
+      await fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined, filterStatus || undefined)
     } catch (err: unknown) {
       const errorObj = err as { message?: string }
       showPopup("error", "Gagal", errorObj?.message || "Gagal menyimpan data diklat.")
@@ -282,7 +281,7 @@ const DataDiklat = () => {
 
       setIsModalOpen(false)
       setSelectedDiklat(null)
-      await fetchDiklat(currentPage, currentFilters)
+      await fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined, filterStatus || undefined)
       showPopup("checklist", "Berhasil", "Laporan sertifikat berhasil diupload.")
     } catch (err: unknown) {
       const errorObj = err as { message?: string }
@@ -323,8 +322,8 @@ const DataDiklat = () => {
         <div className={styles.cardHeader}>
           <div className={styles.searchWrapper}>
             <SearchInput
-              value={search}
-              onChange={setSearch}
+              value={searchQuery}
+              onChange={setSearchQuery}
               placeholder="Cari diklat..."
             />
           </div>

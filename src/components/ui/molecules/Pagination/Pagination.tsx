@@ -22,10 +22,44 @@ const Pagination = ({
     const startItem = totalItems > 0 ? (activePage - 1) * itemsPerPage + 1 : 0;
     const endItem = Math.min(activePage * itemsPerPage, totalItems);
 
-    const pageNumbers = useMemo(
-        () => Array.from({ length: totalPages }, (_, i) => i + 1),
-        [totalPages]
-    );
+    const pageItems = useMemo(() => {
+        const items: (number | string)[] = [];
+        if (totalPages <= 7) {
+            for (let i = 1; i <= totalPages; i++) {
+                items.push(i);
+            }
+        } else {
+            items.push(1);
+
+            if (activePage > 3) {
+                items.push("...");
+            }
+
+            const start = Math.max(2, activePage - 1);
+            const end = Math.min(totalPages - 1, activePage + 1);
+
+            let adjustedStart = start;
+            let adjustedEnd = end;
+            if (activePage <= 3) {
+                adjustedEnd = 4;
+            } else if (activePage >= totalPages - 2) {
+                adjustedStart = totalPages - 3;
+            }
+
+            for (let i = adjustedStart; i <= adjustedEnd; i++) {
+                if (i > 1 && i < totalPages) {
+                    items.push(i);
+                }
+            }
+
+            if (activePage < totalPages - 2) {
+                items.push("...");
+            }
+
+            items.push(totalPages);
+        }
+        return items;
+    }, [totalPages, activePage]);
 
     return (
         <div className={styles.paginationRow}>
@@ -40,15 +74,24 @@ const Pagination = ({
                 >
                     Sebelumnya
                 </button>
-                {pageNumbers.map((pageNum) => (
-                    <button
-                        key={pageNum}
-                        className={`${styles.pageNum} ${activePage === pageNum ? styles.pageNumActive : ""}`}
-                        onClick={() => onPageChange(pageNum)}
-                    >
-                        {pageNum}
-                    </button>
-                ))}
+                {pageItems.map((item, index) => {
+                    if (item === "...") {
+                        return (
+                            <span key={`ellipsis-${index}`} className={styles.ellipsis}>
+                                ...
+                            </span>
+                        );
+                    }
+                    return (
+                        <button
+                            key={item}
+                            className={`${styles.pageNum} ${activePage === item ? styles.pageNumActive : ""}`}
+                            onClick={() => onPageChange(item as number)}
+                        >
+                            {item}
+                        </button>
+                    );
+                })}
                 <button
                     className={styles.pageBtn}
                     onClick={() => onPageChange(Math.min(activePage + 1, totalPages))}

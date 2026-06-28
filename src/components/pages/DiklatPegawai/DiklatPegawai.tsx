@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styles from "./DiklatPegawai.module.css"
 import Topbar from "../../ui/organisms/Topbar/Topbar"
@@ -24,6 +24,8 @@ import { generateRekapDiklatExcel } from "../../../utils/generateRekapDiklatPdf"
 import { useMasterData } from "../../../hooks/useMasterData"
 import { getGlobalUser } from "../../../contexts/AuthContext"
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+
 interface PopupState {
     isOpen: boolean
     variant: "success" | "error" | "warning" | "checklist"
@@ -36,26 +38,20 @@ const ITEMS_PER_PAGE = 7
 const DiklatPegawai = () => {
     const { options: filterJenisOptions, refetch: refetchTipeDiklat } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
+
     const [searchQuery, setSearchQuery] = useState("")
     const [debouncedSearch, setDebouncedSearch] = useState("")
     const [filterJenis, setFilterJenis] = useState("")
-    const [diklatList, setDiklatList] = useState<CardDiklatData[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [isModalJenisOpen, setIsModalJenisOpen] = useState(false)
-    const [isSubmittingJenis, setIsSubmittingJenis] = useState(false)
+
     const [serverErrorsJenis, setServerErrorsJenis] = useState<Record<string, string[]> | undefined>(undefined)
-    const [isSubmittingJadwal, setIsSubmittingJadwal] = useState(false)
-    const [isModalCetakRekapOpen, setIsModalCetakRekapOpen] = useState(false)
-    const [isSubmittingCetakRekap, setIsSubmittingCetakRekap] = useState(false)
     const [selectedDiklat, setSelectedDiklat] = useState<CardDiklatData | null>(null)
     const [modalMode, setModalMode] = useState<string>("")
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isModalJenisOpen, setIsModalJenisOpen] = useState(false)
+    const [isModalCetakRekapOpen, setIsModalCetakRekapOpen] = useState(false)
 
     const [currentPage, setCurrentPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(1)
-    const [totalItems, setTotalItems] = useState(0)
-    const [perPage, setPerPage] = useState(ITEMS_PER_PAGE)
 
     const [popup, setPopup] = useState<PopupState>({
         isOpen: false,
@@ -75,44 +71,30 @@ const DiklatPegawai = () => {
         setPopup(prev => ({ ...prev, isOpen: false }))
     }
 
-    const fetchDiklat = useCallback(async (
-        page: number = 1,
-        searchVal?: string,
-        jenisVal?: string
-    ) => {
-        setIsLoading(true)
-        setError(null)
+    const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+        queryKey: ["diklatPegawai", currentPage, debouncedSearch, filterJenis],
+        queryFn: () => hrdDiklatService.getAll({
+            page: currentPage,
+            per_page: ITEMS_PER_PAGE,
+            search: debouncedSearch || undefined,
+            jenis: filterJenis || undefined,
+        }),
+    });
 
-        try {
-            const response = await hrdDiklatService.getAll({
-                page,
-                per_page: ITEMS_PER_PAGE,
-                search: searchVal,
-                jenis: jenisVal,
-            })
-            if (response.success && response.data) {
-                const responseData = response.data as any
+    const isLoading = queryIsLoading;
+    const error = queryError ? (queryError as any).message || "Gagal mengambil data diklat." : null;
 
-                const rawList = responseData?.data || responseData?.list || []
-                const mapped = rawList.map(mapHrdItemToCardDiklat)
-                setDiklatList(mapped)
+    const diklatList = useMemo(() => {
+        if (!response?.success || !response?.data) return [];
+        const responseData = response.data as any;
+        const rawList = responseData?.data || responseData?.list || [];
+        return rawList.map(mapHrdItemToCardDiklat);
+    }, [response]);
 
-                if (responseData?.current_page !== undefined) {
-                    setCurrentPage(responseData.current_page)
-                    setTotalPages(responseData.last_page || 1)
-                    setTotalItems(responseData.total || 0)
-                    setPerPage(responseData.per_page || ITEMS_PER_PAGE)
-                }
-            } else {
-                setError(response.message || "Gagal mengambil data diklat.")
-            }
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string }
-            setError(errorObj?.message || "Terjadi kesalahan saat mengambil data diklat.")
-        } finally {
-            setIsLoading(false)
-        }
-    }, [])
+    const responseData = response?.data as any;
+    const totalPages = responseData?.last_page || 1;
+    const totalItems = responseData?.total || 0;
+    const perPage = responseData?.per_page || ITEMS_PER_PAGE;
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -121,13 +103,6 @@ const DiklatPegawai = () => {
         }, 500)
         return () => clearTimeout(timer)
     }, [searchQuery])
-
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [filterJenis])
-    useEffect(() => {
-        fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined)
-    }, [currentPage, debouncedSearch, filterJenis, fetchDiklat])
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page)
@@ -138,51 +113,56 @@ const DiklatPegawai = () => {
         setIsModalJenisOpen(true)
     }
 
-    const handleSubmitJenis = async (jenisBaru: string) => {
-        setIsSubmittingJenis(true)
-        setServerErrorsJenis(undefined)
-        try {
-            await masterDataService.createTipeDiklat(jenisBaru)
-            await refetchTipeDiklat()
-            setIsModalJenisOpen(false)
-            showPopup("checklist", "Berhasil", `Jenis diklat "${jenisBaru}" berhasil ditambahkan.`)
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string; errors?: Record<string, string[]> }
-            if (errorObj?.errors) {
-                const mappedErrors: Record<string, string[]> = {}
-                if (errorObj.errors.nama) {
-                    mappedErrors.jenis_baru = errorObj.errors.nama
+    const addJenisMutation = useMutation({
+        mutationFn: (jenisBaru: string) => masterDataService.createTipeDiklat(jenisBaru),
+        onSuccess: async (_res: any, variables: string) => {
+            await refetchTipeDiklat();
+            setIsModalJenisOpen(false);
+            showPopup("checklist", "Berhasil", `Jenis diklat "${variables}" berhasil ditambahkan.`);
+        },
+        onError: (err: any) => {
+            if (err?.errors) {
+                const mappedErrors: Record<string, string[]> = {};
+                if (err.errors.nama) {
+                    mappedErrors.jenis_baru = err.errors.nama;
                 }
-                setServerErrorsJenis(mappedErrors)
+                setServerErrorsJenis(mappedErrors);
             }
-            showPopup("error", "Gagal", errorObj?.message || "Terjadi kesalahan saat menambah jenis diklat.")
-        } finally {
-            setIsSubmittingJenis(false)
+            showPopup("error", "Gagal", err?.message || "Terjadi kesalahan saat menambah jenis diklat.");
         }
+    });
+
+    const isSubmittingJenis = addJenisMutation.isPending;
+
+    const handleSubmitJenis = async (jenisBaru: string) => {
+        addJenisMutation.mutate(jenisBaru);
     }
 
     const handleCetakRekap = () => {
         setIsModalCetakRekapOpen(true)
     }
 
-    const handleSubmitCetakRekap = async (payload: CetakRekapPayload) => {
-        setIsSubmittingCetakRekap(true)
-        try {
-            await generateRekapDiklatExcel(
-                diklatList,
-                payload.bulanAwal,
-                payload.tahunAwal,
-                payload.bulanAkhir,
-                payload.tahunAkhir,
-            )
-            setIsModalCetakRekapOpen(false)
-            showPopup("checklist", "Berhasil", "Rekap berhasil diunduh.")
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string }
-            showPopup("error", "Gagal", errorObj?.message || "Gagal mencetak rekap.")
-        } finally {
-            setIsSubmittingCetakRekap(false)
+    const cetakRekapMutation = useMutation({
+        mutationFn: (payload: CetakRekapPayload) => generateRekapDiklatExcel(
+            diklatList,
+            payload.bulanAwal,
+            payload.tahunAwal,
+            payload.bulanAkhir,
+            payload.tahunAkhir,
+        ),
+        onSuccess: () => {
+            setIsModalCetakRekapOpen(false);
+            showPopup("checklist", "Berhasil", "Rekap berhasil diunduh.");
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal", err?.message || "Gagal mencetak rekap.");
         }
+    });
+
+    const isSubmittingCetakRekap = cetakRekapMutation.isPending;
+
+    const handleSubmitCetakRekap = async (payload: CetakRekapPayload) => {
+        cetakRekapMutation.mutate(payload);
     }
 
     const handleTambahJadwal = () => {
@@ -191,57 +171,45 @@ const DiklatPegawai = () => {
         setIsModalOpen(true)
     }
 
-    const handleSubmitJadwal = async (formData: FormData) => {
-        setIsSubmittingJadwal(true)
-        try {
-            if (modalMode === "Edit Diklat" && selectedDiklat) {
-                showPopup("checklist", "Berhasil", "Jadwal diklat berhasil diperbarui.")
-                setDiklatList(prev => prev.map(item => item.id === selectedDiklat.id ? {
-                    ...item,
-                    namaDiklat: formData.get("nama_kegiatan") as string,
-                    kategori: formData.get("kategori") as string,
-                    jenisDiklat: formData.get("jenis_diklat") as string,
-                    penyelenggara: formData.get("penyelenggara") as string,
-                    tempat: formData.get("lokasi") as string,
-                    tanggalMulai: formData.get("tanggal_mulai") as string,
-                    tanggalSelesai: formData.get("tanggal_selesai") as string,
-                    jamPelajaran: formData.get("jp") as string,
-                    waktu: formData.get("waktu") as string,
-                    jenisBiaya: formData.get("jenis_biaya") as string || "Tidak Tersedia",
-                    totalBiaya: formData.get("total_biaya") ? `Rp. ${Number(formData.get("total_biaya")).toLocaleString("id-ID")}` : "Tidak Tersedia",
-                    catatan: formData.get("catatan") as string,
-                } : item))
-                setIsModalOpen(false)
-                setSelectedDiklat(null)
-                return
-            }
-
-            const payload: CreateMasterDiklatRequest = {
-                nama_kegiatan: formData.get("nama_kegiatan") as string,
-                kategori: formData.get("kategori") as string,
-                jenis_diklat: formData.get("jenis_diklat") as string,
-                penyelenggara: formData.get("penyelenggara") as string,
-                lokasi: formData.get("lokasi") as string,
-                tanggal_mulai: formData.get("tanggal_mulai") as string,
-                tanggal_selesai: formData.get("tanggal_selesai") as string,
-                jp: Number(formData.get("jp")),
-                waktu: formData.get("waktu") as string || undefined,
-                jenis_pelaksana: formData.get("jenis_pelaksana") as "internal" | "external",
-                jenis_biaya: formData.get("jenis_biaya") as string || undefined,
-                total_biaya: formData.get("total_biaya") ? Number(formData.get("total_biaya")) : undefined,
-                catatan: formData.get("catatan") as string || undefined,
-            }
-
-            await hrdDiklatService.createMasterDiklat(payload)
-            setIsModalOpen(false)
-            showPopup("checklist", "Berhasil", "Jadwal diklat berhasil ditambahkan.")
-            await fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined)
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string }
-            showPopup("error", "Gagal", errorObj?.message || "Gagal menambahkan jadwal diklat.")
-        } finally {
-            setIsSubmittingJadwal(false)
+    const submitJadwalMutation = useMutation({
+        mutationFn: (payload: CreateMasterDiklatRequest) => hrdDiklatService.createMasterDiklat(payload),
+        onSuccess: () => {
+            setIsModalOpen(false);
+            showPopup("checklist", "Berhasil", "Jadwal diklat berhasil ditambahkan.");
+            queryClient.invalidateQueries({ queryKey: ["diklatPegawai"] });
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal", err?.message || "Gagal menambahkan jadwal diklat.");
         }
+    });
+
+    const isSubmittingJadwal = submitJadwalMutation.isPending;
+
+    const handleSubmitJadwal = async (formData: FormData) => {
+        if (modalMode === "Edit Diklat" && selectedDiklat) {
+            showPopup("checklist", "Berhasil", "Jadwal diklat berhasil diperbarui.");
+            setIsModalOpen(false);
+            setSelectedDiklat(null);
+            return;
+        }
+
+        const payload: CreateMasterDiklatRequest = {
+            nama_kegiatan: formData.get("nama_kegiatan") as string,
+            kategori: formData.get("kategori") as string,
+            jenis_diklat: formData.get("jenis_diklat") as string,
+            penyelenggara: formData.get("penyelenggara") as string,
+            lokasi: formData.get("lokasi") as string,
+            tanggal_mulai: formData.get("tanggal_mulai") as string,
+            tanggal_selesai: formData.get("tanggal_selesai") as string,
+            jp: Number(formData.get("jp")),
+            waktu: formData.get("waktu") as string || undefined,
+            jenis_pelaksana: formData.get("jenis_pelaksana") as "internal" | "external",
+            jenis_biaya: formData.get("jenis_biaya") as string || undefined,
+            total_biaya: formData.get("total_biaya") ? Number(formData.get("total_biaya")) : undefined,
+            catatan: formData.get("catatan") as string || undefined,
+        }
+
+        submitJadwalMutation.mutate(payload);
     }
 
     const handleTambahPeserta = (diklat: CardDiklatData) => {
@@ -334,7 +302,7 @@ const DiklatPegawai = () => {
 
             <div className={styles.cardList}>
                 {diklatList.length > 0 ? (
-                    diklatList.map((diklat) => (
+                    diklatList.map((diklat: any) => (
                         <CardDiklat
                             key={diklat.id}
                             data={diklat}

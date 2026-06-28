@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useMemo } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import styles from "./VerifikasiKelayakan.module.css"
 import Topbar from "../../ui/organisms/Topbar/Topbar"
 import MainHeaderSection from "../../ui/molecules/MainHeaderSection"
@@ -25,13 +26,9 @@ interface ConfirmState {
 }
 
 const VerifikasiKelayakan = () => {
+    const queryClient = useQueryClient()
     const [search, setSearch] = useState("")
-    const [diklatList, setDiklatList] = useState<CardDiklatData[]>([])
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-    const [isUpdating, setIsUpdating] = useState(false)
     const [previewFile, setPreviewFile] = useState<{ url: string; namaDiklat: string } | null>(null)
-
 
     const [confirm, setConfirm] = useState<ConfirmState>({
         isOpen: false,
@@ -53,39 +50,30 @@ const VerifikasiKelayakan = () => {
         setPopup(prev => ({ ...prev, isOpen: false }))
     }
 
-    const fetchDiklat = useCallback(async () => {
-        setIsLoading(true)
-        setError(null)
-
-        try {
-            const response = await hrdDiklatService.getMenungguKelayakan()
-            if (response.success && response.data) {
-                const mapped = response.data.list.map(mapHrdItemToCardDiklat)
-                setDiklatList(mapped)
-            } else {
-                setError(response.message || "Gagal mengambil data.")
-            }
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string }
-            setError(errorObj?.message || "Terjadi kesalahan saat mengambil data.")
-        } finally {
-            setIsLoading(false)
-        }
-    }, [])
-
-    useEffect(() => {
-        fetchDiklat()
-    }, [fetchDiklat])
-
-    const filteredData = diklatList.filter((item) => {
-        const matchSearch =
-            item.namaDiklat.toLowerCase().includes(search.toLowerCase()) ||
-            item.jenisDiklat.toLowerCase().includes(search.toLowerCase()) ||
-            item.kategori.toLowerCase().includes(search.toLowerCase()) ||
-            item.penyelenggara.toLowerCase().includes(search.toLowerCase()) ||
-            (item.pegawaiNama?.toLowerCase().includes(search.toLowerCase()) ?? false)
-        return matchSearch
+    const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+        queryKey: ["menungguKelayakan"],
+        queryFn: hrdDiklatService.getMenungguKelayakan,
     })
+
+    const isLoading = queryIsLoading
+    const error = queryError ? (queryError as any).message || "Terjadi kesalahan saat mengambil data." : null
+
+    const diklatList = useMemo(() => {
+        if (!response?.success || !response?.data) return []
+        return response.data.list.map(mapHrdItemToCardDiklat)
+    }, [response])
+
+    const filteredData = useMemo(() => {
+        return diklatList.filter((item) => {
+            const matchSearch =
+                item.namaDiklat.toLowerCase().includes(search.toLowerCase()) ||
+                item.jenisDiklat.toLowerCase().includes(search.toLowerCase()) ||
+                item.kategori.toLowerCase().includes(search.toLowerCase()) ||
+                item.penyelenggara.toLowerCase().includes(search.toLowerCase()) ||
+                (item.pegawaiNama?.toLowerCase().includes(search.toLowerCase()) ?? false)
+            return matchSearch
+        })
+    }, [diklatList, search])
 
     const openConfirm = (diklat: CardDiklatData) => {
         setConfirm({ isOpen: true, diklat })
@@ -95,31 +83,35 @@ const VerifikasiKelayakan = () => {
         setConfirm({ isOpen: false, diklat: null })
     }
 
-      const handleViewDocument = (url: string, namaDiklat: string) => {
+    const handleViewDocument = (url: string, namaDiklat: string) => {
         const proxied = getProxiedFileUrl(url)
         setPreviewFile({ url: proxied, namaDiklat })
-      }
+    }
 
-    const handleConfirmKelayakan = async (statusKelayakan: boolean) => {
-        if (!confirm.diklat?.idJadwalDiklat) return
-
-        setIsUpdating(true)
-        try {
-            await hrdDiklatService.updateKelayakan(confirm.diklat.idJadwalDiklat, statusKelayakan)
+    const updateKelayakanMutation = useMutation({
+        mutationFn: ({ idJadwalDiklat, statusKelayakan }: { idJadwalDiklat: number; statusKelayakan: boolean }) => {
+            return hrdDiklatService.updateKelayakan(idJadwalDiklat, statusKelayakan)
+        },
+        onSuccess: (_res, variables) => {
             closeConfirm()
             showPopup(
                 "checklist",
                 "Berhasil",
-                `Status kelayakan berhasil diperbarui menjadi "${statusKelayakan ? "Layak" : "Tidak Layak"}".`
+                `Status kelayakan berhasil diperbarui menjadi "${variables.statusKelayakan ? "Layak" : "Tidak Layak"}".`
             )
-            await fetchDiklat()
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string }
+            queryClient.invalidateQueries({ queryKey: ["menungguKelayakan"] })
+        },
+        onError: (err: any) => {
             closeConfirm()
-            showPopup("error", "Gagal", errorObj?.message || "Gagal memperbarui status kelayakan.")
-        } finally {
-            setIsUpdating(false)
+            showPopup("error", "Gagal", err?.message || "Gagal memperbarui status kelayakan.")
         }
+    })
+
+    const isUpdating = updateKelayakanMutation.isPending
+
+    const handleConfirmKelayakan = async (statusKelayakan: boolean) => {
+        if (!confirm.diklat?.idJadwalDiklat) return
+        updateKelayakanMutation.mutate({ idJadwalDiklat: confirm.diklat.idJadwalDiklat, statusKelayakan })
     }
 
     if (isLoading) {

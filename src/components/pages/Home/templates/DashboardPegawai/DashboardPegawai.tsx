@@ -14,39 +14,23 @@ import CardHeader from "../../../../ui/molecules/CardHeader";
 import ActionItem from "../../../../ui/molecules/ActionItem";
 import ScheduleItem from "../../../../ui/molecules/ScheduleItem";
 import DataField from "../../../../ui/molecules/DataField";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getGlobalUser } from "../../../../../contexts/AuthContext";
 import { dashboardService } from "../../../../../services/dashboardService";
-import type { DashboardPegawaiData, Notifikasi } from "../../../../../types/api";
 
 const DashboardPegawai = () => {
   const navigate = useNavigate();
   const user = getGlobalUser();
 
-  const [dashboard, setDashboard] = useState<DashboardPegawaiData | null>(null);
-  const [notifications, setNotifications] = useState<Notifikasi[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: response, isLoading, error: queryError } = useQuery({
+    queryKey: ["dashboardPegawai"],
+    queryFn: () => dashboardService.getDashboard(),
+  });
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const response = await dashboardService.getDashboard();
-        if (response.success && response.data) {
-          setDashboard(response.data.dashboard);
-          setNotifications(response.data.dashboard.list_notifikasi ?? []);
-        }
-      } catch (err: any) {
-        console.error("Gagal memuat dashboard:", err);
-        setError(err.message ?? "Gagal memuat data dashboard.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDashboard();
-  }, []);
+  const dashboard = response?.success ? response.data?.dashboard : null;
+  const notifications = dashboard?.list_notifikasi ?? [];
+  const error = queryError ? (queryError as any).message || "Gagal memuat data dashboard." : null;
 
   const formatDateRange = (start: string, end: string) => {
     const fmt = (d: string) =>

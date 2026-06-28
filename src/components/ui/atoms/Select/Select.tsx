@@ -75,6 +75,7 @@ const Select = (props: PropsType) => {
                         placeholder={placeholder || "Pilih..."}
                         isDisabled={disabled}
                         isSearchable
+                        required={required}
                         noOptionsMessage={() => "Tidak ada hasil"}
                         className="react-select-container"
                         classNamePrefix="react-select"
@@ -107,6 +108,7 @@ const Select = (props: PropsType) => {
                         disabled={disabled}
                         className={styles.select}
                         style={icon ? { paddingLeft: "38px" } : undefined}
+                        required={required}
                     >
                         {placeholder && <option value="">{placeholder}</option>}
                         {options.map((option) => (

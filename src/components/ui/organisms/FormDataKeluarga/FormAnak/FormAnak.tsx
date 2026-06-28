@@ -5,7 +5,7 @@ import Select from "../../../atoms/Select";
 import Textarea from "../../../atoms/Textarea";
 import styles from "./FormAnak.module.css";
 import { calculateAge } from "../../../../../utils/dateUtils";
-import kotas  from "../../../../../data/kota.json";
+import kotas from "../../../../../data/kota.json";
 
 export interface AnakFormPayload {
     nama_lengkap: string;
@@ -17,7 +17,7 @@ export interface AnakFormPayload {
     pendidikan_terakhir: string;
     status_tanggungan: string;
     keterangan_disabilitas: string;
-    akta_kelahiran_file: File | null;
+    akta_kelahiran_file_path: File | string | null;
 }
 
 interface FormAnakProps {
@@ -75,6 +75,7 @@ const FormAnak = ({ onCancel, onSubmit, initialData, isLoading }: FormAnakProps)
         pendidikan_terakhir: "",
         status_tanggungan: "",
         keterangan_disabilitas: "",
+        akta_kelahiran_file_path: initialData?.akta_kelahiran_file_path || null,
     });
     const [file, setFile] = useState<File | null>(null);
     const [usia, setUsia] = useState<string>("");
@@ -91,6 +92,7 @@ const FormAnak = ({ onCancel, onSubmit, initialData, isLoading }: FormAnakProps)
                 pendidikan_terakhir: initialData.pendidikan_terakhir || "",
                 status_tanggungan: initialData.status_tanggungan || "",
                 keterangan_disabilitas: initialData.keterangan_disabilitas || "",
+                akta_kelahiran_file_path: initialData.akta_kelahiran_file_path || null,
             });
             if (initialData.tanggal_lahir) {
                 setUsia(calculateAge(initialData.tanggal_lahir));
@@ -109,7 +111,7 @@ const FormAnak = ({ onCancel, onSubmit, initialData, isLoading }: FormAnakProps)
         if (onSubmit) {
             onSubmit({
                 ...formData,
-                akta_kelahiran_file: file,
+                akta_kelahiran_file_path: file,
             });
         }
     };
@@ -236,7 +238,7 @@ const FormAnak = ({ onCancel, onSubmit, initialData, isLoading }: FormAnakProps)
                 label="Keterangan Disabilitas"
                 placeholder="Jika ada, sebutkan jenis disabilitas"
                 value={formData.keterangan_disabilitas}
-                onChange={(e) => setFormData({ ...formData, keterangan_disabilitas: e.target.value })}                
+                onChange={(e) => setFormData({ ...formData, keterangan_disabilitas: e.target.value })}
             />
             <Input
                 id="anak-akta-kelahiran-file"
@@ -248,8 +250,13 @@ const FormAnak = ({ onCancel, onSubmit, initialData, isLoading }: FormAnakProps)
                     const selected = e.target.files?.[0] ?? null;
                     setFile(selected);
                 }}
-                required
+                required={!initialData?.akta_kelahiran_file_path}
             />
+            {initialData?.akta_kelahiran_file_path && !file && (
+                <span className={styles.fileHint}>
+                    File akta kelahiran sudah ada. Upload baru hanya jika ingin mengganti.
+                </span>
+            )}
             <div className={styles.actions}>
                 <Button type="submit" label={isLoading ? "Menyimpan..." : "Simpan"} variant="primary" disabled={isLoading} />
                 <Button type="button" label="Batal" variant="secondary" onClick={onCancel} disabled={isLoading} />

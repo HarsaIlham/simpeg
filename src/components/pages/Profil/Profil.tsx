@@ -21,6 +21,7 @@ import { useMasterData } from "../../../hooks/useMasterData";
 import FormGantiPassword from "../../ui/organisms/FormGantiPassword";
 import { authService } from "../../../services/authService";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const mapProfileToFormData = (profile: ProfileData): propsType => ({
     namaLengkap: profile.nama,
@@ -142,6 +143,8 @@ const Profil = () => {
     const { items: profesiItems } = useMasterData("profesi", undefined, [], true);
     const { items: unitKerjaItems } = useMasterData("unitKerja", undefined, [], true);
 
+    const queryClient = useQueryClient();
+
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupConfig, setPopupConfig] = useState({
         variant: "success" as "success" | "error" | "warning",
@@ -151,85 +154,145 @@ const Profil = () => {
     const [profileData, setProfileData] = useState<propsType | null>(null);
     const [photoUrl, setPhotoUrl] = useState<string | null>(null);
     const [statusPegawai, setStatusPegawai] = useState<string>("Aktif");
-    const [isLoading, setIsLoading] = useState(true);
-    const [isUploading, setIsUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
     const [noteText, setNoteText] = useState("");
     const [pendingChanges, setPendingChanges] = useState<Partial<ProfileData>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [myChangeRequests, setMyChangeRequests] = useState<ChangeRequestData[]>([]);
-
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-
     const [isPhotoViewerOpen, setIsPhotoViewerOpen] = useState(false);
-    const [isDocUploading, setIsDocUploading] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const fetchProfile = async () => {
-        try {
-            if (!profile) {
-                setIsLoading(true);
-            }
-            setError(null);
-            const response = await profileService.getProfile();
-
-            if (response.success && response.data) {
-                const fetchedProfile = response.data.profile;
-                setProfile(fetchedProfile);
-                setProfileData(mapProfileToFormData(fetchedProfile));
-                setPhotoUrl(fetchedProfile.link_photo_profile);
-                setStatusPegawai(fetchedProfile.status_pegawai);
-
-                if (fetchedProfile.status_perubahan && fetchedProfile.status_perubahan.status) {
-                    const statusStr = fetchedProfile.status_perubahan.status;
-                    setMyChangeRequests([{
-                        id: `req-${fetchedProfile.status_perubahan.last_update}`,
-                        title: `Pengajuan ${fetchedProfile.status_perubahan.fitur}`,
-                        date: fetchedProfile.status_perubahan.last_update,
-                        statusLabel: statusStr.charAt(0).toUpperCase() + statusStr.slice(1),
-                        statusVariant: statusStr === "pending" ? "warning" : statusStr === "approved" ? "success" : "danger",
-                    }]);
-                } else {
-                    setMyChangeRequests([]);
-                }
-            }
-        } catch (err: unknown) {
-            const apiError = err as { message?: string };
-            if (!profile) {
-                setError(apiError.message || "Gagal memuat data profil.");
-            }
-            console.error("Error fetching profile:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+        queryKey: ["profile"],
+        queryFn: () => profileService.getProfile(),
+    });
 
     useEffect(() => {
-        if (profile) {
-            setProfileData(mapProfileToFormData(profile));
-            setPhotoUrl(profile.link_photo_profile);
-            setStatusPegawai(profile.status_pegawai);
+        if (response?.success && response?.data) {
+            const fetchedProfile = response.data.profile;
+            setProfile(fetchedProfile);
+            setProfileData(mapProfileToFormData(fetchedProfile));
+            setPhotoUrl(fetchedProfile.link_photo_profile);
+            setStatusPegawai(fetchedProfile.status_pegawai);
 
-            if (profile.status_perubahan && profile.status_perubahan.status) {
-                const statusStr = profile.status_perubahan.status;
+            if (fetchedProfile.status_perubahan && fetchedProfile.status_perubahan.status) {
+                const statusStr = fetchedProfile.status_perubahan.status;
                 setMyChangeRequests([{
-                    id: `req-${profile.status_perubahan.last_update}`,
-                    title: `Pengajuan ${profile.status_perubahan.fitur}`,
-                    date: profile.status_perubahan.last_update,
+                    id: `req-${fetchedProfile.status_perubahan.last_update}`,
+                    title: `Pengajuan ${fetchedProfile.status_perubahan.fitur}`,
+                    date: fetchedProfile.status_perubahan.last_update,
                     statusLabel: statusStr.charAt(0).toUpperCase() + statusStr.slice(1),
                     statusVariant: statusStr === "pending" ? "warning" : statusStr === "approved" ? "success" : "danger",
                 }]);
             } else {
                 setMyChangeRequests([]);
             }
-            setIsLoading(false);
-            return;
         }
-        fetchProfile();
-    }, [profile]);
+    }, [response, setProfile]);
+
+    const uploadPhotoMutation = useMutation({
+        mutationFn: (file: File) => profileService.uploadProfilePhoto(file),
+        onSuccess: (res) => {
+            if (res.success && res.data) {
+                const newPhotoUrl = res.data.link_photo_profile;
+                setPhotoUrl(newPhotoUrl);
+                updateUser({ avatarUrl: newPhotoUrl });
+                if (profile) {
+                    setProfile({ ...profile, link_photo_profile: newPhotoUrl });
+                }
+                setPopupConfig({
+                    variant: "success",
+                    title: "Foto Berhasil Diperbarui",
+                    message: "Foto profil Anda telah berhasil diperbarui.",
+                });
+                setIsPopupOpen(true);
+                queryClient.invalidateQueries({ queryKey: ["profile"] });
+            }
+        },
+        onError: (err: any) => {
+            setPopupConfig({
+                variant: "error",
+                title: "Gagal Upload Foto",
+                message: err?.message || "Terjadi kesalahan saat mengupload foto.",
+            });
+            setIsPopupOpen(true);
+        }
+    });
+
+    const uploadDocMutation = useMutation({
+        mutationFn: async ({ fieldName, file }: { fieldName: string; file: File }): Promise<any> => {
+            if (fieldName === "ktp") {
+                return profileService.uploadKtp(file);
+            } else {
+                return profileService.uploadKk(file);
+            }
+        },
+        onSuccess: (res, variables) => {
+            if (res.success && res.data) {
+                setPopupConfig({
+                    variant: "success",
+                    title: `${variables.fieldName === "ktp" ? "KTP" : "KK"} Berhasil Diupload`,
+                    message: `File ${variables.fieldName === "ktp" ? "KTP" : "Kartu Keluarga"} Anda telah berhasil diperbarui.`,
+                });
+                setIsPopupOpen(true);
+                queryClient.invalidateQueries({ queryKey: ["profile"] });
+            }
+        },
+        onError: (err: any) => {
+            setPopupConfig({
+                variant: "error",
+                title: "Gagal Upload Dokumen",
+                message: err?.message || "Terjadi kesalahan saat mengupload dokumen.",
+            });
+            setIsPopupOpen(true);
+        }
+    });
+
+    const updateProfileMutation = useMutation({
+        mutationFn: (payload: UpdateProfileRequest) => profileService.updateProfile(payload),
+        onSuccess: (res) => {
+            if (res.success) {
+                setIsNoteModalOpen(false);
+                setPopupConfig({
+                    variant: "success",
+                    title: "Perubahan Berhasil Diajukan",
+                    message: "Pengajuan perubahan data anda telah dikirim dan sedang menunggu persetujuan Admin/HRD.",
+                });
+                setIsPopupOpen(true);
+                queryClient.invalidateQueries({ queryKey: ["profile"] });
+            }
+        },
+        onError: (err: any) => {
+            setPopupConfig({
+                variant: "error",
+                title: "Gagal Mengajukan Perubahan",
+                message: err?.message || "Terjadi kesalahan saat mengajukan perubahan.",
+            });
+            setIsPopupOpen(true);
+        }
+    });
+
+    const changePasswordMutation = useMutation({
+        mutationFn: ({ oldPw, newPw, confirmPw }: any) => authService.changePassword(oldPw, newPw, confirmPw),
+        onSuccess: () => {
+            setIsPasswordModalOpen(false);
+            setPopupConfig({
+                variant: "success",
+                title: "Kata Sandi Diperbarui",
+                message: "Kata sandi Anda berhasil diperbarui.",
+            });
+            setIsPopupOpen(true);
+        },
+    });
+
+    const isLoading = queryIsLoading && !profile;
+    const isUploading = uploadPhotoMutation.isPending;
+    const isDocUploading = uploadDocMutation.isPending;
+    const isSubmitting = updateProfileMutation.isPending;
+    const error = queryError ? (queryError as any).message || "Gagal memuat data profil." : null;
 
     const handlePhotoClick = () => {
         setIsPhotoViewerOpen(true);
@@ -269,36 +332,7 @@ const Profil = () => {
             return;
         }
 
-        try {
-            setIsUploading(true);
-            const response = await profileService.uploadProfilePhoto(file);
-
-             if (response.success && response.data) {
-                const newPhotoUrl = response.data.link_photo_profile;
-                setPhotoUrl(newPhotoUrl);
-                updateUser({ avatarUrl: newPhotoUrl });
-                if (profile) {
-                    setProfile({ ...profile, link_photo_profile: newPhotoUrl });
-                }
-                setPopupConfig({
-                    variant: "success",
-                    title: "Foto Berhasil Diperbarui",
-                    message: "Foto profil Anda telah berhasil diperbarui.",
-                });
-                setIsPopupOpen(true);
-            }
-        } catch (err: unknown) {
-            const apiError = err as { message?: string };
-            setPopupConfig({
-                variant: "error",
-                title: "Gagal Upload Foto",
-                message: apiError.message || "Terjadi kesalahan saat mengupload foto.",
-            });
-            setIsPopupOpen(true);
-            console.error("Error uploading photo:", err);
-        } finally {
-            setIsUploading(false);
-        }
+        uploadPhotoMutation.mutate(file);
     };
 
     const handleSubmitChange = (newData: propsType) => {
@@ -349,105 +383,38 @@ const Profil = () => {
             return false;
         }
 
-        try {
-            setIsDocUploading(true);
-
-            if (fieldName === "ktp") {
-                const response = await profileService.uploadKtp(file);
-                if (response.success && response.data) {
-                    setPopupConfig({
-                        variant: "success",
-                        title: "KTP Berhasil Diupload",
-                        message: "File KTP Anda telah berhasil diperbarui.",
-                    });
-                    setIsPopupOpen(true);
-                    await fetchProfile();
-                    return true;
-                }
-            } else if (fieldName === "kartuKeluarga") {
-                const response = await profileService.uploadKk(file);
-                if (response.success && response.data) {
-                    setPopupConfig({
-                        variant: "success",
-                        title: "KK Berhasil Diupload",
-                        message: "File Kartu Keluarga Anda telah berhasil diperbarui.",
-                    });
-                    setIsPopupOpen(true);
-                    await fetchProfile();
-                    return true;
-                }
-            } else {
-                setPopupConfig({
-                    variant: "warning",
-                    title: "Fitur Belum Tersedia",
-                    message: `Upload ${fieldName === "bukuNikah" ? "Buku Nikah" : fieldName} belum tersedia saat ini.`,
-                });
-                setIsPopupOpen(true);
-                return false;
-            }
-            return false;
-        } catch (err: unknown) {
-            const apiError = err as { message?: string };
+        if (fieldName !== "ktp" && fieldName !== "kartuKeluarga") {
             setPopupConfig({
-                variant: "error",
-                title: "Gagal Upload Dokumen",
-                message: apiError.message || "Terjadi kesalahan saat mengupload dokumen.",
+                variant: "warning",
+                title: "Fitur Belum Tersedia",
+                message: `Upload ${fieldName === "bukuNikah" ? "Buku Nikah" : fieldName} belum tersedia saat ini.`,
             });
             setIsPopupOpen(true);
-            console.error("Error uploading document:", err);
             return false;
-        } finally {
-            setIsDocUploading(false);
+        }
+
+        try {
+            const res = await uploadDocMutation.mutateAsync({ fieldName, file });
+            return res.success;
+        } catch (err) {
+            return false;
         }
     };
 
     const handlePasswordSubmit = async (oldPw: string, newPw: string, confirmPw: string) => {
         try {
-            await authService.changePassword(oldPw, newPw, confirmPw);
-            setIsPasswordModalOpen(false);
-            setPopupConfig({
-                variant: "success",
-                title: "Kata Sandi Diperbarui",
-                message: "Kata sandi Anda berhasil diperbarui.",
-            });
-            setIsPopupOpen(true);
+            await changePasswordMutation.mutateAsync({ oldPw, newPw, confirmPw });
         } catch (error: any) {
             throw error;
         }
     };
 
     const submitChangeRequest = async () => {
-        try {
-            setIsSubmitting(true);
-            const payload: UpdateProfileRequest = {
-                ...pendingChanges,
-                note: noteText,
-            };
-
-            const response = await profileService.updateProfile(payload);
-
-            if (response.success) {
-                setIsNoteModalOpen(false);
-                setPopupConfig({
-                    variant: "success",
-                    title: "Perubahan Berhasil Diajukan",
-                    message: "Pengajuan perubahan data anda telah dikirim dan sedang menunggu persetujuan Admin/HRD.",
-                });
-                setIsPopupOpen(true);
-                fetchProfile();
-            }
-        } catch (err: unknown) {
-            const apiError = err as { message?: string };
-            setPopupConfig({
-                variant: "error",
-                title: "Gagal Mengajukan Perubahan",
-                message: apiError.message || "Terjadi kesalahan saat mengajukan perubahan.",
-            });
-            setIsPopupOpen(true);
-            console.error("Error submitting profile change:", err);
-        } finally {
-            setIsSubmitting(false);
-        }
+        const payload: UpdateProfileRequest = {
+            ...pendingChanges,
+            note: noteText,
+        };
+        updateProfileMutation.mutate(payload);
     };
 
     if (isLoading) {

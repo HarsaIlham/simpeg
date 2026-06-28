@@ -15,6 +15,7 @@ import FormTambahPegawai from "../components/FormTambahPegawai";
 import { pegawaiService } from "../../../../services/pegawaiService";
 import Button from "../../../ui/atoms/Button";
 import { useNavigate } from "react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface PegawaiItem {
     id: number;
@@ -41,26 +42,14 @@ const ITEMS_PER_PAGE = 10;
 
 const PegawaiAdmin = () => {
     const navigate = useNavigate();
-    const [pegawaiList, setPegawaiList] = useState<PegawaiItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
+
     const [searchValue, setSearchValue] = useState("");
-
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
-
-    const [statCounts, setStatCounts] = useState({
-        totalPegawai: 0,
-        hrdCount: 0,
-        direkturCount: 0,
-        pegawaiAktif: 0,
-    });
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
     const [editingPegawai, setEditingPegawai] = useState<PegawaiItem | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
 
     const [popup, setPopup] = useState({
         isOpen: false,
@@ -77,70 +66,69 @@ const PegawaiAdmin = () => {
         setPopup(prev => ({ ...prev, isOpen: false }));
     };
 
-    const fetchPegawai = useCallback(async (page: number = 1, search?: string) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const response = await pegawaiService.getAll({
-                page,
-                per_page: ITEMS_PER_PAGE,
-                search: search || undefined,
-            });
-            if (response.success && response.data) {
-                const responseData = response.data as any;
-                const paginatedPegawai = responseData.pegawai;
+    const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+        queryKey: ["pegawaiAdmin", currentPage, debouncedSearch],
+        queryFn: () => pegawaiService.getAll({
+            page: currentPage,
+            per_page: ITEMS_PER_PAGE,
+            search: debouncedSearch || undefined,
+        }),
+    });
 
-                const rawList = paginatedPegawai?.data || [];
-                const mapped: PegawaiItem[] = rawList.map((item: any) => ({
-                    id: item.id_pegawai,
-                    nama: item.nama || "",
-                    nik: item.nik || "",
-                    jabatan: item.jabatan || "-",
-                    status: item.status || "Aktif",
-                    unitKerja: item.unit_kerja || "-",
-                    role: item.role || "pegawai",
-                    email: item.email || "-",
-                    noTelepon: item.no_telp || "-",
-                    statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
-                    jenisPegawai: item.jenis_pegawai || "",
-                    pendidikan: item.pendidikan || "",
-                    statusPegawai: item.status || "",
-                }));
-                setPegawaiList(mapped);
+    const isLoading = queryIsLoading;
+    const error = queryError ? (queryError as any).message || "Gagal mengambil data pegawai." : null;
 
-                setCurrentPage(paginatedPegawai?.current_page || 1);
-                setTotalPages(paginatedPegawai?.last_page || 1);
-                setTotalItems(paginatedPegawai?.total || 0);
-                setPerPage(paginatedPegawai?.per_page || ITEMS_PER_PAGE);
-                setStatCounts({
-                    totalPegawai: responseData.total_pegawai ?? 0,
-                    hrdCount: responseData.jumlah_hrd ?? 0,
-                    direkturCount: responseData.jumlah_direktur ?? 0,
-                    pegawaiAktif: responseData.jumlah_pegawai_aktif ?? 0,
-                });
-            }
-        } catch (err: any) {
-            setError(err?.message || "Gagal mengambil data pegawai.");
-        } finally {
-            setIsLoading(false);
+    const pegawaiList = useMemo(() => {
+        if (!response?.success || !response?.data) return [];
+        const paginatedPegawai = (response.data as any).pegawai;
+        const rawList = paginatedPegawai?.data || [];
+        return rawList.map((item: any) => ({
+            id: item.id_pegawai,
+            nama: item.nama || "",
+            nik: item.nik || "",
+            jabatan: item.jabatan || "-",
+            status: item.status || "Aktif",
+            unitKerja: item.unit_kerja || "-",
+            role: item.role || "pegawai",
+            email: item.email || "-",
+            noTelepon: item.no_telp || "-",
+            statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
+            jenisPegawai: item.jenis_pegawai || "",
+            pendidikan: item.pendidikan || "",
+            statusPegawai: item.status || "",
+        }));
+    }, [response]);
+
+    const riwayatPaginated = (response?.data as any)?.pegawai;
+    const totalPages = riwayatPaginated?.last_page || 1;
+    const totalItems = riwayatPaginated?.total || 0;
+    const perPage = riwayatPaginated?.per_page || ITEMS_PER_PAGE;
+
+    const statCounts = useMemo(() => {
+        if (!response?.success || !response?.data) {
+            return {
+                totalPegawai: 0,
+                hrdCount: 0,
+                direkturCount: 0,
+                pegawaiAktif: 0,
+            };
         }
-    }, []);
-
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+        const responseData = response.data as any;
+        return {
+            totalPegawai: responseData.total_pegawai ?? 0,
+            hrdCount: responseData.jumlah_hrd ?? 0,
+            direkturCount: responseData.jumlah_direktur ?? 0,
+            pegawaiAktif: responseData.jumlah_pegawai_aktif ?? 0,
+        };
+    }, [response]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchValue);
+            setCurrentPage(1);
         }, 500);
         return () => clearTimeout(timer);
     }, [searchValue]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedSearch]);
-    useEffect(() => {
-        fetchPegawai(currentPage, debouncedSearch);
-    }, [currentPage, debouncedSearch, fetchPegawai]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
@@ -154,38 +142,39 @@ const PegawaiAdmin = () => {
         setEditingPegawai(null);
     };
 
+    const changeRoleMutation = useMutation({
+        mutationFn: ({ id, role, status }: { id: number; role: string; status: string }) => 
+            pegawaiService.changeRole(id, role as any, status),
+        onSuccess: (res) => {
+            if (res.success) {
+                setEditingPegawai(null);
+                showPopup("checklist", "Berhasil", `Role dan status ${editingPegawai?.nama} berhasil diperbarui.`);
+                queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
+                queryClient.invalidateQueries({ queryKey: ["pegawai"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal", err?.message || "Gagal memperbarui hak akses dan status.");
+        }
+    });
+
     const handleSave = async (role: string, status: string) => {
         if (!editingPegawai) return;
-
-        setIsSaving(true);
-        try {
-            const response = await pegawaiService.changeRole(
-                editingPegawai.id,
-                role as any,
-                status
-            );
-            if (response.success) {
-                handleModalClose();
-                showPopup("checklist", "Berhasil", `Role dan status ${editingPegawai.nama} berhasil diperbarui.`);
-                fetchPegawai(currentPage, debouncedSearch);
-            }
-        } catch (err: any) {
-            showPopup("error", "Gagal", err?.message || "Gagal memperbarui hak akses dan status.");
-        } finally {
-            setIsSaving(false);
-        }
+        changeRoleMutation.mutate({ id: editingPegawai.id, role, status });
     };
 
-    const handleCreatePegawai = async (payload: { nik: string; nama: string; password?: string }) => {
-        setIsSaving(true);
-        try {
-            const response = await pegawaiService.create(payload);
-            if (response.success) {
+    const createPegawaiMutation = useMutation({
+        mutationFn: (payload: { nik: string; nama: string; password?: string }) => 
+            pegawaiService.create(payload),
+        onSuccess: (res, variables) => {
+            if (res.success) {
                 setIsAddModalOpen(false);
-                showPopup("checklist", "Berhasil", `Pegawai ${payload.nama} berhasil ditambahkan.`);
-                fetchPegawai(1, debouncedSearch);
+                showPopup("checklist", "Berhasil", `Pegawai ${variables.nama} berhasil ditambahkan.`);
+                queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
+                queryClient.invalidateQueries({ queryKey: ["pegawai"] });
             }
-        } catch (err: any) {
+        },
+        onError: (err: any) => {
             let errorMsg = "Gagal menambahkan pegawai.";
             if (err?.errors?.nik) {
                 errorMsg = "NIK sudah terdaftar.";
@@ -193,10 +182,14 @@ const PegawaiAdmin = () => {
                 errorMsg = err.message;
             }
             showPopup("error", "Gagal", errorMsg);
-        } finally {
-            setIsSaving(false);
         }
+    });
+
+    const handleCreatePegawai = async (payload: { nik: string; nama: string; password?: string }) => {
+        createPegawaiMutation.mutate(payload);
     };
+
+    const isSaving = changeRoleMutation.isPending || createPegawaiMutation.isPending;
 
     const displayedPegawai = useMemo(() => {
         return pegawaiList;

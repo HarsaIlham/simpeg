@@ -35,13 +35,13 @@ const buildPasanganFormData = (payload: PasanganFormPayload): FormData => {
     if (payload.nik) fd.append("nik", payload.nik);
     if (payload.tempat_lahir) fd.append("tempat_lahir", payload.tempat_lahir);
     if (payload.tanggal_lahir) fd.append("tanggal_lahir", payload.tanggal_lahir);
-    if (payload.pekerjaan) fd.append("pekerjaan", payload.pekerjaan);
-    if (payload.instansi) fd.append("instansi", payload.instansi);
+    fd.append("pekerjaan", payload.pekerjaan || "");
+    fd.append("instansi", payload.instansi || "");
     if (payload.status_pernikahan) fd.append("status_pernikahan", payload.status_pernikahan);
     if (payload.tanggal_pernikahan) fd.append("tanggal_pernikahan", payload.tanggal_pernikahan);
-    if (payload.nomor_buku_nikah) fd.append("nomor_buku_nikah", payload.nomor_buku_nikah);
+    fd.append("nomor_buku_nikah", payload.nomor_buku_nikah || "");
     if (payload.status_tanggungan) fd.append("status_tanggungan", payload.status_tanggungan);
-    if (payload.npwp_pasangan) fd.append("npwp_pasangan", payload.npwp_pasangan);
+    fd.append("npwp_pasangan", payload.npwp_pasangan || "");
     if (payload.buku_nikah_file) fd.append("buku_nikah_file", payload.buku_nikah_file);
     return fd;
 };
@@ -54,10 +54,10 @@ const buildAnakFormData = (payload: AnakFormPayload): FormData => {
     if (payload.tanggal_lahir) fd.append("tanggal_lahir", payload.tanggal_lahir);
     if (payload.jenis_kelamin) fd.append("jenis_kelamin", payload.jenis_kelamin);
     if (payload.status_anak) fd.append("status_anak", payload.status_anak);
-    if (payload.pendidikan_terakhir) fd.append("pendidikan_terakhir", payload.pendidikan_terakhir);
+    fd.append("pendidikan_terakhir", payload.pendidikan_terakhir || "");
     if (payload.status_tanggungan) fd.append("status_tanggungan", payload.status_tanggungan);
-    if (payload.keterangan_disabilitas) fd.append("keterangan_disabilitas", payload.keterangan_disabilitas);
-    if (payload.akta_kelahiran_file) fd.append("akta_kelahiran_file", payload.akta_kelahiran_file);
+    fd.append("keterangan_disabilitas", payload.keterangan_disabilitas || "");
+    if (payload.akta_kelahiran_file_path) fd.append("akta_kelahiran_file_path", payload.akta_kelahiran_file_path);
     return fd;
 };
 
@@ -345,6 +345,7 @@ const TabKeluarga = ({ keluargaList, isAdmin, pegawaiId, onRefresh }: TabKeluarg
                             pendidikan_terakhir: editingMember.pendidikanTerakhir || "",
                             status_tanggungan: editingMember.tanggungan ? "1" : "0",
                             keterangan_disabilitas: editingMember.keteranganDisabilitas || "",
+                            akta_kelahiran_file_path: editingMember.aktaKelahiranFilePath || "",
                         }}
                         onCancel={handleCloseEdit}
                         onSubmit={handleEditAnak}

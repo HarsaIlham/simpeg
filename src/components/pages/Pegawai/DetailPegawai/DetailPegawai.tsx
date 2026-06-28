@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { User, GraduationCap, TrendingUp, ArrowLeft, ContactRound } from "lucide-react";
 
 import Topbar from "../../../ui/organisms/Topbar/Topbar";
@@ -227,85 +228,106 @@ const DetailPegawai = () => {
     const isAdmin = user?.role === "admin" || user?.role === "hrd";
 
     const [activeTab, setActiveTab] = useState("pegawai");
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    const [profileData, setProfileData] = useState<propsType | null>(null);
-    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-    const [statusPegawai, setStatusPegawai] = useState("Aktif");
-    const [pegawaiMeta, setPegawaiMeta] = useState<{ nama: string; nip: string; jabatan: string; email: string; noTelp: string; unitKerja: string }>({
-        nama: "", nip: "", jabatan: "", email: "", noTelp: "", unitKerja: "",
+    const { data: response, isLoading: queryIsLoading, error: queryError, refetch } = useQuery({
+        queryKey: ["pegawaiAdmin", Number(id)],
+        queryFn: () => pegawaiService.getById(Number(id)),
+        enabled: !!id,
     });
 
-    const [diklatList, setDiklatList] = useState<CardDiklatData[]>([]);
-    const [keluargaList, setKeluargaList] = useState<FamilyMemberData[]>([]);
-    const [jabatanList, setJabatanList] = useState<CardJabatanData[]>([]);
-    const [strList, setStrList] = useState<CardStrData[]>([]);
-    const [sipList, setSipList] = useState<CardSipData[]>([]);
-    const [penugasanList, setPenugasanList] = useState<CardPenugasanKlinisData[]>([]);
-    const [pendidikanList, setPendidikanList] = useState<CardPendidikanData[]>([]);
-    const [pangkatList, setPangkatList] = useState<CardPangkatData[]>([]);
+    const isLoading = queryIsLoading;
+    const error = queryError ? (queryError as any).message || "Gagal mengambil data pegawai." : null;
 
-    const hasLoadedRef = useRef(false);
+    const data: DetailPegawaiResponse | null = useMemo(() => {
+        if (!response?.success || !response?.data) return null;
+        return response.data;
+    }, [response]);
 
-    const fetchDetail = useCallback(async (silent: boolean = false) => {
-        if (!id) return;
-        const shouldShowLoading = !silent && !hasLoadedRef.current;
-        if (shouldShowLoading) {
-            setIsLoading(true);
-        }
-        setError(null);
-        try {
-            const response = await pegawaiService.getById(Number(id));
-            if (response.success && response.data) {
-                const data: DetailPegawaiResponse = response.data;
-                const pegawai = data.pegawai;
-                const pribadi = data.pribadi;
-                const keluarga = data.keluarga;
+    const profileData = useMemo(() => {
+        if (!data) return null;
+        return mapToProfileData(data.pegawai, data.pribadi);
+    }, [data]);
 
-                setProfileData(mapToProfileData(pegawai, pribadi));
-                setPhotoUrl(pegawai.link_photo_profil || null);
-                setStatusPegawai(pegawai.status_pegawai || "Aktif");
-                setPegawaiMeta({
-                    nama: pegawai.nama || "",
-                    nip: pegawai.nip || "",
-                    jabatan: pegawai.jabatan || "",
-                    email: pegawai.email || "",
-                    noTelp: pribadi?.no_hp || pribadi?.no_telp || "",
-                    unitKerja: pegawai.unit_kerja || "",
-                });
+    const photoUrl = useMemo(() => {
+        if (!data) return null;
+        return data.pegawai.link_photo_profil || null;
+    }, [data]);
 
-                setDiklatList(mapToDiklatCards(data.diklat || []));
+    const statusPegawai = useMemo(() => {
+        if (!data) return "Aktif";
+        return data.pegawai.status_pegawai || "Aktif";
+    }, [data]);
 
-                const riwayat = data.riwayat_karir || {};
-                setJabatanList(mapToJabatanCards(riwayat.jabatan || []));
-                setStrList(mapToStrCards(riwayat.str || []));
-                setSipList(mapToSipCards(riwayat.sip || []));
-                setPenugasanList(mapToPenugasanCards(riwayat.penugasan_klinis || []));
-                setPendidikanList(mapToPendidikanCards(riwayat.pendidikan || []));
-                setPangkatList(mapToPangkatCards(riwayat.pangkat || []));
-                setKeluargaList([
-                    ...(keluarga.kontak_darurat || []).map(transformKontakDarurat),
-                    ...(keluarga.anak || []).map(transformAnak),
-                    ...(keluarga.pasangan || []).map(transformPasangan),
-                    ...(keluarga.orang_tua || []).map(transformOrangTua),
-                    ...(keluarga.tanggungan_lain || []).map(transformTanggunganLain),
-                ]);
-                hasLoadedRef.current = true;
-            }
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string };
-            setError(errorObj?.message || "Gagal mengambil data pegawai.");
-        } finally {
-            if (shouldShowLoading) {
-                setIsLoading(false);
-            }
-        }
-    }, [id]);
+    const pegawaiMeta = useMemo(() => {
+        if (!data) return { nama: "", nip: "", jabatan: "", email: "", noTelp: "", unitKerja: "" };
+        const pegawai = data.pegawai;
+        const pribadi = data.pribadi;
+        return {
+            nama: pegawai.nama || "",
+            nip: pegawai.nip || "",
+            jabatan: pegawai.jabatan || "",
+            email: pegawai.email || "",
+            noTelp: pribadi?.no_hp || pribadi?.no_telp || "",
+            unitKerja: pegawai.unit_kerja || "",
+        };
+    }, [data]);
 
-    useEffect(() => {
-        fetchDetail();
-    }, [fetchDetail]);
+    const diklatList = useMemo(() => {
+        if (!data) return [];
+        return mapToDiklatCards(data.diklat || []);
+    }, [data]);
+
+    const keluargaList = useMemo(() => {
+        if (!data) return [];
+        const keluarga = data.keluarga || {};
+        return [
+            ...(keluarga.kontak_darurat || []).map(transformKontakDarurat),
+            ...(keluarga.anak || []).map(transformAnak),
+            ...(keluarga.pasangan || []).map(transformPasangan),
+            ...(keluarga.orang_tua || []).map(transformOrangTua),
+            ...(keluarga.tanggungan_lain || []).map(transformTanggunganLain),
+        ];
+    }, [data]);
+
+    const jabatanList = useMemo(() => {
+        if (!data) return [];
+        const riwayat = data.riwayat_karir || {};
+        return mapToJabatanCards(riwayat.jabatan || []);
+    }, [data]);
+
+    const strList = useMemo(() => {
+        if (!data) return [];
+        const riwayat = data.riwayat_karir || {};
+        return mapToStrCards(riwayat.str || []);
+    }, [data]);
+
+    const sipList = useMemo(() => {
+        if (!data) return [];
+        const riwayat = data.riwayat_karir || {};
+        return mapToSipCards(riwayat.sip || []);
+    }, [data]);
+
+    const penugasanList = useMemo(() => {
+        if (!data) return [];
+        const riwayat = data.riwayat_karir || {};
+        return mapToPenugasanCards(riwayat.penugasan_klinis || []);
+    }, [data]);
+
+    const pendidikanList = useMemo(() => {
+        if (!data) return [];
+        const riwayat = data.riwayat_karir || {};
+        return mapToPendidikanCards(riwayat.pendidikan || []);
+    }, [data]);
+
+    const pangkatList = useMemo(() => {
+        if (!data) return [];
+        const riwayat = data.riwayat_karir || {};
+        return mapToPangkatCards(riwayat.pangkat || []);
+    }, [data]);
+
+    const handleRefresh = useCallback(() => {
+        refetch();
+    }, [refetch]);
 
     const renderLoading = () => (
         <div className={styles.centeredState}>
@@ -336,7 +358,7 @@ const DetailPegawai = () => {
                 />
             </div>
 
-            {isLoading ? renderLoading() : error ? renderError() : (
+            {isLoading ? renderLoading() : error || !data ? renderError() : (
                 <>
                     <div className={styles.tabsWrapper}>
                         <Card>
@@ -353,14 +375,14 @@ const DetailPegawai = () => {
                                 pegawaiMeta={pegawaiMeta}
                                 isAdmin={isAdmin}
                                 pegawaiId={Number(id)}
-                                onRefresh={fetchDetail}
+                                onRefresh={handleRefresh}
                             />
                         )}
                         {activeTab === "diklat" && (
-                            <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={fetchDetail} />
+                            <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={handleRefresh} />
                         )}
                         {activeTab === "keluarga" && (
-                            <TabKeluarga keluargaList={keluargaList} isAdmin={isAdmin} pegawaiId={Number(id)} onRefresh={fetchDetail} />
+                            <TabKeluarga keluargaList={keluargaList} isAdmin={isAdmin} pegawaiId={Number(id)} onRefresh={handleRefresh} />
                         )}
                         {activeTab === "riwayat" && (
                             <TabRiwayat
@@ -372,7 +394,7 @@ const DetailPegawai = () => {
                                 pendidikanList={pendidikanList}
                                 isAdmin={isAdmin}
                                 pegawaiId={Number(id)}
-                                onRefresh={fetchDetail}
+                                onRefresh={handleRefresh}
                             />
                         )}
                     </div>

@@ -238,7 +238,7 @@ const FormPasangan = ({ onCancel, onSubmit, initialData, isLoading }: FormPasang
                     const selected = e.target.files?.[0] ?? null;
                     setFile(selected);
                 }}
-                required
+                required={!initialData?.buku_nikah_file_path}
             />
             {initialData?.buku_nikah_file_path && !file && (
                 <span className={styles.fileHint}>

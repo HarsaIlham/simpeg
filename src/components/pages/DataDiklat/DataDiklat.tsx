@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
 import styles from "./DataDiklat.module.css"
 import Topbar from "../../ui/organisms/Topbar/Topbar"
@@ -11,18 +11,19 @@ import Select from "../../ui/atoms/Select"
 import CardDiklat from "../../ui/organisms/CardDiklat"
 import type { CardDiklatData } from "../../ui/organisms/CardDiklat/CardDiklat"
 import Modal from "../../ui/organisms/Modal"
-// import ConfirmDeleteModal from "../../ui/organisms/ConfirmDeleteModal"
 import FormLaporanDiklat from "../../ui/organisms/FormLaporanDiklat"
 import Pagination from "../../ui/molecules/Pagination"
 import { diklatService } from "../../../services/diklatService"
 import { cvService } from "../../../services/cvService"
 import { generateCvPdf } from "../../../utils/generateCvPdf"
-import type { RiwayatDiklatItem, DiklatRingkasan } from "../../../types/api"
+import type { RiwayatDiklatItem } from "../../../types/api"
 import Popup from "../../ui/molecules/Popup"
 import { useMasterData } from "../../../hooks/useMasterData"
 import PdfViewerModal from "../../ui/molecules/PdfViewerModal"
 import { getProxiedFileUrl } from "../../../utils/api"
 import { getGlobalUser } from "../../../contexts/AuthContext"
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 
 const formatTanggal = (dateStr: string): string => {
   const date = new Date(dateStr)
@@ -87,6 +88,7 @@ const DataDiklat = () => {
   const user = getGlobalUser()
   const { options: filterJenisOptions } = useMasterData("tipeDiklat", "Semua Jenis", JENIS_OPTIONS)
   const [searchParams] = useSearchParams()
+  const queryClient = useQueryClient()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<string>("")
@@ -96,15 +98,7 @@ const DataDiklat = () => {
   const [filterJenis, setFilterJenis] = useState("")
   const [filterStatus, setFilterStatus] = useState(searchParams.get("status") ?? "")
 
-  const [diklatList, setDiklatList] = useState<CardDiklatData[]>([])
-  const [_ringkasan, setRingkasan] = useState<DiklatRingkasan | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
-  const [perPage, setPerPage] = useState(ITEMS_PER_PAGE)
 
   const [popup, setPopup] = useState<popupState>({
     isOpen: false,
@@ -121,7 +115,6 @@ const DataDiklat = () => {
       title,
       message,
     })
-    console.log(popup.variant)
   }
 
   const closePopup = () => {
@@ -133,50 +126,31 @@ const DataDiklat = () => {
     setPreviewFile({ url: proxied, namaDiklat })
   }
 
-  const fetchDiklat = useCallback(async (
-    page: number = 1,
-    searchVal?: string,
-    jenisVal?: string,
-    statusVal?: string
-  ) => {
-    setIsLoading(true)
-    setError(null)
+  const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+    queryKey: ["diklat", currentPage, debouncedSearch, filterJenis, filterStatus],
+    queryFn: () => diklatService.getDiklat({
+      page: currentPage,
+      per_page: ITEMS_PER_PAGE,
+      search: debouncedSearch || undefined,
+      jenis: filterJenis || undefined,
+      status: filterStatus || undefined,
+    }),
+  });
 
-    try {
-      const response = await diklatService.getDiklat({
-        page,
-        per_page: ITEMS_PER_PAGE,
-        search: searchVal,
-        jenis: jenisVal,
-        status: statusVal,
-      })
+  const isLoading = queryIsLoading;
+  const error = queryError ? (queryError as any).message || "Gagal mengambil data diklat." : null;
 
-      if (response.success && response.data) {
-        const { diklat } = response.data
+  const diklatList = useMemo(() => {
+    if (!response?.success || !response?.data) return [];
+    const riwayatPaginated = response.data.diklat.riwayat_diklat as any;
+    const rawRiwayat = riwayatPaginated?.data || riwayatPaginated || [];
+    return rawRiwayat.map(mapRiwayatToCardDiklat);
+  }, [response]);
 
-        const riwayatPaginated = diklat.riwayat_diklat as any
-        const rawRiwayat = riwayatPaginated?.data || riwayatPaginated || []
-        const mappedDiklat = rawRiwayat.map(mapRiwayatToCardDiklat)
-        setDiklatList(mappedDiklat)
-
-        if (riwayatPaginated?.current_page !== undefined) {
-          setCurrentPage(riwayatPaginated.current_page)
-          setTotalPages(riwayatPaginated.last_page || 1)
-          setTotalItems(riwayatPaginated.total || 0)
-          setPerPage(riwayatPaginated.per_page || ITEMS_PER_PAGE)
-        }
-
-        setRingkasan(diklat.ringkasan)
-      } else {
-        setError(response.message || "Gagal mengambil data diklat.")
-      }
-    } catch (err: unknown) {
-      const errorObj = err as { message?: string }
-      setError(errorObj?.message || "Terjadi kesalahan saat mengambil data diklat.")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+  const riwayatPaginated = response?.data?.diklat?.riwayat_diklat as any;
+  const totalPages = riwayatPaginated?.last_page || 1;
+  const totalItems = riwayatPaginated?.total || 0;
+  const perPage = riwayatPaginated?.per_page || ITEMS_PER_PAGE;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -186,20 +160,9 @@ const DataDiklat = () => {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [filterJenis, filterStatus])
-  useEffect(() => {
-    fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined, filterStatus || undefined)
-  }, [currentPage, debouncedSearch, filterJenis, filterStatus, fetchDiklat])
-
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
   }, [])
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  // const [deleteTarget, setDeleteTarget] = useState<CardDiklatData | null>(null)
-  // const [isDeleting, setIsDeleting] = useState(false)
 
   const handleEdit = (diklat: CardDiklatData) => {
     if (diklat.jenisPelaksana === "internal" && diklat.pencatat !== user?.nama) {
@@ -211,51 +174,54 @@ const DataDiklat = () => {
     setIsModalOpen(true)
   }
 
-  // const handleDelete = (diklat: CardDiklatData) => {
-  //   setDeleteTarget(diklat)
-  // }
+  const saveDiklatMutation = useMutation({
+    mutationFn: ({ id, formData }: { id?: number; formData: FormData }) => {
+      if (id !== undefined) {
+        return diklatService.updateDiklat(id, formData);
+      } else {
+        return diklatService.createDiklat(formData);
+      }
+    },
+    onSuccess: (res, variables) => {
+      if (res.success) {
+        showPopup("checklist", "Berhasil", `Data diklat berhasil ${variables.id !== undefined ? "diperbarui" : "ditambahkan"}.`);
+        setIsModalOpen(false);
+        setSelectedDiklat(null);
+        queryClient.invalidateQueries({ queryKey: ["diklat"] });
+      }
+    },
+    onError: (err: any) => {
+      showPopup("error", "Gagal", err?.message || "Gagal menyimpan data diklat.");
+    }
+  });
 
-  // const handleConfirmDelete = async () => {
-  //   if (!deleteTarget) return
-
-  //   setIsDeleting(true)
-  //   try {
-  //     await diklatService.deleteDiklat(deleteTarget.id)
-  //     setDeleteTarget(null)
-  //     await fetchDiklat(currentPage, currentFilters)
-  //     showPopup("checklist", "Berhasil", "Data diklat berhasil dihapus.")
-  //   } catch (err: unknown) {
-  //     const errorObj = err as { message?: string }
-  //     showPopup("error", "Gagal", errorObj?.message || "Gagal menghapus data diklat.")
-  //   } finally {
-  //     setIsDeleting(false)
-  //   }
-  // }
+  const isSubmitting = saveDiklatMutation.isPending;
 
   const handleFormSubmit = async (formData: FormData) => {
-    setIsSubmitting(true)
-    try {
-      if (modalMode === "Edit Diklat" && selectedDiklat) {
-        await diklatService.updateDiklat(selectedDiklat.id, formData)
-        showPopup("checklist", "Berhasil", "Data diklat berhasil diperbarui.")
-      } else {
-        await diklatService.createDiklat(formData)
-        showPopup("checklist", "Berhasil", "Data diklat berhasil ditambahkan.")
-      }
-      setIsModalOpen(false)
-      setSelectedDiklat(null)
-      await fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined, filterStatus || undefined)
-    } catch (err: unknown) {
-      const errorObj = err as { message?: string }
-      showPopup("error", "Gagal", errorObj?.message || "Gagal menyimpan data diklat.")
-    } finally {
-      setIsSubmitting(false)
-    }
+    saveDiklatMutation.mutate({
+      id: modalMode === "Edit Diklat" && selectedDiklat ? selectedDiklat.id : undefined,
+      formData
+    });
   }
 
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [uploadNoSertif, setUploadNoSertif] = useState("")
-  const [isUploading, setIsUploading] = useState(false)
+
+  const uploadLaporanMutation = useMutation({
+    mutationFn: ({ id, formData }: { id: number; formData: FormData }) => 
+      diklatService.uploadLaporan(id, formData),
+    onSuccess: () => {
+      setIsModalOpen(false);
+      setSelectedDiklat(null);
+      queryClient.invalidateQueries({ queryKey: ["diklat"] });
+      showPopup("checklist", "Berhasil", "Laporan sertifikat berhasil diupload.");
+    },
+    onError: (err: any) => {
+      showPopup("error", "Gagal", err?.message || "Gagal mengupload laporan.");
+    }
+  });
+
+  const isUploading = uploadLaporanMutation.isPending;
 
   const handleUploadLaporan = (diklat: CardDiklatData) => {
     setSelectedDiklat(diklat)
@@ -269,26 +235,12 @@ const DataDiklat = () => {
     e.preventDefault()
     if (!selectedDiklat || !uploadFile) return
 
-    setIsUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append("upload_laporan", uploadFile)
-      if (uploadNoSertif.trim()) {
-        formData.append("no_sertif", uploadNoSertif.trim())
-      }
-
-      await diklatService.uploadLaporan(selectedDiklat.id, formData)
-
-      setIsModalOpen(false)
-      setSelectedDiklat(null)
-      await fetchDiklat(currentPage, debouncedSearch || undefined, filterJenis || undefined, filterStatus || undefined)
-      showPopup("checklist", "Berhasil", "Laporan sertifikat berhasil diupload.")
-    } catch (err: unknown) {
-      const errorObj = err as { message?: string }
-      showPopup("error", "Gagal", errorObj?.message || "Gagal mengupload laporan.")
-    } finally {
-      setIsUploading(false)
+    const formData = new FormData()
+    formData.append("upload_laporan", uploadFile)
+    if (uploadNoSertif.trim()) {
+      formData.append("no_sertif", uploadNoSertif.trim())
     }
+    uploadLaporanMutation.mutate({ id: selectedDiklat.id, formData });
   }
 
   const handleTambahDiklat = () => {
@@ -297,20 +249,21 @@ const DataDiklat = () => {
     setIsModalOpen(true)
   }
 
-  const [isCetakLoading, setIsCetakLoading] = useState(false)
+  const cetakCvMutation = useMutation({
+    mutationFn: () => cvService.getCvData(),
+    onSuccess: async (cvData) => {
+      await generateCvPdf(cvData);
+      showPopup("checklist", "Cetak CV", "CV berhasil diunduh.");
+    },
+    onError: (err: any) => {
+      showPopup("error", "Gagal", err?.message || "Gagal mengambil data untuk CV.");
+    }
+  });
+
+  const isCetakLoading = cetakCvMutation.isPending;
 
   const handleCetakCv = async () => {
-    setIsCetakLoading(true)
-    try {
-      const cvData = await cvService.getCvData()
-      await generateCvPdf(cvData)
-      showPopup("checklist", "Cetak CV", "CV berhasil diunduh.")
-    } catch (err: unknown) {
-      const errorObj = err as { message?: string }
-      showPopup("error", "Gagal", errorObj?.message || "Gagal mengambil data untuk CV.")
-    } finally {
-      setIsCetakLoading(false)
-    }
+    cetakCvMutation.mutate();
   }
 
   return (
@@ -371,7 +324,7 @@ const DataDiklat = () => {
             </Card>
           )
             : diklatList.length > 0 ? (
-              diklatList.map((diklat) => {
+              diklatList.map((diklat: any) => {
                 const canEdit = diklat.jenisPelaksana !== "internal" || diklat.pencatat === user?.nama;
                 return (
                   <CardDiklat

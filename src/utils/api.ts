@@ -50,7 +50,7 @@ export const getProxiedFileUrl = (url: string | null | undefined): string => {
     if (!url) return "";
     try {
         const backendBase = BASE_URL.replace(/\/api$/, "");
-        if (url.startsWith(backendBase)) {
+        if (backendBase && url.startsWith(backendBase)) {
             return url.replace(backendBase, "");
         }
         if (url.startsWith("http")) {

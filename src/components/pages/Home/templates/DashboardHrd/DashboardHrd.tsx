@@ -1,5 +1,5 @@
 import { GraduationCap, Stethoscope, Users } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import MainHeaderSection from "../../../../ui/molecules/MainHeaderSection";
 import Topbar from "../../../../ui/organisms/Topbar/Topbar";
 import Card from "../../../../ui/atoms/Card";
@@ -8,9 +8,10 @@ import TabPegawai from "./TabPegawai";
 import TabDiklatAsn from "./TabDiklatAsn";
 import TabDiklatNakes from "./TabDiklatNakes";
 import { dashboardService } from "../../../../../services/dashboardService";
-import type { DashboardHrdDashboard } from "../../../../../types/api";
 import styles from "./DashboardHrd.module.css";
 import { getGlobalUser } from "../../../../../contexts/AuthContext";
+
+import { useQuery } from "@tanstack/react-query";
 
 const TAB_ITEMS = [
     { id: "pegawai", label: "Pegawai", icon: <Users size={16} /> },
@@ -22,31 +23,15 @@ const DashboardHrd = () => {
     const user = getGlobalUser();
     const role = user?.role;
     const [activeTab, setActiveTab] = useState("pegawai");
-    const [dashboard, setDashboard] = useState<DashboardHrdDashboard | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    const fetchDashboard = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const res = await dashboardService.getHrdDashboard();
-            if (res.success && res.data) {
-                setDashboard(res.data.dashboard);
-            } else {
-                setError(res.message || "Gagal mengambil data dashboard.");
-            }
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string };
-            setError(errorObj?.message || "Terjadi kesalahan.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
+    const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+        queryKey: ["dashboardHrd"],
+        queryFn: () => dashboardService.getHrdDashboard(),
+    });
 
-    useEffect(() => {
-        fetchDashboard();
-    }, [fetchDashboard]);
+    const dashboard = response?.success ? response.data?.dashboard : null;
+    const isLoading = queryIsLoading;
+    const error = queryError ? (queryError as any).message || "Gagal mengambil data dashboard." : null;
 
     const renderTabContent = () => {
         if (error) {

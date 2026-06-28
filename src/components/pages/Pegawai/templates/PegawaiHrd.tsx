@@ -15,6 +15,7 @@ import Input from "../../../ui/atoms/Input";
 import { getGlobalUser } from "../../../../contexts/AuthContext";
 import { useMasterData } from "../../../../hooks/useMasterData";
 import { pegawaiService } from "../../../../services/pegawaiService";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface PegawaiItem {
     id: number;
@@ -73,9 +74,8 @@ const PegawaiHrd = () => {
     const user = getGlobalUser();
     const navigate = useNavigate();
     const isAdmin = user?.role === "admin";
-    const [pegawaiList, setPegawaiList] = useState<PegawaiItem[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const queryClient = useQueryClient();
+
     const [searchValue, setSearchValue] = useState("");
     const [statusdata, setStatusData] = useState("");
     const [jenisPegawai, setJenisPegawai] = useState("");
@@ -83,7 +83,6 @@ const PegawaiHrd = () => {
     const [statusPegawai, setStatusPegawai] = useState("");
     const [profesi, setProfesi] = useState("");
 
-    // Date/Year entry filters
     const [tahunMasuk, setTahunMasuk] = useState("");
     const [tglMasukDari, setTglMasukDari] = useState("");
     const [tglMasukSampai, setTglMasukSampai] = useState("");
@@ -94,94 +93,16 @@ const PegawaiHrd = () => {
     const [tempTglMasukSampai, setTempTglMasukSampai] = useState("");
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
-
-    const [statCounts, setStatCounts] = useState({
-        totalPegawai: 0,
-        hrdCount: 0,
-        direkturCount: 0,
-        adminCount: 0,
-    });
 
     const { options: filterJenisPegawaiOptions } = useMasterData("jenisPegawai", "Semua Jenis Pegawai", JENIS_PEGAWAI_OPTIONS);
     const { options: filterProfesiOptions } = useMasterData("profesi", "Semua Profesi", PROFESI_OPTIONS);
-
-    const fetchPegawai = useCallback(async (
-        page: number = 1,
-        filters?: {
-            search?: string;
-            status_kelengkapan?: string;
-            jenis_pegawai?: string;
-            pendidikan?: string;
-            status_pegawai?: string;
-            profesi?: string;
-            tahun_masuk?: string;
-            tgl_masuk_dari?: string;
-            tgl_masuk_sampai?: string;
-        }
-    ) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const response = await pegawaiService.getAll({
-                page,
-                per_page: ITEMS_PER_PAGE,
-                search: filters?.search || undefined,
-                status_kelengkapan: filters?.status_kelengkapan || undefined,
-                jenis_pegawai: filters?.jenis_pegawai || undefined,
-                pendidikan: filters?.pendidikan || undefined,
-                status_pegawai: filters?.status_pegawai || undefined,
-                profesi: filters?.profesi || undefined,
-                tahun_masuk: filters?.tahun_masuk || undefined,
-                tgl_masuk_dari: filters?.tgl_masuk_dari || undefined,
-                tgl_masuk_sampai: filters?.tgl_masuk_sampai || undefined,
-            });
-            if (response.success && response.data) {
-                const responseData = response.data as any;
-                const paginatedPegawai = responseData.pegawai;
-
-                const rawList = paginatedPegawai?.data || [];
-                const mapped: PegawaiItem[] = rawList.map((item: any) => ({
-                    id: item.id_pegawai,
-                    nama: item.nama || "",
-                    nik: item.nik || "",
-                    jabatan: item.jabatan || "-",
-                    profesi: item.profesi || item.unit_kerja || "-",
-                    status: item.status || "Aktif",
-                    role: item.role || "pegawai",
-                    statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
-                    jenisPegawai: item.jenis_pegawai || "",
-                    pendidikan: item.pendidikan || "",
-                    statusPegawai: item.status || "",
-                }));
-                setPegawaiList(mapped);
-
-                setCurrentPage(paginatedPegawai?.current_page || 1);
-                setTotalPages(paginatedPegawai?.last_page || 1);
-                setTotalItems(paginatedPegawai?.total || 0);
-                setPerPage(paginatedPegawai?.per_page || ITEMS_PER_PAGE);
-
-                setStatCounts({
-                    totalPegawai: responseData.total_pegawai ?? 0,
-                    hrdCount: responseData.jumlah_hrd ?? 0,
-                    direkturCount: responseData.jumlah_direktur ?? 0,
-                    adminCount: responseData.jumlah_admin ?? 0,
-                });
-            }
-        } catch (err: any) {
-            setError(err?.message || "Gagal mengambil data pegawai.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
 
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchValue);
+            setCurrentPage(1);
         }, 500);
         return () => clearTimeout(timer);
     }, [searchValue]);
@@ -198,27 +119,81 @@ const PegawaiHrd = () => {
         tgl_masuk_sampai: tglMasukSampai || undefined,
     }), [debouncedSearch, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [debouncedSearch, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
-    useEffect(() => {
-        fetchPegawai(currentPage, currentFilters);
-    }, [currentPage, currentFilters, fetchPegawai]);
+    const { data: response, isLoading, error: queryError } = useQuery({
+        queryKey: ["pegawai", currentPage, currentFilters],
+        queryFn: () => pegawaiService.getAll({
+            page: currentPage,
+            per_page: ITEMS_PER_PAGE,
+            search: currentFilters.search,
+            status_kelengkapan: currentFilters.status_kelengkapan,
+            jenis_pegawai: currentFilters.jenis_pegawai,
+            pendidikan: currentFilters.pendidikan,
+            status_pegawai: currentFilters.status_pegawai,
+            profesi: currentFilters.profesi,
+            tahun_masuk: currentFilters.tahun_masuk,
+            tgl_masuk_dari: currentFilters.tgl_masuk_dari,
+            tgl_masuk_sampai: currentFilters.tgl_masuk_sampai,
+        }),
+    });
+
+    const error = queryError ? (queryError as any).message || "Gagal mengambil data pegawai." : null;
+
+    const pegawaiList = useMemo(() => {
+        if (!response?.success || !response?.data) return [];
+        const rawList = (response.data as any).pegawai?.data || [];
+        return rawList.map((item: any) => ({
+            id: item.id_pegawai,
+            nama: item.nama || "",
+            nik: item.nik || "",
+            jabatan: item.jabatan || "-",
+            profesi: item.profesi || item.unit_kerja || "-",
+            status: item.status || "Aktif",
+            role: item.role || "pegawai",
+            statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
+            jenisPegawai: item.jenis_pegawai || "",
+            pendidikan: item.pendidikan || "",
+            statusPegawai: item.status || "",
+        }));
+    }, [response]);
+
+    const statCounts = useMemo(() => {
+        if (!response?.success || !response?.data) {
+            return { totalPegawai: 0, hrdCount: 0, direkturCount: 0, adminCount: 0 };
+        }
+        const responseData = response.data as any;
+        return {
+            totalPegawai: responseData.total_pegawai ?? 0,
+            hrdCount: responseData.jumlah_hrd ?? 0,
+            direkturCount: responseData.jumlah_direktur ?? 0,
+            adminCount: responseData.jumlah_admin ?? 0,
+        };
+    }, [response]);
+
+    const totalPages = (response?.data as any)?.pegawai?.last_page || 1;
+    const totalItems = (response?.data as any)?.pegawai?.total || 0;
+    const perPage = (response?.data as any)?.pegawai?.per_page || ITEMS_PER_PAGE;
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
     }, []);
 
-    const handleRoleChange = useCallback(async (id: number, newRole: "admin" | "hrd" | "direktur" | "pegawai") => {
-        try {
-            const response = await pegawaiService.changeRole(id, newRole);
-            if (response.success) {
-                fetchPegawai(currentPage, currentFilters);
+    const changeRoleMutation = useMutation({
+        mutationFn: ({ id, newRole }: { id: number; newRole: "admin" | "hrd" | "direktur" | "pegawai" }) => 
+            pegawaiService.changeRole(id, newRole),
+        onSuccess: (res) => {
+            if (res.success) {
+                queryClient.invalidateQueries({ queryKey: ["pegawai"] });
+                queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
             }
-        } catch (err: any) {
+        },
+        onError: (err: any) => {
             alert(err?.message || "Gagal mengubah role pegawai.");
         }
-    }, [currentPage, currentFilters, fetchPegawai]);
+    });
+
+    const handleRoleChange = useCallback((id: number, newRole: "admin" | "hrd" | "direktur" | "pegawai") => {
+        changeRoleMutation.mutate({ id, newRole });
+    }, [changeRoleMutation]);
 
     const handleDetailClick = (id: number) => {
         navigate(`/pegawai/${id}`);
@@ -231,6 +206,7 @@ const PegawaiHrd = () => {
             value: statusdata,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
                 setStatusData(e.target.value);
+                setCurrentPage(1);
             },
             icon: <FilterIcon size={16} />
         },
@@ -240,6 +216,7 @@ const PegawaiHrd = () => {
             value: jenisPegawai,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
                 setJenisPegawai(e.target.value);
+                setCurrentPage(1);
             },
             icon: <FilterIcon size={16} />
         },
@@ -249,6 +226,7 @@ const PegawaiHrd = () => {
             value: pendidikan,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
                 setPendidikan(e.target.value);
+                setCurrentPage(1);
             },
             icon: <FilterIcon size={16} />
         },
@@ -258,6 +236,7 @@ const PegawaiHrd = () => {
             value: statusPegawai,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
                 setStatusPegawai(e.target.value);
+                setCurrentPage(1);
             },
             icon: <FilterIcon size={16} />
         },
@@ -267,6 +246,7 @@ const PegawaiHrd = () => {
             value: profesi,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
                 setProfesi(e.target.value);
+                setCurrentPage(1);
             },
             icon: <FilterIcon size={16} />
         },
@@ -491,6 +471,7 @@ const PegawaiHrd = () => {
                                     setTahunMasuk("");
                                     setTglMasukDari("");
                                     setTglMasukSampai("");
+                                    setCurrentPage(1);
                                     setIsDateModalOpen(false);
                                 }}
                             />
@@ -502,6 +483,7 @@ const PegawaiHrd = () => {
                                     setTahunMasuk(tempTahunMasuk);
                                     setTglMasukDari(tempTglMasukDari);
                                     setTglMasukSampai(tempTglMasukSampai);
+                                    setCurrentPage(1);
                                     setIsDateModalOpen(false);
                                 }}
                             />

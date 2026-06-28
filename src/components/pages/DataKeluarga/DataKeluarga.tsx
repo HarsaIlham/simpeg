@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Topbar from "../../ui/organisms/Topbar/Topbar";
 import StatCard from "../../ui/molecules/StatCard";
 import styles from "./DataKeluarga.module.css";
@@ -25,7 +26,6 @@ import Popup from "../../ui/molecules/Popup";
 import { keluargaService } from "../../../services/keluargaService";
 import PdfViewerModal from "../../ui/molecules/PdfViewerModal";
 import type {
-    KeluargaRingkasanResponse,
     PasanganItem,
     AnakItem,
     OrangTuaItem,
@@ -101,13 +101,13 @@ const buildPasanganFormData = (payload: PasanganFormPayload): FormData => {
     if (payload.nik) fd.append("nik", payload.nik);
     if (payload.tempat_lahir) fd.append("tempat_lahir", payload.tempat_lahir);
     if (payload.tanggal_lahir) fd.append("tanggal_lahir", payload.tanggal_lahir);
-    if (payload.pekerjaan) fd.append("pekerjaan", payload.pekerjaan);
-    if (payload.instansi) fd.append("instansi", payload.instansi);
+    fd.append("pekerjaan", payload.pekerjaan || "");
+    fd.append("instansi", payload.instansi || "");
     if (payload.status_pernikahan) fd.append("status_pernikahan", payload.status_pernikahan);
     if (payload.tanggal_pernikahan) fd.append("tanggal_pernikahan", payload.tanggal_pernikahan);
-    if (payload.nomor_buku_nikah) fd.append("nomor_buku_nikah", payload.nomor_buku_nikah);
+    fd.append("nomor_buku_nikah", payload.nomor_buku_nikah || "");
     if (payload.status_tanggungan) fd.append("status_tanggungan", payload.status_tanggungan);
-    if (payload.npwp_pasangan) fd.append("npwp_pasangan", payload.npwp_pasangan);
+    fd.append("npwp_pasangan", payload.npwp_pasangan || "");
     if (payload.buku_nikah_file) fd.append("buku_nikah_file", payload.buku_nikah_file);
     return fd;
 };
@@ -120,10 +120,10 @@ const buildAnakFormData = (payload: AnakFormPayload): FormData => {
     if (payload.tanggal_lahir) fd.append("tanggal_lahir", payload.tanggal_lahir);
     if (payload.jenis_kelamin) fd.append("jenis_kelamin", payload.jenis_kelamin);
     if (payload.status_anak) fd.append("status_anak", payload.status_anak);
-    if (payload.pendidikan_terakhir) fd.append("pendidikan_terakhir", payload.pendidikan_terakhir);
+    fd.append("pendidikan_terakhir", payload.pendidikan_terakhir || "");
     if (payload.status_tanggungan) fd.append("status_tanggungan", payload.status_tanggungan);
-    if (payload.keterangan_disabilitas) fd.append("keterangan_disabilitas", payload.keterangan_disabilitas);
-    if (payload.akta_kelahiran_file) fd.append("akta_kelahiran_file", payload.akta_kelahiran_file);
+    fd.append("keterangan_disabilitas", payload.keterangan_disabilitas || "");
+    if (payload.akta_kelahiran_file_path) fd.append("akta_kelahiran_file_path", payload.akta_kelahiran_file_path);
     return fd;
 };
 
@@ -141,9 +141,7 @@ interface PopupState {
 // }
 
 const DataKeluarga = () => {
-    const [keluargaData, setKeluargaData] = useState<KeluargaRingkasanResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isMutating, setIsMutating] = useState(false);
+    const queryClient = useQueryClient();
     const [isModalAddOpen, setIsModalAddOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<FamilyMemberData | null>(null);
     const [previewFile, setPreviewFile] = useState<{ url: string; title: string } | null>(null);
@@ -155,26 +153,169 @@ const DataKeluarga = () => {
         message: "",
     });
 
-    // const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+    const { data: response, isLoading: queryIsLoading } = useQuery({
+        queryKey: ["keluargaRingkasan"],
+        queryFn: keluargaService.getRingkasan,
+    });
 
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const res = await keluargaService.getRingkasan();
-            if (res.success && res.data) {
-                setKeluargaData(res.data);
+    const keluargaData = response?.success && response?.data ? response.data : null;
+    const isLoading = queryIsLoading;
+
+    const createMutation = useMutation({
+        mutationFn: async (payload: FormKeluargaSubmitPayload) => {
+            switch (payload.type) {
+                case "pasangan": {
+                    const fd = buildPasanganFormData(payload.data);
+                    return keluargaService.createPasangan(fd);
+                }
+                case "anak": {
+                    const fd = buildAnakFormData(payload.data);
+                    return keluargaService.createAnak(fd);
+                }
+                case "orang_tua": {
+                    const { nama_ayah, nama_ibu, status_hidup, alamat } = payload.data;
+                    const jsonPayload: Record<string, string> = {};
+                    if (nama_ayah) jsonPayload.nama_ayah = nama_ayah;
+                    if (nama_ibu) jsonPayload.nama_ibu = nama_ibu;
+                    if (status_hidup) jsonPayload.status_hidup = status_hidup;
+                    if (alamat) jsonPayload.alamat = alamat;
+                    return keluargaService.createOrangTua(jsonPayload);
+                }
+                case "kontak_darurat": {
+                    const { nama_kontak, hubungan_keluarga, nomor_hp, alamat } = payload.data;
+                    const jsonPayload: Record<string, string> = {};
+                    if (nama_kontak) jsonPayload.nama_kontak = nama_kontak;
+                    if (hubungan_keluarga) jsonPayload.hubungan_keluarga = hubungan_keluarga;
+                    if (nomor_hp) jsonPayload.nomor_hp = nomor_hp;
+                    if (alamat) jsonPayload.alamat = alamat;
+                    return keluargaService.createKontakDarurat(jsonPayload);
+                }
+                case "tanggungan_lain": {
+                    const { nama, hubungan_keluarga, status_tanggungan } = payload.data;
+                    return keluargaService.createTanggunganLain({
+                        nama,
+                        hubungan_keluarga,
+                        status_tanggungan,
+                    });
+                }
+                default:
+                    throw new Error("Tipe data keluarga tidak valid");
             }
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Memuat Data", error?.message || "Terjadi kesalahan saat memuat data keluarga.");
-        } finally {
-            setIsLoading(false);
+        },
+        onSuccess: (res) => {
+            if (res.success) {
+                setIsModalAddOpen(false);
+                showPopup("success", "Berhasil", "Data keluarga berhasil ditambahkan.");
+                queryClient.invalidateQueries({ queryKey: ["keluargaRingkasan"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal Menyimpan", err?.message || "Terjadi kesalahan saat menyimpan data.");
         }
-    }, []);
+    });
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    const editPasanganMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: PasanganFormPayload }) => {
+            const fd = buildPasanganFormData(payload);
+            return keluargaService.updatePasangan(id, fd);
+        },
+        onSuccess: (res) => {
+            if (res.success) {
+                setEditingMember(null);
+                showPopup("success", "Berhasil", "Data pasangan berhasil diperbarui.");
+                queryClient.invalidateQueries({ queryKey: ["keluargaRingkasan"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal Memperbarui", err?.message || "Terjadi kesalahan saat memperbarui data.");
+        }
+    });
+
+    const editAnakMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: AnakFormPayload }) => {
+            const fd = buildAnakFormData(payload);
+            return keluargaService.updateAnak(id, fd);
+        },
+        onSuccess: (res) => {
+            if (res.success) {
+                setEditingMember(null);
+                showPopup("success", "Berhasil", "Data anak berhasil diperbarui.");
+                queryClient.invalidateQueries({ queryKey: ["keluargaRingkasan"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal Memperbarui", err?.message || "Terjadi kesalahan saat memperbarui data.");
+        }
+    });
+
+    const editOrangTuaMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: OrangTuaFormPayload }) => {
+            const jsonPayload: Record<string, string> = {};
+            if (payload.nama_ayah) jsonPayload.nama_ayah = payload.nama_ayah;
+            if (payload.nama_ibu) jsonPayload.nama_ibu = payload.nama_ibu;
+            if (payload.status_hidup) jsonPayload.status_hidup = payload.status_hidup;
+            if (payload.alamat) jsonPayload.alamat = payload.alamat;
+            return keluargaService.updateOrangTua(id, jsonPayload);
+        },
+        onSuccess: (res) => {
+            if (res.success) {
+                setEditingMember(null);
+                showPopup("success", "Berhasil", "Data orang tua berhasil diperbarui.");
+                queryClient.invalidateQueries({ queryKey: ["keluargaRingkasan"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal Memperbarui", err?.message || "Terjadi kesalahan saat memperbarui data.");
+        }
+    });
+
+    const editKontakDaruratMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: KontakDaruratFormPayload }) => {
+            const jsonPayload: Record<string, string> = {};
+            if (payload.nama_kontak) jsonPayload.nama_kontak = payload.nama_kontak;
+            if (payload.hubungan_keluarga) jsonPayload.hubungan_keluarga = payload.hubungan_keluarga;
+            if (payload.nomor_hp) jsonPayload.nomor_hp = payload.nomor_hp;
+            if (payload.alamat) jsonPayload.alamat = payload.alamat;
+            return keluargaService.updateKontakDarurat(id, jsonPayload);
+        },
+        onSuccess: (res) => {
+            if (res.success) {
+                setEditingMember(null);
+                showPopup("success", "Berhasil", "Data kontak darurat berhasil diperbarui.");
+                queryClient.invalidateQueries({ queryKey: ["keluargaRingkasan"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal Memperbarui", err?.message || "Terjadi kesalahan saat memperbarui data.");
+        }
+    });
+
+    const editTanggunganLainMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: number; payload: TanggunganLainFormPayload }) => {
+            return keluargaService.updateTanggunganLain(id, {
+                nama: payload.nama,
+                hubungan_keluarga: payload.hubungan_keluarga,
+                status_tanggungan: payload.status_tanggungan,
+            });
+        },
+        onSuccess: (res) => {
+            if (res.success) {
+                setEditingMember(null);
+                showPopup("success", "Berhasil", "Data tanggungan lain berhasil diperbarui.");
+                queryClient.invalidateQueries({ queryKey: ["keluargaRingkasan"] });
+            }
+        },
+        onError: (err: any) => {
+            showPopup("error", "Gagal Memperbarui", err?.message || "Terjadi kesalahan saat memperbarui data.");
+        }
+    });
+
+    const isMutating = createMutation.isPending || 
+                       editPasanganMutation.isPending || 
+                       editAnakMutation.isPending || 
+                       editOrangTuaMutation.isPending || 
+                       editKontakDaruratMutation.isPending || 
+                       editTanggunganLainMutation.isPending;
 
     const showPopup = (variant: PopupState["variant"], title: string, message: string) => {
         setPopup({ isOpen: true, variant, title, message });
@@ -204,58 +345,7 @@ const DataKeluarga = () => {
     };
 
     const handleCreate = async (payload: FormKeluargaSubmitPayload) => {
-        setIsMutating(true);
-        try {
-            switch (payload.type) {
-                case "pasangan": {
-                    const fd = buildPasanganFormData(payload.data);
-                    await keluargaService.createPasangan(fd);
-                    break;
-                }
-                case "anak": {
-                    const fd = buildAnakFormData(payload.data);
-                    await keluargaService.createAnak(fd);
-                    break;
-                }
-                case "orang_tua": {
-                    const { nama_ayah, nama_ibu, status_hidup, alamat } = payload.data;
-                    const jsonPayload: Record<string, string> = {};
-                    if (nama_ayah) jsonPayload.nama_ayah = nama_ayah;
-                    if (nama_ibu) jsonPayload.nama_ibu = nama_ibu;
-                    if (status_hidup) jsonPayload.status_hidup = status_hidup;
-                    if (alamat) jsonPayload.alamat = alamat;
-                    await keluargaService.createOrangTua(jsonPayload);
-                    break;
-                }
-                case "kontak_darurat": {
-                    const { nama_kontak, hubungan_keluarga, nomor_hp, alamat } = payload.data;
-                    const jsonPayload: Record<string, string> = {};
-                    if (nama_kontak) jsonPayload.nama_kontak = nama_kontak;
-                    if (hubungan_keluarga) jsonPayload.hubungan_keluarga = hubungan_keluarga;
-                    if (nomor_hp) jsonPayload.nomor_hp = nomor_hp;
-                    if (alamat) jsonPayload.alamat = alamat;
-                    await keluargaService.createKontakDarurat(jsonPayload);
-                    break;
-                }
-                case "tanggungan_lain": {
-                    const { nama, hubungan_keluarga, status_tanggungan } = payload.data;
-                    await keluargaService.createTanggunganLain({
-                        nama,
-                        hubungan_keluarga,
-                        status_tanggungan,
-                    });
-                    break;
-                }
-            }
-            setIsModalAddOpen(false);
-            showPopup("success", "Berhasil", "Data keluarga berhasil ditambahkan.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Menyimpan", error?.message || "Terjadi kesalahan saat menyimpan data.");
-        } finally {
-            setIsMutating(false);
-        }
+        createMutation.mutate(payload);
     };
 
     const handleEdit = (member: FamilyMemberData) => {
@@ -268,98 +358,27 @@ const DataKeluarga = () => {
 
     const handleEditPasangan = async (payload: PasanganFormPayload) => {
         if (!editingMember) return;
-        setIsMutating(true);
-        try {
-            const fd = buildPasanganFormData(payload);
-            await keluargaService.updatePasangan(editingMember.id, fd);
-            setEditingMember(null);
-            showPopup("success", "Berhasil", "Data pasangan berhasil diperbarui.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Memperbarui", error?.message || "Terjadi kesalahan saat memperbarui data.");
-        } finally {
-            setIsMutating(false);
-        }
+        editPasanganMutation.mutate({ id: editingMember.id, payload });
     };
 
     const handleEditAnak = async (payload: AnakFormPayload) => {
         if (!editingMember) return;
-        setIsMutating(true);
-        try {
-            const fd = buildAnakFormData(payload);
-            await keluargaService.updateAnak(editingMember.id, fd);
-            setEditingMember(null);
-            showPopup("success", "Berhasil", "Data anak berhasil diperbarui.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Memperbarui", error?.message || "Terjadi kesalahan saat memperbarui data.");
-        } finally {
-            setIsMutating(false);
-        }
+        editAnakMutation.mutate({ id: editingMember.id, payload });
     };
 
     const handleEditOrangTua = async (payload: OrangTuaFormPayload) => {
         if (!editingMember) return;
-        setIsMutating(true);
-        try {
-            const jsonPayload: Record<string, string> = {};
-            if (payload.nama_ayah) jsonPayload.nama_ayah = payload.nama_ayah;
-            if (payload.nama_ibu) jsonPayload.nama_ibu = payload.nama_ibu;
-            if (payload.status_hidup) jsonPayload.status_hidup = payload.status_hidup;
-            if (payload.alamat) jsonPayload.alamat = payload.alamat;
-            await keluargaService.updateOrangTua(editingMember.id, jsonPayload);
-            setEditingMember(null);
-            showPopup("success", "Berhasil", "Data orang tua berhasil diperbarui.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Memperbarui", error?.message || "Terjadi kesalahan saat memperbarui data.");
-        } finally {
-            setIsMutating(false);
-        }
+        editOrangTuaMutation.mutate({ id: editingMember.id, payload });
     };
 
     const handleEditKontakDarurat = async (payload: KontakDaruratFormPayload) => {
         if (!editingMember) return;
-        setIsMutating(true);
-        try {
-            const jsonPayload: Record<string, string> = {};
-            if (payload.nama_kontak) jsonPayload.nama_kontak = payload.nama_kontak;
-            if (payload.hubungan_keluarga) jsonPayload.hubungan_keluarga = payload.hubungan_keluarga;
-            if (payload.nomor_hp) jsonPayload.nomor_hp = payload.nomor_hp;
-            if (payload.alamat) jsonPayload.alamat = payload.alamat;
-            await keluargaService.updateKontakDarurat(editingMember.id, jsonPayload);
-            setEditingMember(null);
-            showPopup("success", "Berhasil", "Data kontak darurat berhasil diperbarui.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Memperbarui", error?.message || "Terjadi kesalahan saat memperbarui data.");
-        } finally {
-            setIsMutating(false);
-        }
+        editKontakDaruratMutation.mutate({ id: editingMember.id, payload });
     };
 
     const handleEditTanggunganLain = async (payload: TanggunganLainFormPayload) => {
         if (!editingMember) return;
-        setIsMutating(true);
-        try {
-            await keluargaService.updateTanggunganLain(editingMember.id, {
-                nama: payload.nama,
-                hubungan_keluarga: payload.hubungan_keluarga,
-                status_tanggungan: payload.status_tanggungan,
-            });
-            setEditingMember(null);
-            showPopup("success", "Berhasil", "Data tanggungan lain berhasil diperbarui.");
-            await fetchData();
-        } catch (err: unknown) {
-            const error = err as { message?: string };
-            showPopup("error", "Gagal Memperbarui", error?.message || "Terjadi kesalahan saat memperbarui data.");
-        } finally {
-            setIsMutating(false);
-        }
+        editTanggunganLainMutation.mutate({ id: editingMember.id, payload });
     };
 
     // const handleDeleteRequest = (member: FamilyMemberData) => {
@@ -438,6 +457,7 @@ const DataKeluarga = () => {
                             pendidikan_terakhir: editingMember.pendidikanTerakhir || "",
                             status_tanggungan: editingMember.tanggungan ? "1" : "0",
                             keterangan_disabilitas: editingMember.keteranganDisabilitas || "",
+                            akta_kelahiran_file_path: editingMember.aktaKelahiranFilePath || "",
                         }}
                         onCancel={handleCloseEdit}
                         onSubmit={handleEditAnak}

@@ -70,3 +70,13 @@
         align-items: center;
     }
 }
+
+.ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: #9CA3AF;
+    font-weight: 600;
+}

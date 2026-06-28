@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import CardProfile from "../../../Profil/components/CardProfile";
 import FormProfile from "../../../Profil/components/FormProfile";
 import type { propsType } from "../../../Profil/components/FormProfile/FormProfile";
@@ -58,6 +59,7 @@ const TabPegawai = ({
     pegawaiId,
     onRefresh,
 }: TabPegawaiProps) => {
+    const queryClient = useQueryClient();
     const [jenisPegawaiList, setJenisPegawaiList] = useState<{ id: number; nama: string }[]>([]);
     const [profesiList, setProfesiList] = useState<{ id: number; nama: string }[]>([]);
     const [golonganRuangList, setGolonganRuangList] = useState<{ id: number; nama: string }[]>([]);
@@ -161,6 +163,8 @@ const TabPegawai = ({
                     message: "Foto profil pegawai berhasil diperbarui.",
                 });
                 setIsPopupOpen(true);
+                queryClient.invalidateQueries({ queryKey: ["pegawai"] });
+                queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
                 onRefresh?.();
             }
         } catch (err: any) {
@@ -273,6 +277,8 @@ const TabPegawai = ({
                     message: "Data profil pegawai berhasil disimpan.",
                 });
                 setIsPopupOpen(true);
+                queryClient.invalidateQueries({ queryKey: ["pegawai"] });
+                queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
                 onRefresh?.();
             }
         } catch (error: any) {
@@ -333,6 +339,8 @@ const TabPegawai = ({
                     message: `Berkas ${fieldName === "ktp" ? "KTP" : "Kartu Keluarga"} pegawai berhasil diperbarui.`,
                 });
                 setIsPopupOpen(true);
+                queryClient.invalidateQueries({ queryKey: ["pegawai"] });
+                queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
                 onRefresh?.();
                 return true;
             }

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { FileText, CheckCircle, AlertTriangle, XCircle, Send } from "lucide-react";
 import Topbar from "../../ui/organisms/Topbar/Topbar";
 import MainHeaderSection from "../../ui/molecules/MainHeaderSection";
@@ -186,22 +187,10 @@ const StrSip = () => {
     const [filterStatus, setFilterStatus] = useState("");
     const [filterDateFrom, setFilterDateFrom] = useState("");
     const [filterDateTo, setFilterDateTo] = useState("");
-    const [allData, setAllData] = useState<StrSipRecord[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     const [previewFile, setPreviewFile] = useState<{ url: string; title: string } | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const [summary, setSummary] = useState({
-        total: 0,
-        aktif: 0,
-        hampirHabis: 0,
-        tidakAktif: 0,
-    });
-
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
     const [confirmNotify, setConfirmNotify] = useState<{
@@ -224,97 +213,6 @@ const StrSip = () => {
         message: "",
     });
 
-    const [isSending, setIsSending] = useState(false);
-
-    const handleOpenNotifyConfirm = useCallback((row: StrSipRecord) => {
-        setConfirmNotify({
-            isOpen: true,
-            record: row,
-        });
-    }, []);
-
-    const handleSendNotification = useCallback(async () => {
-        if (!confirmNotify.record) return;
-        const record = confirmNotify.record;
-        const tipeDokumen = record.jenis.toLowerCase() as "str" | "sip";
-        setIsSending(true);
-        try {
-            const response = await strSipService.sendReminderStrSip(
-                record.pegawaiId,
-                tipeDokumen,
-                record.id
-            );
-            setConfirmNotify({ isOpen: false, record: null });
-            setPopupState({
-                isOpen: true,
-                variant: "checklist",
-                title: "Berhasil",
-                message: response.message || `Reminder ${record.jenis} nomor ${record.nomor} berhasil dikirim ke ${record.nama}.`,
-            });
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string };
-            setConfirmNotify({ isOpen: false, record: null });
-            setPopupState({
-                isOpen: true,
-                variant: "error",
-                title: "Gagal",
-                message: errorObj?.message || `Gagal mengirimkan reminder untuk ${record.nama}.`,
-            });
-        } finally {
-            setIsSending(false);
-        }
-    }, [confirmNotify.record]);
-
-    const fetchStrSipData = useCallback(async (
-        page: number,
-        search: string,
-        jenis: string,
-        status: string,
-        tanggalDari: string,
-        tanggalSampai: string
-    ) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const response = await strSipService.getStrSipData({
-                page,
-                per_page: ITEMS_PER_PAGE,
-                search: search || undefined,
-                jenis: jenis || undefined,
-                status: status || undefined,
-                tanggal_dari: tanggalDari || undefined,
-                tanggal_sampai: tanggalSampai || undefined,
-            });
-            if (response.success && response.data) {
-                const paginatedItems = response.data.items;
-                const rawList = paginatedItems.data || [];
-                const mappedRecords = rawList.map(mapApiItemToStrSipRecord);
-                setAllData(mappedRecords);
-
-                setCurrentPage(paginatedItems.current_page || 1);
-                setTotalPages(paginatedItems.last_page || 1);
-                setTotalItems(paginatedItems.total || 0);
-
-                const backendSummary = response.data.summary;
-                if (backendSummary) {
-                    setSummary({
-                        total: backendSummary.total ?? 0,
-                        aktif: backendSummary.aktif ?? 0,
-                        hampirHabis: backendSummary.hampir_habis ?? 0,
-                        tidakAktif: backendSummary.tidak_aktif ?? 0,
-                    });
-                }
-            } else {
-                setError(response.message || "Gagal mengambil data STR/SIP.");
-            }
-        } catch (err: unknown) {
-            const errorObj = err as { message?: string };
-            setError(errorObj?.message || "Terjadi kesalahan saat mengambil data STR/SIP.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
     // Debounce search query input
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -330,9 +228,84 @@ const StrSip = () => {
     useEffect(() => {
         setCurrentPage(1);
     }, [filterJenis, filterStatus, filterDateFrom, filterDateTo]);
-    useEffect(() => {
-        fetchStrSipData(currentPage, debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo);
-    }, [currentPage, debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo, fetchStrSipData]);
+
+    const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
+        queryKey: ["strSipData", currentPage, debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo],
+        queryFn: () => strSipService.getStrSipData({
+            page: currentPage,
+            per_page: ITEMS_PER_PAGE,
+            search: debouncedSearch || undefined,
+            jenis: filterJenis || undefined,
+            status: filterStatus || undefined,
+            tanggal_dari: filterDateFrom || undefined,
+            tanggal_sampai: filterDateTo || undefined,
+        }),
+    });
+
+    const isLoading = queryIsLoading;
+    const error = queryError ? (queryError as any).message || "Terjadi kesalahan saat mengambil data STR/SIP." : null;
+
+    const allData = useMemo(() => {
+        if (!response?.success || !response?.data) return [];
+        const rawList = response.data.items.data || [];
+        return rawList.map(mapApiItemToStrSipRecord);
+    }, [response]);
+
+    const totalPages = response?.data?.items?.last_page || 1;
+    const totalItems = response?.data?.items?.total || 0;
+
+    const summary = useMemo(() => {
+        const backendSummary = response?.data?.summary;
+        return {
+            total: backendSummary?.total ?? 0,
+            aktif: backendSummary?.aktif ?? 0,
+            hampirHabis: backendSummary?.hampir_habis ?? 0,
+            tidakAktif: backendSummary?.tidak_aktif ?? 0,
+        };
+    }, [response]);
+
+    const sendReminderMutation = useMutation({
+        mutationFn: async (record: StrSipRecord) => {
+            const tipeDokumen = record.jenis.toLowerCase() as "str" | "sip";
+            return strSipService.sendReminderStrSip(
+                record.pegawaiId,
+                tipeDokumen,
+                record.id
+            );
+        },
+        onSuccess: (res, record) => {
+            setConfirmNotify({ isOpen: false, record: null });
+            setPopupState({
+                isOpen: true,
+                variant: "checklist",
+                title: "Berhasil",
+                message: res.message || `Reminder ${record.jenis} nomor ${record.nomor} berhasil dikirim ke ${record.nama}.`,
+            });
+        },
+        onError: (err: any, record) => {
+            setConfirmNotify({ isOpen: false, record: null });
+            setPopupState({
+                isOpen: true,
+                variant: "error",
+                title: "Gagal",
+                message: err?.message || `Gagal mengirimkan reminder untuk ${record.nama}.`,
+            });
+        }
+    });
+
+    const isSending = sendReminderMutation.isPending;
+
+    const handleOpenNotifyConfirm = useCallback((row: StrSipRecord) => {
+        setConfirmNotify({
+            isOpen: true,
+            record: row,
+        });
+    }, []);
+
+    const handleSendNotification = useCallback(async () => {
+        if (!confirmNotify.record) return;
+        sendReminderMutation.mutate(confirmNotify.record);
+    }, [confirmNotify.record, sendReminderMutation]);
 
     const handleViewDocument = useCallback((docPath: string) => {
         if (!docPath) return;

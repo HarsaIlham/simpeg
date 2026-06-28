@@ -18,15 +18,20 @@ interface propsType {
     error?: string;
     onlyNumbers?: boolean;
     isDesimal?: boolean;
+    isRupiah?: boolean;
 }
 
-const Input = ({label,type, name, id, placeholder, required, className, rightNode, value, onChange, disabled, bgColor, error, onlyNumbers, isDesimal}: propsType) => {
+const Input = ({label,type, name, id, placeholder, required, className, rightNode, value, onChange, disabled, bgColor, error, onlyNumbers, isDesimal, isRupiah}: propsType) => {
 
     const [isFocused, setIsFocused] = useState(false);
 
     const isDateField = type === 'date';
     const currentType = isDateField ? (isFocused ? 'date' : 'text') : type;
-    const displayValue = (isDateField && !isFocused && value) ? formatLongDate(value) : value;
+    let displayValue = (isDateField && !isFocused && value) ? formatLongDate(value) : value;
+    if (isRupiah && displayValue) {
+        const clean = displayValue.replace(/\D/g, "");
+        displayValue = clean ? Number(clean).toLocaleString("id-ID") : "";
+    }
 
     return (
         <label htmlFor={id} className={styles.label}>
@@ -41,7 +46,7 @@ const Input = ({label,type, name, id, placeholder, required, className, rightNod
                     className={`${styles.input} ${rightNode ? styles.hasRightNode : ""} ${className || ""}`}
                     style={bgColor ? { backgroundColor: bgColor } : { backgroundColor: "#F9FAFC" }}
                     {...(type !== 'file' ? { value: displayValue || "" } : {})}
-                    inputMode={onlyNumbers && type === 'text' ? "numeric" : undefined}
+                    inputMode={(onlyNumbers || isRupiah) && type === 'text' ? "numeric" : undefined}
                     onChange={(e) => {
                         let val = e.target.value;
                         if (isDateField && val) {
@@ -54,6 +59,10 @@ const Input = ({label,type, name, id, placeholder, required, className, rightNod
                         }
                         if (onlyNumbers && type === 'text') {
                             val = val.replace(/\D/g, "");
+                        }
+                        if (isRupiah && type === 'text') {
+                            const clean = val.replace(/\D/g, "");
+                            val = clean ? Number(clean).toLocaleString("id-ID") : "";
                         }
                         if (isDesimal && type === 'text') {
                             val = val.replace(/[^0-9.]/g, "");

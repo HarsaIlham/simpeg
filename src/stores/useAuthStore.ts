@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { authService } from "../services/authService";
 import type { ProfileData } from "../types/api";
+import { queryClient } from "../utils/queryClient";
 
 export type UserRole = "admin" | "pegawai" | "hrd" | "direktur";
 
@@ -48,6 +49,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       localStorage.removeItem("simpeg_user");
       localStorage.removeItem("simpeg_token");
+      queryClient.clear();
       set({ user: null, token: null, profile: null });
     }
   },

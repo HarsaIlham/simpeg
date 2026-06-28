@@ -35,13 +35,12 @@ const CardSip = memo(({ data, onEdit, onDelete, onViewDocument }: CardSipProps) 
             onEdit={onEdit} onDelete={onDelete} enableDelete={false}
         >
             <div className={styles.header}>
-                <Text text="Surat Izin Praktik (SIP)" weight="bold" color="default" fontSize="18px" />
+                <Text text={`${data.jenisSipNama}`} weight="bold" color="default" fontSize="18px" />
                 <Text text={`No: ${data.nomorSip}`} variant="body" color="green" />
                 <Badge className={styles.badge} variant={data.isCurrent ? "success" : "danger"}>
                     {data.isCurrent ? "Aktif" : "Tidak Aktif"}
                 </Badge>
             </div>
-            {data.jenisSipNama && <DataField label="Jenis SIP" value={data.jenisSipNama} />}
             <div className={styles.dates}>
                 <DataField label="Tanggal Terbit" value={data.tanggalTerbit} isDate={true} />
                 <DataField label="Tanggal Akhir" value={data.tanggalKadaluarsa || "-"} isDate={true} />

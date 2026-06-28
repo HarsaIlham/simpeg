@@ -54,9 +54,11 @@ export const hrdDiklatService = {
   },
 
   getPeserta: async (
-    diklatId: number
+    diklatId: number,
+    section?: string
   ): Promise<ApiResponse<PesertaDiklatResponse>> => {
-    const response = await apiFetch(`/hrd/diklat/${diklatId}/peserta`);
+    const url = section ? `/hrd/diklat/${diklatId}/peserta?section=${section}` : `/hrd/diklat/${diklatId}/peserta`;
+    const response = await apiFetch(url);
     const data = await response.json();
 
     if (!response.ok) {

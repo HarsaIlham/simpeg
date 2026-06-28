@@ -274,6 +274,8 @@ const TabKeluarga = ({ keluargaList, isAdmin, pegawaiId, onRefresh }: TabKeluarg
             switch (deleteTarget.status) {
                 case "Istri":
                 case "Suami":
+                case "Pasangan":
+                case "pasangan":
                     await hrdPegawaiService.deletePasangan(pegawaiId, deleteTarget.id);
                     break;
                 case "Anak":
@@ -310,6 +312,8 @@ const TabKeluarga = ({ keluargaList, isAdmin, pegawaiId, onRefresh }: TabKeluarg
         switch (editingMember.status) {
             case "Istri":
             case "Suami":
+            case "Pasangan":
+            case "pasangan":
                 return (
                     <FormPasangan
                         initialData={{

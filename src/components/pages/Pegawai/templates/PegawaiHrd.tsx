@@ -285,19 +285,6 @@ const PegawaiHrd = () => {
             key: "role",
             label: "role",
             width: "12%",
-            render: (row: PegawaiItem) => (
-                <select
-                    value={row.role}
-                    onChange={(e) => handleRoleChange(row.id, e.target.value as any)}
-                    className={styles.roleSelect}
-                    disabled={!isAdmin}
-                >
-                    <option value="pegawai">Pegawai</option>
-                    <option value="hrd">HRD</option>
-                    <option value="direktur">Direktur</option>
-                    <option value="admin">Admin</option>
-                </select>
-            )
         },
         {
             key: "detail",

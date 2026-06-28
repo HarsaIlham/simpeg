@@ -6,6 +6,7 @@ import Badge from "../../atoms/Badge"
 import Button from "../../atoms/Button"
 import styles from "./CardDiklat.module.css"
 import { getFileUrl } from "../../../../utils/api"
+import { formatRupiah } from "../../../../utils/currencyUtils"
 
 export interface CardDiklatData {
     id: number;
@@ -67,17 +68,18 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
             onDelete={onDelete}
         >
             <div className={styles.header}>
-                <Text text={data.namaDiklat} weight="bold" color="default" fontSize="18px" />
+                <Text text={`${data.jenisPelaksana?.toUpperCase()} - ${data.namaDiklat}`} weight="bold" color="default" fontSize="18px" />
                 <div className={styles.badgeGroup}>
                     <Badge variant="parent">{data.jenisDiklat}</Badge>
                     <Badge variant="info">{data.kategori}</Badge>
                     {(() => {
                         const status = data.statusValidasi?.toLowerCase();
-                        if (status?.includes("valid") && !status?.includes("menunggu") && !status?.includes("tolak")) {
+                        const valid = /^\bvalid\b$/.test(status || "");
+                        if (valid) {
                             return <Badge variant="success">Valid</Badge>;
                         } else if (status?.includes("tolak") || status?.includes("tidak")) {
                             return <Badge variant="danger">Tidak Valid</Badge>;
-                        } else if (data.hasLaporan) {
+                        } else if (data.hasLaporan && data.jenisPelaksana?.toLowerCase() === "internal") {
                             return <Badge variant="warning">Menunggu Validasi</Badge>;
                         } else {
                             return undefined;
@@ -126,7 +128,7 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                         {isInternal && (
                             <div className={styles.detailItem}>
                                 <span className={styles.detailIcon}><BadgeDollarSignIcon size={14} /></span>
-                                <span>{data.totalBiaya || "-"}</span>
+                                <span>{formatRupiah(data.totalBiaya)}</span>
                             </div>
                         )}
                     </div>

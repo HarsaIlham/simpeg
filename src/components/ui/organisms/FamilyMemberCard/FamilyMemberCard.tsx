@@ -9,7 +9,7 @@ import Button from "../../atoms/Button";
 import { getProxiedFileUrl } from "../../../../utils/api";
 import styles from "./FamilyMemberCard.module.css";
 
-export type FamilyMemberStatus = "Istri" | "Suami" | "Anak" | "Orang Tua" | "Kontak Darurat" | "Tanggungan Lain";
+export type FamilyMemberStatus = "Istri" | "Suami" | "Pasangan" | "pasangan" | "Anak" | "Orang Tua" | "Kontak Darurat" | "Tanggungan Lain";
 
 export interface FamilyMemberData {
     id: number;
@@ -51,6 +51,8 @@ const getIconConfig = (status: string) => {
     switch (status) {
         case "Istri":
         case "Suami":
+        case "Pasangan":
+        case "pasangan":
             return { icon: Heart, bgColor: "#fce4e4", color: "#e53e3e", badgeVariant: "danger" as const };
         case "Anak":
             return { icon: UserRound, bgColor: "#e3f2fd", color: "#3182ce", badgeVariant: "info" as const };
@@ -77,7 +79,7 @@ const FamilyMemberCard = memo(({ data, onEdit, onDelete, onViewDocument }: Famil
 
     let docPath: string | null = null;
     let docLabel = "Lihat Dokumen";
-    if ((data.status === "Istri" || data.status === "Suami") && data.bukuNikahFilePath) {
+    if ((data.status === "Istri" || data.status === "Suami" || data.status === "Pasangan" || data.status === "pasangan") && data.bukuNikahFilePath) {
         docPath = data.bukuNikahFilePath;
         docLabel = "Lihat Buku Nikah";
     } else if (data.status === "Anak" && data.aktaKelahiranFilePath) {

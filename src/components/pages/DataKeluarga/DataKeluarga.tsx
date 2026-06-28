@@ -422,6 +422,8 @@ const DataKeluarga = () => {
         switch (editingMember.status) {
             case "Istri":
             case "Suami":
+            case "Pasangan":
+            case "pasangan":
                 return (
                     <FormPasangan
                         initialData={{

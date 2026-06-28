@@ -220,7 +220,7 @@ const FormTambahJadwalDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoa
                     onChange={(e) => setTotalBiaya(e.target.value)}
                     disabled={!isEdit}
                     type="text"
-                    onlyNumbers
+                    isRupiah
                     required
                 />
             )}

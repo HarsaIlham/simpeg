@@ -11,6 +11,7 @@ import { useMasterData } from "../../../../hooks/useMasterData";
 interface FormLaporanDiklatProps {
     initialData?: CardDiklatData | null;
     isEdit?: boolean;
+    isMaster?: boolean;
     onCancel: () => void;
     onSubmit?: (formData: FormData) => void;
     isLoading?: boolean;
@@ -21,7 +22,7 @@ const KATEGORI_OPTIONS = [
     { value: "external", label: "External" },
 ];
 
-const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading = false }: FormLaporanDiklatProps) => {
+const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isMaster = false, isLoading = false }: FormLaporanDiklatProps) => {
     const { options: jenisDiklatOptions } = useMasterData("kategoriDiklat", "Pilih Jenis Diklat", []);
     const { options: kategoriPegawaiOptions } = useMasterData("tipeDiklat", "Pilih Kategori Pegawai", []);
     const { options: jenisBiayaOptions } = useMasterData("jenisBiaya", "Pilih Jenis Biaya", []);
@@ -46,7 +47,7 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
     const [penyelenggara, setPenyelenggara] = useState(initialData?.penyelenggara ?? "");
     const [jenisPelaksana, setJenisPelaksana] = useState(initialData?.jenisPelaksana ?? "");
     const [catatan, setCatatan] = useState(initialData?.catatan ?? "");
-    const [dokumenFile, setDokumenFile] = useState<File | null>(null);
+    // const [dokumenFile, setDokumenFile] = useState<File | null>(null);
 
     const isInternal = jenisPelaksana === "internal";
 
@@ -62,7 +63,7 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
         formData.append("lokasi", tempat);
         formData.append("tanggal_mulai", tanggalMulai);
         formData.append("tanggal_selesai", tanggalSelesai);
-        
+
         let formattedWaktu = waktu;
         if (waktu && waktu.length === 5) {
             formattedWaktu = `${waktu}:00`;
@@ -78,9 +79,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
             formData.append("total_biaya", totalBiaya.replace(/[^0-9]/g, ""));
         }
 
-        if (dokumenFile) {
-            formData.append("upload_sertif", dokumenFile);
-        }
 
         onSubmit(formData);
     };
@@ -220,7 +218,7 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                     value={totalBiaya}
                     onChange={(e) => setTotalBiaya(e.target.value)}
                     type="text"
-                    onlyNumbers
+                    isRupiah
                     required
                 />
             )}
@@ -241,15 +239,6 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                 </div>
             </div>
 
-            <Input
-                id="dokumen"
-                name="dokumen"
-                type="file"
-                label="Upload Sertifikat"
-                disabled={!isEdit}
-                onChange={(e) => setDokumenFile(e.target.files?.[0] ?? null)}
-            />
-
             <Textarea
                 id="catatan"
                 name="catatan"
@@ -259,7 +248,7 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isLoading 
                 onChange={(e) => setCatatan(e.target.value)}
             />
 
-            {isEdit && (
+            {(isEdit || isMaster) && (
                 <div className={styles.actions}>
                     <Button
                         type="submit"

@@ -114,6 +114,7 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
                         onCancel={() => setIsModalOpen(false)}
                         onSubmit={handleFormSubmit}
                         isLoading={isSubmitting}
+                        isMaster={true}
                     />
                 </Modal>
             )}

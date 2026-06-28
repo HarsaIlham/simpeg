@@ -14,6 +14,7 @@ import Popup from "../../../ui/molecules/Popup"
 import { hrdDiklatService } from "../../../../services/hrdDiklatService"
 import type { PesertaDiklatItem } from "../../../../types/api"
 import { useMasterData } from "../../../../hooks/useMasterData"
+import { Send } from "lucide-react"
 
 const STATUS_OPTIONS = [
     { value: "", label: "Semua Status" },
@@ -68,6 +69,7 @@ const PesertaDiklat = () => {
     const [filterUnitKerja, setFilterUnitKerja] = useState("")
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [mode, setMode] = useState<"view" | "add">("view")
 
     const [pegawaiList, setPegawaiList] = useState<PesertaDiklatItem[]>([])
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -90,7 +92,7 @@ const PesertaDiklat = () => {
         setPopup((prev) => ({ ...prev, isOpen: false }))
     }, [])
 
-    const fetchPeserta = useCallback(async () => {
+    const fetchPeserta = useCallback(async (targetMode: "view" | "add") => {
         if (!diklatId) {
             setIsLoading(false)
             return
@@ -98,7 +100,8 @@ const PesertaDiklat = () => {
 
         setIsLoading(true)
         try {
-            const response = await hrdDiklatService.getPeserta(diklatId)
+            const section = targetMode === "add" ? "all" : undefined
+            const response = await hrdDiklatService.getPeserta(diklatId, section)
             if (response.success && response.data) {
                 setPegawaiList(response.data.list)
 
@@ -116,8 +119,14 @@ const PesertaDiklat = () => {
     }, [diklatId, showPopup])
 
     useEffect(() => {
-        fetchPeserta()
-    }, [fetchPeserta])
+        fetchPeserta(mode)
+    }, [fetchPeserta, mode])
+
+    useEffect(() => {
+        if (mode === "view") {
+            setFilterStatus("")
+        }
+    }, [mode])
 
     const filteredPegawai = useMemo(() => {
         return pegawaiList.filter((p) => {
@@ -128,16 +137,21 @@ const PesertaDiklat = () => {
                 p.unit_kerja.toLowerCase().includes(search.toLowerCase())
 
             const isTerdaftar = selectedIds.has(p.pegawai_id)
+
+            if (mode === "view" && !isTerdaftar) {
+                return false
+            }
+
             const matchStatus =
                 !filterStatus ||
                 (filterStatus === "terdaftar" && isTerdaftar) ||
                 (filterStatus === "belum" && !isTerdaftar)
-            const matchProfesi = !filterProfesi || p.profesi.toLowerCase() === filterProfesi
-            const matchUnitKerja = !filterUnitKerja || p.unit_kerja.toLowerCase().replace(/\s+/g, "-") === filterUnitKerja
+            const matchProfesi = !filterProfesi || p.profesi.toLowerCase() === filterProfesi.toLowerCase()
+            const matchUnitKerja = !filterUnitKerja || p.unit_kerja.toLowerCase() === filterUnitKerja.toLowerCase()
 
             return matchSearch && matchStatus && matchProfesi && matchUnitKerja
         })
-    }, [search, filterStatus, filterProfesi, filterUnitKerja, selectedIds, pegawaiList])
+    }, [search, filterStatus, filterProfesi, filterUnitKerja, selectedIds, pegawaiList, mode])
 
     const handleToggle = useCallback((id: number) => {
         setSelectedIds((prev) => {
@@ -177,6 +191,7 @@ const PesertaDiklat = () => {
                 "Berhasil",
                 `${pesertaIds.length} peserta berhasil disimpan untuk ${diklatName}.`,
             )
+            setMode("view")
         } catch (err: unknown) {
             const errorObj = err as { message?: string }
             showPopup("error", "Gagal", errorObj?.message || "Gagal menyimpan peserta.")
@@ -189,8 +204,8 @@ const PesertaDiklat = () => {
         navigate(-1)
     }, [navigate])
 
-    const columns: Column<PesertaDiklatItem>[] = useMemo(
-        () => [
+    const columns: Column<PesertaDiklatItem>[] = useMemo(() => {
+        const baseColumns: Column<PesertaDiklatItem>[] = [
             {
                 key: "nama",
                 label: "Nama",
@@ -211,23 +226,50 @@ const PesertaDiklat = () => {
                 label: "Profesi",
                 width: "18%",
             },
-            {
-                key: "terdaftar",
-                label: "Terdaftar",
-                width: "13%",
-                render: (row: PesertaDiklatItem) => (
-                    <div className={styles.checkboxCell}>
-                        <Checkbox
-                            id={`peserta-${row.pegawai_id}`}
-                            checked={selectedIds.has(row.pegawai_id)}
-                            onChange={() => handleToggle(row.pegawai_id)}
+        ]
+
+        if (mode === "view") {
+            return [
+                ...baseColumns,
+                {
+                    key: "dokumen",
+                    label: "Dokumen",
+                    width: "18%",
+                },
+                {
+                    key: "ingatkan",
+                    label: "Ingatkan",
+                    width: "11%",
+                    render: (row) => (
+                        <Button
+                            icon={<Send size={14} />}
+                            size="sm"
+                            variant="info"
+                            onClick={() => console.log("ingatkan", row)}
                         />
-                    </div>
-                ),
-            },
-        ],
-        [selectedIds, handleToggle],
-    )
+                    ),
+                },
+            ]
+        } else {
+            return [
+                ...baseColumns,
+                {
+                    key: "terdaftar",
+                    label: "Terdaftar",
+                    width: "13%",
+                    render: (row: PesertaDiklatItem) => (
+                        <div className={styles.checkboxCell}>
+                            <Checkbox
+                                id={`peserta-${row.pegawai_id}`}
+                                checked={selectedIds.has(row.pegawai_id)}
+                                onChange={() => handleToggle(row.pegawai_id)}
+                            />
+                        </div>
+                    ),
+                },
+            ]
+        }
+    }, [mode, selectedIds, handleToggle])
 
     if (isLoading) {
         return (
@@ -266,14 +308,15 @@ const PesertaDiklat = () => {
 
             <div className={styles.toolbar}>
                 <div className={styles.toolbarLeft}>
-                    <Select
-                        name="status"
-                        id="filter-status-peserta"
-                        options={STATUS_OPTIONS}
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                    />
-
+                    {mode === "add" && (
+                        <Select
+                            name="status"
+                            id="filter-status-peserta"
+                            options={STATUS_OPTIONS}
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                        />
+                    )}
                     <Select
                         name="profesi"
                         id="filter-profesi-peserta"
@@ -290,18 +333,29 @@ const PesertaDiklat = () => {
                     />
                 </div>
                 <div className={styles.toolbarRight}>
-                    <Button
-                        label="Pilih Semua"
-                        variant="info"
-                        size="md"
-                        onClick={handleSelectAll}
-                    />
-                    <Button
-                        label="Batalkan Pilih Semua"
-                        variant="dangerSoft"
-                        size="md"
-                        onClick={handleDeselectAll}
-                    />
+                    {mode === "view" ? (
+                        <Button
+                            label="Tambah Peserta"
+                            variant="success"
+                            size="md"
+                            onClick={() => setMode("add")}
+                        />
+                    ) : (
+                        <>
+                            <Button
+                                label="Pilih Semua"
+                                variant="info"
+                                size="md"
+                                onClick={handleSelectAll}
+                            />
+                            <Button
+                                label="Batalkan Pilih Semua"
+                                variant="dangerSoft"
+                                size="md"
+                                onClick={handleDeselectAll}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -316,20 +370,37 @@ const PesertaDiklat = () => {
             </Card>
 
             <div className={styles.footerActions}>
-                <Button
-                    label={isSaving ? "Menyimpan..." : "Simpan"}
-                    variant="primary"
-                    size="md"
-                    onClick={handleSimpan}
-                    disabled={isSaving}
-                />
-                <Button
-                    label="Batal"
-                    variant="secondary"
-                    size="md"
-                    onClick={handleBatal}
-                    disabled={isSaving}
-                />
+                {mode === "view" ? (
+                    <Button
+                        label="Kembali"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => navigate(-1)}
+                    />
+                ) : (
+                    <>
+                        <Button
+                            label={isSaving ? "Menyimpan..." : "Simpan"}
+                            variant="primary"
+                            size="md"
+                            onClick={handleSimpan}
+                            disabled={isSaving}
+                        />
+                        <Button
+                            label="Batal"
+                            variant="secondary"
+                            size="md"
+                            onClick={() => {
+                                const registeredIds = pegawaiList
+                                    .filter((p) => p.status)
+                                    .map((p) => p.pegawai_id)
+                                setSelectedIds(new Set(registeredIds))
+                                setMode("view")
+                            }}
+                            disabled={isSaving}
+                        />
+                    </>
+                )}
             </div>
 
             <Popup

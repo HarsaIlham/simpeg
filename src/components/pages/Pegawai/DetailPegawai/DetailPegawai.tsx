@@ -141,16 +141,21 @@ const mapToDiklatCards = (diklatList: any[]): CardDiklatData[] =>
         jenisDiklat: item.jenis || "",
         tanggalMulai: formatTanggal(item.tanggal_mulai),
         tanggalSelesai: formatTanggal(item.tanggal_selesai),
-        tempat: "",
-        waktu: "",
+        tempat: item.tempat || "",
+        waktu: item.waktu || "",
         jamPelajaran: item.jp != null ? String(item.jp) : "-",
         status: item.status_diklat || "",
-        jenisBiaya: null,
-        totalBiaya: null,
+        jenisBiaya: item.jenis_biaya || null,
+        totalBiaya: item.total_biaya || null,
         penyelenggara: item.penyelenggara || "",
-        uploadLaporan: item.upload_laporan || "",
+        pencatat: item.created_by || "",
+        catatan: item.catatan || "",
+        jenisPelaksana: item.jenis_pelaksana || "",
+        sertifikat: item.sertif || "",
+        noSertifikat: item.no_sertif || "",
         statusValidasi: item.status_validasi || "",
         statusVerifikasi: item.status_kelayakan || "",
+        uploadLaporan: !!item.upload_laporan,
     }));
 
 const mapToJabatanCards = (jabatanList: any[]): CardJabatanData[] =>
@@ -229,39 +234,61 @@ const DetailPegawai = () => {
 
     const [activeTab, setActiveTab] = useState("pegawai");
 
-    const { data: response, isLoading: queryIsLoading, error: queryError, refetch } = useQuery({
-        queryKey: ["pegawaiAdmin", Number(id)],
-        queryFn: () => pegawaiService.getById(Number(id)),
+    const { data: pegawaiResponse, isLoading: pegawaiLoading, error: pegawaiError, refetch: refetchPegawai } = useQuery({
+        queryKey: ["pegawaiAdmin", Number(id), "pegawai"],
+        queryFn: () => pegawaiService.getBySection(Number(id), "pegawai"),
         enabled: !!id,
     });
 
-    const isLoading = queryIsLoading;
-    const error = queryError ? (queryError as any).message || "Gagal mengambil data pegawai." : null;
+    const { data: keluargaResponse, isLoading: keluargaLoading, error: keluargaError, refetch: refetchKeluarga } = useQuery({
+        queryKey: ["pegawaiAdmin", Number(id), "keluarga"],
+        queryFn: () => pegawaiService.getBySection(Number(id), "keluarga"),
+        enabled: !!id && activeTab === "keluarga",
+    });
 
-    const data: DetailPegawaiResponse | null = useMemo(() => {
-        if (!response?.success || !response?.data) return null;
-        return response.data;
-    }, [response]);
+    const { data: diklatResponse, isLoading: diklatLoading, error: diklatError, refetch: refetchDiklat } = useQuery({
+        queryKey: ["pegawaiAdmin", Number(id), "diklat"],
+        queryFn: () => pegawaiService.getBySection(Number(id), "diklat"),
+        enabled: !!id && activeTab === "diklat",
+    });
+
+    const { data: riwayatResponse, isLoading: riwayatLoading, error: riwayatError, refetch: refetchRiwayat } = useQuery({
+        queryKey: ["pegawaiAdmin", Number(id), "riwayat"],
+        queryFn: () => pegawaiService.getBySection(Number(id), "riwayat-karir"),
+        enabled: !!id && activeTab === "riwayat",
+    });
+
+    const isLoading = pegawaiLoading;
+    const error = pegawaiError ? (pegawaiError as any).message || "Gagal mengambil data pegawai." : null;
+
+    const basicData = useMemo(() => {
+        if (!pegawaiResponse?.success || !pegawaiResponse?.data) return null;
+        return pegawaiResponse.data;
+    }, [pegawaiResponse]);
 
     const profileData = useMemo(() => {
-        if (!data) return null;
-        return mapToProfileData(data.pegawai, data.pribadi);
-    }, [data]);
+        if (!basicData) return null;
+        const pegawai = basicData.pegawai || basicData;
+        const pribadi = basicData.pribadi || {};
+        return mapToProfileData(pegawai, pribadi);
+    }, [basicData]);
 
     const photoUrl = useMemo(() => {
-        if (!data) return null;
-        return data.pegawai.link_photo_profil || null;
-    }, [data]);
+        if (!basicData) return null;
+        const pegawai = basicData.pegawai || basicData;
+        return pegawai.link_photo_profil || null;
+    }, [basicData]);
 
     const statusPegawai = useMemo(() => {
-        if (!data) return "Aktif";
-        return data.pegawai.status_pegawai || "Aktif";
-    }, [data]);
+        if (!basicData) return "Aktif";
+        const pegawai = basicData.pegawai || basicData;
+        return pegawai.status_pegawai || "Aktif";
+    }, [basicData]);
 
     const pegawaiMeta = useMemo(() => {
-        if (!data) return { nama: "", nip: "", jabatan: "", email: "", noTelp: "", unitKerja: "" };
-        const pegawai = data.pegawai;
-        const pribadi = data.pribadi;
+        if (!basicData) return { nama: "", nip: "", jabatan: "", email: "", noTelp: "", unitKerja: "" };
+        const pegawai = basicData.pegawai || basicData;
+        const pribadi = basicData.pribadi || {};
         return {
             nama: pegawai.nama || "",
             nip: pegawai.nip || "",
@@ -270,16 +297,18 @@ const DetailPegawai = () => {
             noTelp: pribadi?.no_hp || pribadi?.no_telp || "",
             unitKerja: pegawai.unit_kerja || "",
         };
-    }, [data]);
+    }, [basicData]);
 
     const diklatList = useMemo(() => {
-        if (!data) return [];
-        return mapToDiklatCards(data.diklat || []);
-    }, [data]);
+        if (!diklatResponse?.success || !diklatResponse?.data) return [];
+        const diklatData = diklatResponse.data.diklat;
+        const list = Array.isArray(diklatData) ? diklatData : (diklatData?.data || []);
+        return mapToDiklatCards(list);
+    }, [diklatResponse]);
 
     const keluargaList = useMemo(() => {
-        if (!data) return [];
-        const keluarga = data.keluarga || {};
+        if (!keluargaResponse?.success || !keluargaResponse?.data) return [];
+        const keluarga = keluargaResponse.data.keluarga || {};
         return [
             ...(keluarga.kontak_darurat || []).map(transformKontakDarurat),
             ...(keluarga.anak || []).map(transformAnak),
@@ -287,47 +316,50 @@ const DetailPegawai = () => {
             ...(keluarga.orang_tua || []).map(transformOrangTua),
             ...(keluarga.tanggungan_lain || []).map(transformTanggunganLain),
         ];
-    }, [data]);
+    }, [keluargaResponse]);
 
     const jabatanList = useMemo(() => {
-        if (!data) return [];
-        const riwayat = data.riwayat_karir || {};
+        if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
+        const riwayat = riwayatResponse.data.riwayat_karir || {};
         return mapToJabatanCards(riwayat.jabatan || []);
-    }, [data]);
+    }, [riwayatResponse]);
 
     const strList = useMemo(() => {
-        if (!data) return [];
-        const riwayat = data.riwayat_karir || {};
+        if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
+        const riwayat = riwayatResponse.data.riwayat_karir || {};
         return mapToStrCards(riwayat.str || []);
-    }, [data]);
+    }, [riwayatResponse]);
 
     const sipList = useMemo(() => {
-        if (!data) return [];
-        const riwayat = data.riwayat_karir || {};
+        if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
+        const riwayat = riwayatResponse.data.riwayat_karir || {};
         return mapToSipCards(riwayat.sip || []);
-    }, [data]);
+    }, [riwayatResponse]);
 
     const penugasanList = useMemo(() => {
-        if (!data) return [];
-        const riwayat = data.riwayat_karir || {};
+        if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
+        const riwayat = riwayatResponse.data.riwayat_karir || {};
         return mapToPenugasanCards(riwayat.penugasan_klinis || []);
-    }, [data]);
+    }, [riwayatResponse]);
 
     const pendidikanList = useMemo(() => {
-        if (!data) return [];
-        const riwayat = data.riwayat_karir || {};
+        if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
+        const riwayat = riwayatResponse.data.riwayat_karir || {};
         return mapToPendidikanCards(riwayat.pendidikan || []);
-    }, [data]);
+    }, [riwayatResponse]);
 
     const pangkatList = useMemo(() => {
-        if (!data) return [];
-        const riwayat = data.riwayat_karir || {};
+        if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
+        const riwayat = riwayatResponse.data.riwayat_karir || {};
         return mapToPangkatCards(riwayat.pangkat || []);
-    }, [data]);
+    }, [riwayatResponse]);
 
     const handleRefresh = useCallback(() => {
-        refetch();
-    }, [refetch]);
+        if (activeTab === "pegawai") refetchPegawai();
+        else if (activeTab === "keluarga") refetchKeluarga();
+        else if (activeTab === "diklat") refetchDiklat();
+        else if (activeTab === "riwayat") refetchRiwayat();
+    }, [activeTab, refetchPegawai, refetchKeluarga, refetchDiklat, refetchRiwayat]);
 
     const renderLoading = () => (
         <div className={styles.centeredState}>
@@ -358,7 +390,7 @@ const DetailPegawai = () => {
                 />
             </div>
 
-            {isLoading ? renderLoading() : error || !data ? renderError() : (
+            {isLoading ? renderLoading() : error || !basicData ? renderError() : (
                 <>
                     <div className={styles.tabsWrapper}>
                         <Card>
@@ -379,23 +411,56 @@ const DetailPegawai = () => {
                             />
                         )}
                         {activeTab === "diklat" && (
-                            <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={handleRefresh} />
+                            diklatLoading ? (
+                                <div className={styles.centeredState}>
+                                    <div className={styles.spinner} />
+                                    <p className={styles.stateText}>Memuat data diklat...</p>
+                                </div>
+                            ) : diklatError ? (
+                                <div className={styles.centeredState}>
+                                    <p className={styles.errorText}>{(diklatError as any).message || "Gagal memuat data diklat."}</p>
+                                </div>
+                            ) : (
+                                <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={handleRefresh} />
+                            )
                         )}
                         {activeTab === "keluarga" && (
-                            <TabKeluarga keluargaList={keluargaList} isAdmin={isAdmin} pegawaiId={Number(id)} onRefresh={handleRefresh} />
+                            keluargaLoading ? (
+                                <div className={styles.centeredState}>
+                                    <div className={styles.spinner} />
+                                    <p className={styles.stateText}>Memuat data keluarga...</p>
+                                </div>
+                            ) : keluargaError ? (
+                                <div className={styles.centeredState}>
+                                    <p className={styles.errorText}>{(keluargaError as any).message || "Gagal memuat data keluarga."}</p>
+                                </div>
+                            ) : (
+                                <TabKeluarga keluargaList={keluargaList} isAdmin={isAdmin} pegawaiId={Number(id)} onRefresh={handleRefresh} />
+                            )
                         )}
                         {activeTab === "riwayat" && (
-                            <TabRiwayat
-                                jabatanList={jabatanList}
-                                pangkatList={pangkatList}
-                                strList={strList}
-                                sipList={sipList}
-                                penugasanList={penugasanList}
-                                pendidikanList={pendidikanList}
-                                isAdmin={isAdmin}
-                                pegawaiId={Number(id)}
-                                onRefresh={handleRefresh}
-                            />
+                            riwayatLoading ? (
+                                <div className={styles.centeredState}>
+                                    <div className={styles.spinner} />
+                                    <p className={styles.stateText}>Memuat riwayat karir...</p>
+                                </div>
+                            ) : riwayatError ? (
+                                <div className={styles.centeredState}>
+                                    <p className={styles.errorText}>{(riwayatError as any).message || "Gagal memuat riwayat karir."}</p>
+                                </div>
+                            ) : (
+                                <TabRiwayat
+                                    jabatanList={jabatanList}
+                                    pangkatList={pangkatList}
+                                    strList={strList}
+                                    sipList={sipList}
+                                    penugasanList={penugasanList}
+                                    pendidikanList={pendidikanList}
+                                    isAdmin={isAdmin}
+                                    pegawaiId={Number(id)}
+                                    onRefresh={handleRefresh}
+                                />
+                            )
                         )}
                     </div>
                 </>

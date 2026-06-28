@@ -61,6 +61,32 @@ export const pegawaiService = {
     }
   },
 
+  getBySection: async (
+    id: number,
+    bagian: "pegawai" | "keluarga" | "riwayat-karir" | "diklat",
+    params?: { kelayakan?: string; page?: number; per_page?: number }
+  ): Promise<ApiResponse<any>> => {
+    try {
+      const query = new URLSearchParams();
+      if (params?.kelayakan) query.set("status_kelayakan", params.kelayakan);
+      if (params?.page) query.set("page", String(params.page));
+      if (params?.per_page) query.set("per_page", String(params.per_page));
+      const qs = query.toString();
+      const url = qs ? `${BASE_URL}/${id}/${bagian}?${qs}` : `${BASE_URL}/${id}/${bagian}`;
+
+      const response = await apiFetch(url, {
+        method: "GET",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw data;
+      }
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   create: async (payload: { nik: string; nama: string; password?: string }): Promise<ApiResponse<{ id: number; nik: string; nama: string }>> => {
     try {
       const response = await apiFetch(BASE_URL, {

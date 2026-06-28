@@ -200,9 +200,9 @@ const PesertaDiklat = () => {
         }
     }, [selectedIds, diklatId, diklatName, showPopup])
 
-    const handleBatal = useCallback(() => {
-        navigate(-1)
-    }, [navigate])
+    // const handleBatal = useCallback(() => {
+    //     navigate(-1)
+    // }, [navigate])
 
     const columns: Column<PesertaDiklatItem>[] = useMemo(() => {
         const baseColumns: Column<PesertaDiklatItem>[] = [

@@ -27,7 +27,7 @@ import { getGlobalUser } from "../../../../contexts/AuthContext";
 import styles from "./DetailPegawai.module.css";
 import TabKeluarga from "./components/TabKeluarga";
 import type { FamilyMemberData } from "../../../ui/organisms/FamilyMemberCard/FamilyMemberCard";
-import type { DetailPegawaiResponse } from "../../../../types/api";
+
 
 const TAB_ITEMS = [
     { id: "pegawai", label: "Pegawai", icon: <User size={16} /> },

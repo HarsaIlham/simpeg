@@ -6,7 +6,7 @@ import FormProfile from "./components/FormProfile";
 import Icon from "../../ui/atoms/Icon";
 import ChangeRequestCard from "./components/ChangeRequestCard";
 import type { ChangeRequestData } from "./components/ChangeRequestCard/ChangeRequestCard";
-import { User } from "lucide-react";
+import { SquarePen, User } from "lucide-react";
 
 import styles from "./Profil.module.css";
 import type { propsType } from "./components/FormProfile/FormProfile";
@@ -488,9 +488,10 @@ const Profil = () => {
 
                     <ChangeRequestCard requests={myChangeRequests} />
                     <Button
-                        className={styles.passwordButton}
+                        // className={styles.passwordButton}
+                        icon={<SquarePen size={16} />}
                         label="Ubah Password"
-                        variant="transparant"
+                        variant="primary"
                         onClick={handleChangePasswordClick}
                     />
                 </div>

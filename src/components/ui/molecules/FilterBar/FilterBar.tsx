@@ -18,6 +18,7 @@ interface FilterBarProps {
     searchPlaceholder?: string;
     filters: FilterItem[];
     customWidth?: string;
+    children?: React.ReactNode;
 }
 
 const FilterBar = ({
@@ -26,6 +27,7 @@ const FilterBar = ({
     searchPlaceholder = "Cari...",
     filters,
     customWidth,
+    children,
 }: FilterBarProps) => {
     return (
         <div className={styles.filterBar}>
@@ -51,6 +53,7 @@ const FilterBar = ({
                         icon={filter.icon}
                     />
                 ))}
+                {children}
             </div>
         </div>
     );

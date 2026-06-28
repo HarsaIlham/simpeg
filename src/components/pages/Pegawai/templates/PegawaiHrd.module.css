@@ -5,6 +5,10 @@
     margin: var(--spacing-lg) 0;
 }
 
+.gap {
+    margin-bottom: var(--spacing-lg);
+}
+
 .filterRight {
     margin: var(--spacing-md) 0;
     display: flex;

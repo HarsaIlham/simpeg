@@ -180,10 +180,10 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                             )}
                         </div>
                     </div>
-                    <div className={styles.footerRow}>
+                    {/* <div className={styles.footerRow}>
                         <span className={styles.footerLabelBold}>Catatan:</span>
                         {data.catatan}
-                    </div>
+                    </div> */}
                 </div>
 
 

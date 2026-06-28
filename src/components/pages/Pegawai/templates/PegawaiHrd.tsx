@@ -178,7 +178,7 @@ const PegawaiHrd = () => {
     }, []);
 
     const changeRoleMutation = useMutation({
-        mutationFn: ({ id, newRole }: { id: number; newRole: "admin" | "hrd" | "direktur" | "pegawai" }) => 
+        mutationFn: ({ id, newRole }: { id: number; newRole: "admin" | "hrd" | "direktur" | "pegawai" }) =>
             pegawaiService.changeRole(id, newRole),
         onSuccess: (res) => {
             if (res.success) {
@@ -333,33 +333,33 @@ const PegawaiHrd = () => {
                 />
             </div>
             <>
-                <Card>
+                <Card className={styles.gap}>
                     <FilterBar
                         customWidth="640px"
                         searchValue={searchValue}
                         onSearchChange={setSearchValue}
                         filters={filterBarFilters}
                         searchPlaceholder="Cari nama atau NIK"
-                    />
+                    >
+                        <Button
+                            label={
+                                tahunMasuk || tglMasukDari || tglMasukSampai
+                                    ? "Filter Masuk: Aktif"
+                                    : "Tahun masuk"
+                            }
+                            icon={<FilterIcon size={16} />}
+                            variant={tahunMasuk || tglMasukDari || tglMasukSampai ? "success" : "primary"}
+                            size="md"
+                            onClick={() => {
+                                setTempTahunMasuk(tahunMasuk);
+                                setTempTglMasukDari(tglMasukDari);
+                                setTempTglMasukSampai(tglMasukSampai);
+                                setIsDateModalOpen(true);
+                            }}
+                        />
+                    </FilterBar>
                 </Card>
 
-                <div className={styles.filterRight}>
-                    <Button
-                        label={
-                            tahunMasuk || tglMasukDari || tglMasukSampai 
-                            ? "Filter Masuk: Aktif" 
-                            : "Tahun masuk"
-                        }
-                        variant={tahunMasuk || tglMasukDari || tglMasukSampai ? "success" : "primary"}
-                        size="sm"
-                        onClick={() => {
-                            setTempTahunMasuk(tahunMasuk);
-                            setTempTglMasukDari(tglMasukDari);
-                            setTempTglMasukSampai(tglMasukSampai);
-                            setIsDateModalOpen(true);
-                        }}
-                    />
-                </div>
 
                 <div>
                     {isLoading ? (
@@ -394,12 +394,12 @@ const PegawaiHrd = () => {
 
             {isDateModalOpen && (
                 <Modal
-                    title="Filter Tanggal / Tahun Masuk Pegawai"
+                    title="Filter Tanggal Masuk Pegawai"
                     isOpen={isDateModalOpen}
                     onClose={() => setIsDateModalOpen(false)}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <div>
+                        {/* <div>
                             <Input
                                 id="filter-tahun-masuk"
                                 name="tahun_masuk"
@@ -416,7 +416,7 @@ const PegawaiHrd = () => {
                                     }
                                 }}
                             />
-                        </div>
+                        </div> */}
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <div style={{ flex: 1 }}>
                                 <Input

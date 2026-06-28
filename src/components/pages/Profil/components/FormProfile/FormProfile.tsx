@@ -291,6 +291,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     label="Tanggal Lahir"
                     name="tanggalLahir"
                     id="tanggalLahir"
+                    type="date"
                     value={formData.tanggalLahir}
                     onChange={handleInputChange}
                     disabled={!isEditing}
@@ -349,7 +350,8 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                         if (formData.ktp) {
                             setPreviewDoc({ label: "KTP", url: formData.ktp, fieldName: "ktp" });
                         } else {
-                            setUploadDoc({ label: "KTP", fieldName: "ktp" });
+                            uploadTargetRef.current = { label: "KTP", fieldName: "ktp" };
+                            docFileInputRef.current?.click();
                         }
                     }}
                     bgColor="#E6F4EE"
@@ -373,7 +375,8 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                         if (formData.kartuKeluarga) {
                             setPreviewDoc({ label: "Kartu Keluarga", url: formData.kartuKeluarga, fieldName: "kartuKeluarga" });
                         } else {
-                            setUploadDoc({ label: "Kartu Keluarga", fieldName: "kartuKeluarga" });
+                            uploadTargetRef.current = { label: "Kartu Keluarga", fieldName: "kartuKeluarga" };
+                            docFileInputRef.current?.click();
                         }
                     }}
                     bgColor="#E6F4EE"

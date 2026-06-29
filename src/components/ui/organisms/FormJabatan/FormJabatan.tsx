@@ -108,28 +108,12 @@ const FormJabatan = ({ initialData, onCancel, onSubmit, isPegawai = true }: Form
                         value={formData.tmt_selesai}
                         onChange={(e) => setFormData({ ...formData, tmt_selesai: e.target.value })}
                         required={!formData.isCurrent}
-                        disabled={formData.isCurrent}
+                        // disabled={formData.isCurrent}
                     />
                 </div>
             </div>
 
-            <div className={styles.row}>
-                <div className={styles.col}>
-                    <Select
-                        id="status-jabatan"
-                        name="status-jabatan"
-                        label="Status Jabatan"
-                        options={[
-                            { value: "aktif", label: "Aktif" },
-                            { value: "tidak-aktif", label: "Tidak Aktif" }
-                        ]}
-                        value={formData.isCurrent ? "aktif" : "tidak-aktif"}
-                        onChange={(e) => setFormData({ ...formData, isCurrent: e.target.value === "aktif" })}
-                        required
-                    />
-                </div>
-                <div className={styles.col}></div>
-            </div>
+
             <Input
                 id="dokumen"
                 name="dokumen"

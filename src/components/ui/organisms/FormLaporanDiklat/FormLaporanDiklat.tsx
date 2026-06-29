@@ -47,7 +47,8 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isMaster =
     const [penyelenggara, setPenyelenggara] = useState(initialData?.penyelenggara ?? "");
     const [jenisPelaksana, setJenisPelaksana] = useState(initialData?.jenisPelaksana ?? "");
     const [catatan, setCatatan] = useState(initialData?.catatan ?? "");
-    // const [dokumenFile, setDokumenFile] = useState<File | null>(null);
+    const [noSertif, setNoSertif] = useState(initialData?.noSertifikat ?? "");
+    const [sertifikatFile, setSertifikatFile] = useState<File | null>(null);
 
     const isInternal = jenisPelaksana === "internal";
 
@@ -73,6 +74,12 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isMaster =
         formData.append("jp", jamPelajaran);
         formData.append("jenis_pelaksana", jenisPelaksana);
         formData.append("catatan", catatan);
+        if (!initialData) {
+            formData.append("no_sertif", noSertif);
+            if (sertifikatFile) {
+                formData.append("upload_sertif", sertifikatFile);
+            }
+        }
 
         if (isInternal) {
             formData.append("jenis_biaya", jenisBiaya);
@@ -239,6 +246,34 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isMaster =
                 </div>
             </div>
 
+            {!initialData && (
+                <div className={styles.row}>
+                    <div className={styles.col}>
+                        <Input
+                            id="no-sertif"
+                            name="no_sertif"
+                            label="Nomor Sertifikat"
+                            value={noSertif}
+                            onChange={(e) => setNoSertif(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className={styles.col}>
+                        <Input
+                            id="upload-sertif"
+                            name="upload_sertif"
+                            type="file"
+                            label="Upload Sertifikat"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0] ?? null;
+                                setSertifikatFile(file);
+                            }}
+                            required
+                        />
+                    </div>
+                </div>
+            )}
+
             <Textarea
                 id="catatan"
                 name="catatan"
@@ -252,7 +287,7 @@ const FormLaporanDiklat = ({ initialData, onCancel, onSubmit, isEdit, isMaster =
                 <div className={styles.actions}>
                     <Button
                         type="submit"
-                        label={isLoading ? "Menyimpan..." : "Simpan"}
+                        label={isLoading ? "Menyimpan..." : (initialData ? "Update" : "Simpan")}
                         variant="primary"
                         disabled={isLoading}
                     />

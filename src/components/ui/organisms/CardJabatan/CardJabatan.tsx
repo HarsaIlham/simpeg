@@ -29,6 +29,11 @@ interface CardJabatanProps {
 }
 
 const CardJabatan = memo(({ data, onEdit, onDelete, onViewDocument }: CardJabatanProps) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = data.tmt_selesai ? new Date(data.tmt_selesai) : null;
+    const isPast = end && !isNaN(end.getTime()) && end < today;
+    const isActive = !isPast;
 
     return (
         <RecordCard
@@ -37,9 +42,14 @@ const CardJabatan = memo(({ data, onEdit, onDelete, onViewDocument }: CardJabata
         >
             <div className={styles.header}>
                 <Text text={data.namaJabatan} weight="bold" color="default" fontSize="18px" />
-                <Badge variant={data.isCurrent ? "success" : "danger"}>
-                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
-                </Badge>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <Badge variant={isActive ? "success" : "danger"}>
+                        {isActive ? "Aktif" : "Tidak Aktif"}
+                    </Badge>
+                    <Badge variant={data.isCurrent ? "info" : "default"}>
+                        {data.isCurrent ? "Digunakan" : "Tidak Digunakan"}
+                    </Badge>
+                </div>
             </div>
             <div className={styles.grid}>
                 <DataField label="Terhitung Mulai Tanggal" value={data.tmt_mulai} isDate={true} />

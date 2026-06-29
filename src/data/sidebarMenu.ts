@@ -21,8 +21,8 @@ export const sidebarMenuItems: SidebarMenuItem[] = [
     allowedRoles: ["pegawai", "admin", "hrd", "direktur"],
   },
   {
-    id: "profil",
-    label: "Profil",
+    id: "profile",
+    label: "Profile",
     icon: UserRound,
     path: "/profil",
     allowedRoles: ["pegawai", "hrd"],

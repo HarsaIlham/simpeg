@@ -1,5 +1,5 @@
 import styles from "./SidebarUserCard.module.css";
-import { useSidebar } from "../../../../contexts/SidebarContext";
+import { useSidebarStore } from "../../../../../../stores/useSidebarStore";
 
 interface SidebarUserCardProps {
   name: string;
@@ -8,7 +8,7 @@ interface SidebarUserCardProps {
 }
 
 const SidebarUserCard = ({ name, role, avatarSrc }: SidebarUserCardProps) => {
-  const { isCollapsed } = useSidebar();
+  const isCollapsed = useSidebarStore((state) => state.isCollapsed);
 
   return (
     <div className={styles.userCard}>

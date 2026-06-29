@@ -36,77 +36,14 @@ import { sipService } from "../../../../services/sipService";
 import { penugasanKlinisService } from "../../../../services/penugasanKlinisService";
 import { hrdPegawaiService } from "../../../../services/hrdPegawaiService";
 
-import type {
-  RiwayatPendidikanItem,
-  RiwayatJabatanItem,
-  RiwayatPangkatItem,
-  RiwayatStrItem,
-  RiwayatSipItem,
-  RiwayatPenugasanKlinisItem,
-} from "../../../../types/api";
-
-const mapToCardPendidikan = (item: RiwayatPendidikanItem): CardPendidikanData => ({
-  id: item.id,
-  jenjang: item.jenjang,
-  institusi: item.institusi,
-  jurusan: item.jurusan,
-  tahun_lulus: item.tahun_lulus,
-  nomor_ijazah: item.nomor_ijazah,
-  link_ijazah: item.link_ijazah,
-});
-
-const mapToCardJabatan = (item: RiwayatJabatanItem): CardJabatanData => ({
-  id: item.id,
-  unit_kerja_id: item.unit_kerja_id,
-  unit_kerja_nama: item.unit_kerja_nama,
-  namaJabatan: item.nama_jabatan,
-  isCurrent: item.is_current,
-  tmt_mulai: item.tmt_mulai,
-  tmt_selesai: item.tmt_selesai,
-  link_sk: item.link_sk,
-  note: item.note,
-});
-
-const mapToCardPangkat = (item: RiwayatPangkatItem): CardPangkatData => ({
-  id: item.id,
-  namaPangkat: item.nama_pangkat,
-  isCurrent: item.is_current,
-  pejabatPenetap: item.pejabat_penetap,
-  tmtSk: item.tmt_sk,
-  startedAt: item.started_at,
-  endedAt: item.ended_at,
-  linkSk: item.link_sk,
-  note: item.note,
-});
-
-const mapToCardStr = (item: RiwayatStrItem): CardStrData => ({
-  id: item.id,
-  nomorStr: item.nomor_str,
-  tanggalTerbit: item.tanggal_terbit,
-  tanggalKadaluarsa: item.tanggal_kadaluarsa,
-  isCurrent: item.is_current,
-  linkSk: item.link_sk,
-});
-
-const mapToCardSip = (item: RiwayatSipItem): CardSipData => ({
-  id: item.id,
-  jenisSipId: item.jenis_sip_id,
-  jenisSipNama: item.jenis_sip_nama,
-  nomorSip: item.nomor_sip,
-  tanggalTerbit: item.tanggal_terbit,
-  tanggalKadaluarsa: item.tanggal_kadaluarsa,
-  isCurrent: item.is_current,
-  linkSk: item.link_sk,
-});
-
-const mapToCardPenugasan = (item: RiwayatPenugasanKlinisItem): CardPenugasanKlinisData => ({
-  id: item.id,
-  nomorSurat: item.nomor_surat,
-  tglMulai: item.tgl_mulai,
-  tglKadaluarsa: item.tgl_kadaluarsa,
-  isCurrent: item.is_current,
-  linkDokumen: item.link_dokumen,
-});
+import {
+  mapPendidikanToCard as mapToCardPendidikan,
+  mapJabatanToCard as mapToCardJabatan,
+  mapPangkatToCard as mapToCardPangkat,
+  mapStrToCard as mapToCardStr,
+  mapSipToCard as mapToCardSip,
+  mapPenugasanToCard as mapToCardPenugasan,
+} from "../../../../utils/riwayatMappers";
 
 interface RiwayatKarirContainerProps {
   pegawaiId?: number;
@@ -664,14 +601,14 @@ export const RiwayatKarirContainer = ({
             <FormPendidikan initialData={selectedPendidikan} isEdit={!!selectedPendidikan}
               isSubmitting={isSubmitting} serverErrors={serverErrors}
               onCancel={handleCloseModal} onSubmit={(fd) => handleSubmit("pendidikan", fd, selectedPendidikan)}
-              isPegawai={false}
+              isPegawai={true}
             />
           )}
 
           {activeTab === "jabatan" && (
             <FormJabatan initialData={selectedJabatan}
               onCancel={handleCloseModal} onSubmit={(fd) => handleSubmit("jabatan", fd, selectedJabatan)}
-              isPegawai={false}
+              isPegawai={true}
             />
           )}
 
@@ -679,7 +616,7 @@ export const RiwayatKarirContainer = ({
             <FormPangkat initialData={selectedPangkat} isEdit={!!selectedPangkat}
               isSubmitting={isSubmitting} serverErrors={serverErrors}
               onCancel={handleCloseModal} onSubmit={(fd) => handleSubmit("pangkat", fd, selectedPangkat)}
-              isPegawai={false}
+              isPegawai={true}
             />
           )}
 

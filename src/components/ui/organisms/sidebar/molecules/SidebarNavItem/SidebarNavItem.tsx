@@ -1,15 +1,15 @@
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
-import type { SidebarMenuItem } from "../../../../types/sidebar";
+import type { SidebarMenuItem } from "../../../../../../types/sidebar";
 import styles from "./SidebarNavItem.module.css";
-import { useSidebar } from "../../../../contexts/SidebarContext";
+import { useSidebarStore } from "../../../../../../stores/useSidebarStore";
 
 interface SidebarNavItemProps {
   item: SidebarMenuItem;
 }
 
 const SidebarNavItem = memo(({ item }: SidebarNavItemProps) => {
-  const { isCollapsed } = useSidebar();
+  const isCollapsed = useSidebarStore((state) => state.isCollapsed);
   const IconComponent = item.icon;
 
   return (

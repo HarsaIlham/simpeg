@@ -172,27 +172,27 @@ const DiklatPegawai = () => {
     }
 
     const submitJadwalMutation = useMutation({
-        mutationFn: (payload: CreateMasterDiklatRequest) => hrdDiklatService.createMasterDiklat(payload),
-        onSuccess: () => {
+        mutationFn: ({ id, payload }: { id?: number; payload: CreateMasterDiklatRequest }) => {
+            if (id !== undefined) {
+                return hrdDiklatService.updateMasterDiklat(id, payload);
+            }
+            return hrdDiklatService.createMasterDiklat(payload);
+        },
+        onSuccess: (_res, variables) => {
             setIsModalOpen(false);
-            showPopup("checklist", "Berhasil", "Jadwal diklat berhasil ditambahkan.");
+            setSelectedDiklat(null);
+            const isEdit = variables.id !== undefined;
+            showPopup("checklist", "Berhasil", `Jadwal diklat berhasil ${isEdit ? "diperbarui" : "ditambahkan"}.`);
             queryClient.invalidateQueries({ queryKey: ["diklatPegawai"] });
         },
         onError: (err: any) => {
-            showPopup("error", "Gagal", err?.message || "Gagal menambahkan jadwal diklat.");
+            showPopup("error", "Gagal", err?.message || "Gagal menyimpan jadwal diklat.");
         }
     });
 
     const isSubmittingJadwal = submitJadwalMutation.isPending;
 
     const handleSubmitJadwal = async (formData: FormData) => {
-        if (modalMode === "Edit Diklat" && selectedDiklat) {
-            showPopup("checklist", "Berhasil", "Jadwal diklat berhasil diperbarui.");
-            setIsModalOpen(false);
-            setSelectedDiklat(null);
-            return;
-        }
-
         const payload: CreateMasterDiklatRequest = {
             nama_kegiatan: formData.get("nama_kegiatan") as string,
             kategori: formData.get("kategori") as string,
@@ -209,7 +209,10 @@ const DiklatPegawai = () => {
             catatan: formData.get("catatan") as string || undefined,
         }
 
-        submitJadwalMutation.mutate(payload);
+        submitJadwalMutation.mutate({
+            id: modalMode === "Edit Diklat" && selectedDiklat ? selectedDiklat.id : undefined,
+            payload
+        });
     }
 
     const handleTambahPeserta = (diklat: CardDiklatData) => {

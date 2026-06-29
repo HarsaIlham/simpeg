@@ -14,6 +14,7 @@ import FormEditRoleStatus from "../../../ui/organisms/FormEditRoleStatus";
 import FormTambahPegawai from "../components/FormTambahPegawai";
 import { pegawaiService } from "../../../../services/pegawaiService";
 import Button from "../../../ui/atoms/Button";
+import Badge from "../../../ui/atoms/Badge";
 import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -203,7 +204,7 @@ const PegawaiAdmin = () => {
         {
             key: "nama",
             label: "Nama/NIK",
-            width: "20%",
+            width: "18%",
             render: (row: PegawaiItem) =>
                 <div>
                     <span className={styles.empName}>{row.nama}</span>
@@ -213,19 +214,19 @@ const PegawaiAdmin = () => {
         {
             key: "jabatan",
             label: "Jabatan",
-            width: "12%",
+            width: "10%",
             render: (row: PegawaiItem) => <span>{row.jabatan}</span>
         },
         {
             key: "unitkerja",
             label: "Unit Kerja",
-            width: "15%",
+            width: "12%",
             render: (row: PegawaiItem) => <span>{row.unitKerja}</span>
         },
         {
             key: "kontak",
             label: "Kontak",
-            width: "23%",
+            width: "18%",
 
             render: (row: PegawaiItem) =>
                 <div>
@@ -236,13 +237,23 @@ const PegawaiAdmin = () => {
         {
             key: "status",
             label: "Status",
-            width: "10%",
+            width: "8%",
             render: (row: PegawaiItem) => <span className={row.status.toLowerCase() === "aktif" ? styles.statusActive : styles.statusInactive}>{row.status}</span>
+        },
+        {
+            key: "statusKelengkapan",
+            label: "Kelengkapan",
+            width: "15%",
+            render: (row: PegawaiItem) => (
+                <Badge variant={row.statusData === "lengkap" ? "success" : "danger"}>
+                    {row.statusData === "lengkap" ? "Lengkap" : "Belum Lengkap"}
+                </Badge>
+            )
         },
         {
             key: "role",
             label: "role",
-            width: "12%",
+            width: "10%",
             render: (row: PegawaiItem) => (
                 <span>{capitalize(row.role)}</span>
             )
@@ -250,7 +261,7 @@ const PegawaiAdmin = () => {
         {
             key: "aksi",
             label: "Aksi",
-            width: "8%",
+            width: "6%",
             render: (row: PegawaiItem) => (
                 <button
                     type="button"

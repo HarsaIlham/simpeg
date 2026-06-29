@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
-import DashboardLayout from "../layouts/DashboardLayout";
+import DashboardLayout from "../components/layouts/DashboardLayout";
 import { ProtectedRoute, PublicRoute } from "./ProtectedRoute";
 
 const Home = lazy(() => import("../components/pages/Home"));
@@ -99,40 +99,6 @@ const routes: RouteObject[] = [
                 path: "/forgot-password",
                 element: <ForgotPassword />,
             },
-            // {
-            //     path: "/str-sip",
-            //     element: <StrSip />,
-            // },
-            // {
-            //     path: "/dashboard-hrd",
-            //     element: <DashboardHrd />,
-            // },
-            // {
-            //     path: "/",
-            //     element: <DashboardLayout />,
-            //     children: [
-            //         {
-            //             index: true,
-            //             element: <Home />,
-            //         },
-            //         {
-            //             path: "profil",
-            //             element: <Profil />,
-            //         },
-            //         {
-            //             path: "data-diklat",
-            //             element: <DataDiklat />,
-            //         },
-            //         {
-            //             path: "data-keluarga",
-            //             element: <DataKeluarga />,
-            //         },
-            //         {
-            //             path: "riwayat-karir",
-            //             element: <RiwayatKarir />,
-            //         },
-            //     ],
-            // }
         ]
     },
 ];

@@ -1,12 +1,12 @@
 import { Hospital } from "lucide-react";
-import Icon from "../../../ui/atoms/Icon";
+import Icon from "../../../../atoms/Icon";
 import styles from "./SidebarBrand.module.css";
-import { useSidebar } from "../../../../contexts/SidebarContext";
+import { useSidebarStore } from "../../../../../../stores/useSidebarStore";
 import { useState } from "react";
-import logoImage from "../../../../assets/images/logo_rsd_kalisat__1___1_-removebg-preview 3.png";
+import logoImage from "../../../../../../assets/images/logo_rsd_kalisat__1___1_-removebg-preview 3.png";
 
 const SidebarBrand = () => {
-  const { isCollapsed } = useSidebar();
+  const isCollapsed = useSidebarStore((state) => state.isCollapsed);
   const [imageError, setImageError] = useState(false);
 
   return (

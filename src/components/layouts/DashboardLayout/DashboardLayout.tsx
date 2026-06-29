@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
-import Sidebar from "../../components/sidebar";
+import Sidebar from "../../ui/organisms/sidebar";
 import styles from "./DashboardLayout.module.css";
-import { SidebarProvider, useSidebar } from "../../contexts/SidebarContext";
-import PageLoader from "../../components/ui/atoms/PageLoader";
+import { useSidebarStore } from "../../../stores/useSidebarStore";
+import PageLoader from "../../ui/atoms/PageLoader";
 
 const DashboardContent = () => {
-  const { isCollapsed } = useSidebar();
+  const isCollapsed = useSidebarStore((state) => state.isCollapsed);
 
   return (
     <div className={styles.layout}>
@@ -26,11 +26,7 @@ const DashboardContent = () => {
 };
 
 const DashboardLayout = () => {
-  return (
-    <SidebarProvider>
-      <DashboardContent />
-    </SidebarProvider>
-  );
+  return <DashboardContent />;
 };
 
 export default DashboardLayout;

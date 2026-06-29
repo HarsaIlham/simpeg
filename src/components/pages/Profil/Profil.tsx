@@ -137,7 +137,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 const Profil = () => {
-    const { updateUser, profile, setProfile } = useAuth();
+    const { updateUser, profile, setProfile, logout } = useAuth();
     const { items: golonganRuangItems } = useMasterData("golonganRuang", undefined, [], true);
     const { items: jenisPegawaiItems } = useMasterData("jenisPegawai", undefined, [], true);
     const { items: profesiItems } = useMasterData("profesi", undefined, [], true);
@@ -146,6 +146,7 @@ const Profil = () => {
     const queryClient = useQueryClient();
 
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [shouldLogoutOnClose, setShouldLogoutOnClose] = useState(false);
     const [popupConfig, setPopupConfig] = useState({
         variant: "success" as "success" | "error" | "warning",
         title: "",
@@ -258,7 +259,7 @@ const Profil = () => {
                 setIsNoteModalOpen(false);
                 setPopupConfig({
                     variant: "success",
-                    title: "Perubahan Berhasil Diajukan",
+                    title: "Permintaan Berhasil Diajukan",
                     message: "Pengajuan perubahan data anda telah dikirim dan sedang menunggu persetujuan Admin/HRD.",
                 });
                 setIsPopupOpen(true);
@@ -282,8 +283,9 @@ const Profil = () => {
             setPopupConfig({
                 variant: "success",
                 title: "Kata Sandi Diperbarui",
-                message: "Kata sandi Anda berhasil diperbarui.",
+                message: "Kata sandi Anda berhasil diperbarui. Silakan login kembali menggunakan kata sandi baru Anda.",
             });
+            setShouldLogoutOnClose(true);
             setIsPopupOpen(true);
         },
     });
@@ -420,8 +422,8 @@ const Profil = () => {
     if (isLoading) {
         return (
             <>
-                <Topbar title="Profil Pegawai" />
-                <MainHeaderSection title="Profil Saya" subtitle="Kelola Informasi Profil dan Data Diri Anda" />
+                <Topbar title="Profile Pegawai" />
+                <MainHeaderSection title="Profile Saya" subtitle="Kelola Informasi Profil dan Data Diri Anda" />
                 <div className={styles.loadingContainer}>
                     <div className={styles.spinner} />
                     <p className={styles.loadingText}>Memuat data profil...</p>
@@ -433,10 +435,10 @@ const Profil = () => {
     if (error || !profileData) {
         return (
             <>
-                <Topbar title="Profil Pegawai" />
-                <MainHeaderSection title="Profil Saya" subtitle="Kelola Informasi Profil dan Data Diri Anda" />
+                <Topbar title="Profile Pegawai" />
+                <MainHeaderSection title="Profile Saya" subtitle="Kelola Informasi Profile dan Data Diri Anda" />
                 <div className={styles.errorContainer}>
-                    <p className={styles.errorText}>{error || "Data profil tidak tersedia."}</p>
+                    <p className={styles.errorText}>{error || "Data profile tidak tersedia."}</p>
                 </div>
             </>
         );
@@ -450,9 +452,9 @@ const Profil = () => {
 
     return (
         <>
-            <Topbar title="Profil Pegawai" />
+            <Topbar title="Profile Pegawai" />
 
-            <MainHeaderSection title="Profil Saya" subtitle="Kelola Informasi Profil dan Data Diri Anda" />
+            <MainHeaderSection title="Profile Saya" subtitle="Kelola Informasi Profile dan Data Diri Anda" />
 
             <input
                 ref={fileInputRef}
@@ -574,7 +576,13 @@ const Profil = () => {
 
             <Popup
                 isOpen={isPopupOpen}
-                onClose={() => setIsPopupOpen(false)}
+                onClose={() => {
+                    setIsPopupOpen(false);
+                    if (shouldLogoutOnClose) {
+                        logout();
+                        setShouldLogoutOnClose(false);
+                    }
+                }}
                 variant={popupConfig.variant}
                 title={popupConfig.title}
                 message={popupConfig.message}

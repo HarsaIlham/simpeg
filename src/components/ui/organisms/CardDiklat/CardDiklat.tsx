@@ -65,7 +65,7 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
         <RecordCard
             icon={<Icon icon={GraduationCap} variant="soft" color="#218838" bgColor="#e6f4ea" rounded="md" sizeBox="lg" sizeIcon="sm" />}
             onEdit={onEdit}
-            onDelete={onDelete}
+            onDelete={isBelumTerlaksana ? onDelete : undefined}
         >
             <div className={styles.header}>
                 <Text text={`${data.jenisPelaksana?.toUpperCase()} - ${data.namaDiklat}`} weight="bold" color="default" fontSize="18px" />

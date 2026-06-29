@@ -6,17 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/dokumen': {
-        target: 'https://api-simpeg.widy4aa.my.id',
-        changeOrigin: true,
-        configure: (proxy) => {
-          proxy.on('proxyRes', (proxyRes) => {
-            delete proxyRes.headers['content-disposition'];
-          });
-        },
-      },
       // '/dokumen': {
-      //   target: 'http://be-simpeg-rskalisat.test',
+      //   target: 'https://api-simpeg.widy4aa.my.id',
       //   changeOrigin: true,
       //   configure: (proxy) => {
       //     proxy.on('proxyRes', (proxyRes) => {
@@ -24,6 +15,15 @@ export default defineConfig({
       //     });
       //   },
       // },
+      '/dokumen': {
+        target: 'http://10.94.146.215:8000',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            delete proxyRes.headers['content-disposition'];
+          });
+        },
+      },
     },
   },
 })

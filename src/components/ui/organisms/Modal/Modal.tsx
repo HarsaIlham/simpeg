@@ -15,7 +15,10 @@ const Modal = ({ isOpen, onClose, title, children, className }: ModalProps) => {
 
     const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        if (target.closest(".react-select__menu-portal")) {
+        if (
+            target.closest(".react-select__menu-portal") ||
+            target.closest("[class*='Mui']")
+        ) {
             return;
         }
         if (modalRef.current && !modalRef.current.contains(target)) {

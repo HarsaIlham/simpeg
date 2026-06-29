@@ -78,6 +78,7 @@ const DashboardAdmin = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const [actionNote, setActionNote] = useState("");
+  const [isRejectMode, setIsRejectMode] = useState(false);
   const [isActionSubmitting, setIsActionSubmitting] = useState(false);
   const [feedbackPopup, setFeedbackPopup] = useState<{
     isOpen: boolean; variant: "success" | "error"; title: string; message: string;
@@ -144,6 +145,7 @@ const DashboardAdmin = () => {
     setSelectedRequestId(null);
     setDetailData([]);
     setActionNote("");
+    setIsRejectMode(false);
   };
 
   const handleAction = async (type: "accept" | "reject") => {
@@ -312,28 +314,53 @@ const DashboardAdmin = () => {
 
               {detailStatus === "pending" && (
                 <>
-                  <Textarea
-                    id="action-note"
-                    name="action-note"
-                    label="Catatan"
-                    value={actionNote}
-                    onChange={(e) => setActionNote(e.target.value)}
-                    rows={4}
-                    placeholder="Catatan (opsional)"
-                  />
+                  {isRejectMode && (
+                    <Textarea
+                      id="action-note"
+                      name="action-note"
+                      label="Catatan Penolakan"
+                      value={actionNote}
+                      onChange={(e) => setActionNote(e.target.value)}
+                      rows={4}
+                      placeholder="Masukkan alasan penolakan..."
+                      required
+                    />
+                  )}
                   <div className={styles.actionButtons}>
-                    <Button
-                      label={isActionSubmitting ? "Memproses..." : "Setujui"}
-                      variant="primary"
-                      onClick={() => handleAction("accept")}
-                      disabled={isActionSubmitting}
-                    />
-                    <Button
-                      label={isActionSubmitting ? "Memproses..." : "Tolak"}
-                      variant="danger"
-                      onClick={() => handleAction("reject")}
-                      disabled={isActionSubmitting}
-                    />
+                    {!isRejectMode ? (
+                      <>
+                        <Button
+                          label={isActionSubmitting ? "Memproses..." : "Setujui"}
+                          variant="primary"
+                          onClick={() => handleAction("accept")}
+                          disabled={isActionSubmitting}
+                        />
+                        <Button
+                          label="Tolak"
+                          variant="danger"
+                          onClick={() => setIsRejectMode(true)}
+                          disabled={isActionSubmitting}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          label={isActionSubmitting ? "Memproses..." : "Tolak Pengajuan"}
+                          variant="danger"
+                          onClick={() => handleAction("reject")}
+                          disabled={isActionSubmitting}
+                        />
+                        <Button
+                          label="Batal"
+                          variant="secondary"
+                          onClick={() => {
+                            setIsRejectMode(false);
+                            setActionNote("");
+                          }}
+                          disabled={isActionSubmitting}
+                        />
+                      </>
+                    )}
                   </div>
                 </>
               )}

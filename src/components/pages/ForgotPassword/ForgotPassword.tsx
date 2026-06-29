@@ -1,4 +1,4 @@
-import AuthLayout from "../../../layouts/AuthLayout";
+import AuthLayout from "../../layouts/AuthLayout";
 import ForgotPasswordCard from "./molecules/ForgotPasswordCard";
 import HelpMessageCard from "../Login/molecules/HelpMessageCard";
 import styles from "./ForgotPassword.module.css";

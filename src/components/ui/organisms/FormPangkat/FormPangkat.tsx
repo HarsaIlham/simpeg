@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Button from "../../atoms/Button";
 import Input from "../../atoms/Input";
-import Select from "../../atoms/Select";
 import styles from "./FormPangkat.module.css";
 import type { CardPangkatData } from "../CardPangkat/CardPangkat";
 
@@ -17,7 +16,7 @@ interface FormPangkatProps {
 
 const FormPangkat = ({ initialData, isSubmitting = false, serverErrors, onCancel, onSubmit, isPegawai = true }: FormPangkatProps) => {
     const [namaPangkat, setNamaPangkat] = useState(initialData?.namaPangkat ?? "");
-    const [isCurrent, setIsCurrent] = useState(initialData?.isCurrent ?? false);
+    const [isCurrent] = useState(initialData?.isCurrent ?? false);
     const [pejabatPenetap, setPejabatPenetap] = useState(initialData?.pejabatPenetap ?? "");
     const [tmtSk, setTmtSk] = useState(initialData?.tmtSk ?? "");
     const [startedAt, setStartedAt] = useState(initialData?.startedAt ?? "");
@@ -57,33 +56,15 @@ const FormPangkat = ({ initialData, isSubmitting = false, serverErrors, onCancel
                 required
             />
 
-            <div className={styles.row}>
-                <div className={styles.col}>
-                    <Select
-                        id="status-pangkat"
-                        name="is_current"
-                        label="Status"
-                        options={[
-                            { value: "aktif", label: "Aktif" },
-                            { value: "tidak-aktif", label: "Tidak Aktif" },
-                        ]}
-                        value={isCurrent ? "aktif" : "tidak-aktif"}
-                        onChange={(e) => setIsCurrent(e.target.value === "aktif")}
-                        required
-                    />
-                </div>
-                <div className={styles.col}>
-                    <Input
-                        id="pejabat-penetap"
-                        name="pejabat_penetap"
-                        label="Pejabat Penetap"
-                        value={pejabatPenetap}
-                        onChange={(e) => setPejabatPenetap(e.target.value)}
-                        error={getFieldError("pejabat_penetap")}
-                        required
-                    />
-                </div>
-            </div>
+            <Input
+                id="pejabat-penetap"
+                name="pejabat_penetap"
+                label="Pejabat Penetap"
+                value={pejabatPenetap}
+                onChange={(e) => setPejabatPenetap(e.target.value)}
+                error={getFieldError("pejabat_penetap")}
+                required
+            />
 
             <div className={styles.row}>
                 <div className={styles.col}>

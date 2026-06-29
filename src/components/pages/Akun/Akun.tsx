@@ -23,6 +23,7 @@ const Akun = () => {
 
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [shouldLogoutOnClose, setShouldLogoutOnClose] = useState(false);
     const [popupConfig, setPopupConfig] = useState({
         variant: "success" as "success" | "error" | "warning",
         title: "",
@@ -67,8 +68,9 @@ const Akun = () => {
             setPopupConfig({
                 variant: "success",
                 title: "Kata Sandi Diperbarui",
-                message: "Kata sandi Anda berhasil diperbarui.",
+                message: "Kata sandi Anda berhasil diperbarui. Silakan login kembali menggunakan kata sandi baru Anda.",
             });
+            setShouldLogoutOnClose(true);
             setIsPopupOpen(true);
         } catch (error: any) {
             throw error;
@@ -105,7 +107,13 @@ const Akun = () => {
 
             <Popup
                 isOpen={isPopupOpen}
-                onClose={() => setIsPopupOpen(false)}
+                onClose={() => {
+                    setIsPopupOpen(false);
+                    if (shouldLogoutOnClose) {
+                        useAuthStore.getState().logout();
+                        setShouldLogoutOnClose(false);
+                    }
+                }}
                 variant={popupConfig.variant}
                 title={popupConfig.title}
                 message={popupConfig.message}

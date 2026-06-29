@@ -4,6 +4,7 @@ import {
   Clock,
   ClipboardList,
   CalendarDays,
+  CircleAlert,
 } from "lucide-react";
 import styles from "./DashboardPegawai.module.css";
 import Topbar from "../../../../ui/organisms/Topbar/Topbar";
@@ -67,7 +68,7 @@ const DashboardPegawai = () => {
 
         <div className={styles.statsRow}>
           <StatCard
-            icon={<CheckCircle2 size={24} />}
+            icon={dashboard?.list_aksi && dashboard.list_aksi.length === 0 ? <CheckCircle2 size={24} /> : <CircleAlert size={24} />}
             value={
               dashboard
                 ? (dashboard.list_aksi && dashboard.list_aksi.length === 0)
@@ -76,7 +77,7 @@ const DashboardPegawai = () => {
                 : undefined
             }
             label="Kelengkapan Data"
-            variant="green"
+            variant={dashboard?.list_aksi && dashboard.list_aksi.length === 0 ? "green" : "amber"}
             isLoading={isLoading}
             onClick={() => navigate("/profil")}
           />

@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import NotificationItem from "../../molecules/NotificationItem";
 import type { NotifVariant } from "../../molecules/NotificationItem/NotificationItem";
 import { notificationService } from "../../../../services/notificationService";
-import { useSidebar } from "../../../../contexts/SidebarContext";
+import { useSidebarStore } from "../../../../stores/useSidebarStore";
 import type { Notifikasi } from "../../../../types/api";
 import { getGlobalUser } from "../../../../contexts/AuthContext";
 
@@ -49,7 +49,7 @@ const formatRelativeTime = (dateStr: string): string => {
 const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
   const user = getGlobalUser();
   const isAdmin = user?.role.toLowerCase() === "admin";
-  const { openMobile } = useSidebar();
+  const openMobile = useSidebarStore((state) => state.openMobile);
   const [isOpen, setIsOpen] = useState(false);
   const [localNotifs, setLocalNotifs] = useState<Notifikasi[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);

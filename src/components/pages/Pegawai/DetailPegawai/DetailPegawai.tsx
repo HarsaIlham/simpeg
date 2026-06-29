@@ -15,19 +15,21 @@ import TabRiwayat from "./components/TabRiwayat";
 
 import type { propsType } from "../../Profil/components/FormProfile/FormProfile";
 import type { CardDiklatData } from "../../../ui/organisms/CardDiklat/CardDiklat";
-import type { CardJabatanData } from "../../../ui/organisms/CardJabatan/CardJabatan";
-import type { CardStrData } from "../../../ui/organisms/CardStr/CardStr";
-import type { CardSipData } from "../../../ui/organisms/CardSip/CardSip";
-import type { CardPenugasanKlinisData } from "../../../ui/organisms/CardPenugasanKlinis/CardPenugasanKlinis";
-import type { CardPendidikanData } from "../../../ui/organisms/CardPendidikan/CardPendidikan";
-import type { CardPangkatData } from "../../../ui/organisms/CardPangkat/CardPangkat";
+
 
 import { pegawaiService } from "../../../../services/pegawaiService";
 import { getGlobalUser } from "../../../../contexts/AuthContext";
 import styles from "./DetailPegawai.module.css";
 import TabKeluarga from "./components/TabKeluarga";
 import type { FamilyMemberData } from "../../../ui/organisms/FamilyMemberCard/FamilyMemberCard";
-
+import {
+    mapPendidikanToCard,
+    mapJabatanToCard,
+    mapPangkatToCard,
+    mapStrToCard,
+    mapSipToCard,
+    mapPenugasanToCard,
+} from "../../../../utils/riwayatMappers";
 
 const TAB_ITEMS = [
     { id: "pegawai", label: "Pegawai", icon: <User size={16} /> },
@@ -158,73 +160,7 @@ const mapToDiklatCards = (diklatList: any[]): CardDiklatData[] =>
         uploadLaporan: !!item.upload_laporan,
     }));
 
-const mapToJabatanCards = (jabatanList: any[]): CardJabatanData[] =>
-    jabatanList.map((item) => ({
-        id: item.id,
-        unit_kerja_id: 0,
-        unit_kerja_nama: item.unit_kerja || "",
-        namaJabatan: item.jabatan || "",
-        isCurrent: item.is_current,
-        tmt_mulai: item.tanggal_mulai || "",
-        tmt_selesai: item.tanggal_selesai || "",
-        link_sk: item.file_path || null,
-    }));
-
-const mapToStrCards = (strList: any[]): CardStrData[] =>
-    strList.map((item) => ({
-        id: item.id,
-        nomorStr: item.nomor_str || "",
-        tanggalTerbit: item.tanggal_terbit || "",
-        tanggalKadaluarsa: item.tanggal_kadaluarsa || null,
-        isCurrent: item.is_current,
-        linkSk: item.file_path || null,
-    }));
-
-const mapToSipCards = (sipList: any[]): CardSipData[] =>
-    sipList.map((item) => ({
-        id: item.id,
-        jenisSipId: 0,
-        jenisSipNama: item.jenis_sip || "",
-        nomorSip: item.nomor_sip || "",
-        tanggalTerbit: item.tanggal_terbit || "",
-        tanggalKadaluarsa: item.tanggal_kadaluarsa || null,
-        isCurrent: item.is_current,
-        linkSk: item.file_path || null,
-    }));
-
-const mapToPenugasanCards = (pkList: any[]): CardPenugasanKlinisData[] =>
-    pkList.map((item) => ({
-        id: item.id,
-        nomorSurat: item.nomor_surat || "",
-        tglMulai: item.tanggal_mulai || "",
-        tglKadaluarsa: item.tanggal_kadaluarsa || null,
-        isCurrent: item.is_current,
-        linkDokumen: item.file_path || null,
-    }));
-
-const mapToPendidikanCards = (pendidikanList: any[]): CardPendidikanData[] =>
-    pendidikanList.map((item) => ({
-        id: item.id,
-        jenjang: item.jenjang || "",
-        institusi: item.institusi || "",
-        jurusan: item.jurusan || "",
-        tahun_lulus: item.tahun_lulus || "",
-        nomor_ijazah: item.nomor_ijazah || "",
-        link_ijazah: item.ijazah_file_path || "",
-    }));
-
-const mapToPangkatCards = (pangkatList: any[]): CardPangkatData[] =>
-    pangkatList.map((item) => ({
-        id: item.id,
-        namaPangkat: item.pangkat || "",
-        isCurrent: item.is_current,
-        pejabatPenetap: item.pejabat_penetap || null,
-        tmtSk: item.tmt_sk || null,
-        startedAt: item.tanggal_mulai || null,
-        endedAt: item.tanggal_selesai || null,
-        linkSk: item.link_sk || null,
-        note: item.note || "",
-    }));
+// Mappers are now imported from riwayatMappers.ts
 
 const DetailPegawai = () => {
     const { id } = useParams<{ id: string }>();
@@ -321,37 +257,37 @@ const DetailPegawai = () => {
     const jabatanList = useMemo(() => {
         if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
         const riwayat = riwayatResponse.data.riwayat_karir || {};
-        return mapToJabatanCards(riwayat.jabatan || []);
+        return (riwayat.jabatan || []).map(mapJabatanToCard);
     }, [riwayatResponse]);
 
     const strList = useMemo(() => {
         if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
         const riwayat = riwayatResponse.data.riwayat_karir || {};
-        return mapToStrCards(riwayat.str || []);
+        return (riwayat.str || []).map(mapStrToCard);
     }, [riwayatResponse]);
 
     const sipList = useMemo(() => {
         if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
         const riwayat = riwayatResponse.data.riwayat_karir || {};
-        return mapToSipCards(riwayat.sip || []);
+        return (riwayat.sip || []).map(mapSipToCard);
     }, [riwayatResponse]);
 
     const penugasanList = useMemo(() => {
         if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
         const riwayat = riwayatResponse.data.riwayat_karir || {};
-        return mapToPenugasanCards(riwayat.penugasan_klinis || []);
+        return (riwayat.penugasan_klinis || []).map(mapPenugasanToCard);
     }, [riwayatResponse]);
 
     const pendidikanList = useMemo(() => {
         if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
         const riwayat = riwayatResponse.data.riwayat_karir || {};
-        return mapToPendidikanCards(riwayat.pendidikan || []);
+        return (riwayat.pendidikan || []).map(mapPendidikanToCard);
     }, [riwayatResponse]);
 
     const pangkatList = useMemo(() => {
         if (!riwayatResponse?.success || !riwayatResponse?.data) return [];
         const riwayat = riwayatResponse.data.riwayat_karir || {};
-        return mapToPangkatCards(riwayat.pangkat || []);
+        return (riwayat.pangkat || []).map(mapPangkatToCard);
     }, [riwayatResponse]);
 
     const handleRefresh = useCallback(() => {

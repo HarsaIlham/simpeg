@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, LogOut, PanelLeftOpen} from "lucide-react";
-import { sidebarMenuItems } from "../../data/sidebarMenu";
+import { ChevronLeft, LogOut, PanelLeftOpen } from "lucide-react";
+import { sidebarMenuItems } from "../../../../data/sidebarMenu";
 import SidebarBrand from "./molecules/SidebarBrand";
 import SidebarUserCard from "./molecules/SidebarUserCard";
 import SidebarNavItem from "./molecules/SidebarNavItem";
 import styles from "./Sidebar.module.css";
-import { useAuth } from "../../contexts/AuthContext";
-import { useSidebar } from "../../contexts/SidebarContext";
-import { profileService } from "../../services/profileService";
-import { getProxiedFileUrl } from "../../utils/api";
-import Popup from "../ui/molecules/Popup";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { useSidebarStore } from "../../../../stores/useSidebarStore";
+import { profileService } from "../../../../services/profileService";
+import { getProxiedFileUrl } from "../../../../utils/api";
+import Popup from "../../molecules/Popup";
 
 let isFetchingProfileGlobal = false;
 
 const Sidebar = () => {
   const { user, logout, profile, updateUser } = useAuth();
-  const { isCollapsed, isMobileOpen, toggleCollapse, closeMobile } = useSidebar();
+  const { isCollapsed, isMobileOpen, toggleCollapse, closeMobile } = useSidebarStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const avatarUrl = profile?.link_photo_profile
     ? getProxiedFileUrl(profile.link_photo_profile)
     : user?.avatarUrl
-    ? getProxiedFileUrl(user.avatarUrl)
-    : undefined;
-  
+      ? getProxiedFileUrl(user.avatarUrl)
+      : undefined;
+
   useEffect(() => {
     if (!user || user.avatarUrl !== undefined || isFetchingProfileGlobal) return;
 
@@ -49,8 +49,8 @@ const Sidebar = () => {
 
   if (!user) return null;
 
-  const currentRole = user.role; 
-  
+  const currentRole = user.role;
+
   const accessibleMenus = sidebarMenuItems.filter(item => {
     if (!item.allowedRoles) return true;
     return item.allowedRoles.includes(currentRole);

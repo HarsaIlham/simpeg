@@ -191,7 +191,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
     return (
         <div className={styles.card}>
             <div className={styles.cardHeader}>
-                <CardHeader title="Data Profil" />
+                <CardHeader title="Data Profile" />
                 {!readOnly && (
                     <div className={styles.cardActions}>
                         {isEditing ? (
@@ -240,6 +240,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.namaLengkap}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    required
                 />
                 <Input
                     bgColor="#E6F4EE"
@@ -250,6 +251,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Input
@@ -262,6 +264,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.nik}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Input
@@ -272,6 +275,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.nip}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Input
@@ -284,6 +288,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.noTelepon}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Input
@@ -295,6 +300,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.tanggalLahir}
                     onChange={handleInputChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Select
@@ -306,6 +312,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.jenisKelamin}
                     onChange={handleSelectChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Select
@@ -317,6 +324,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.agama}
                     onChange={handleSelectChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Select
@@ -422,6 +430,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.profesi}
                     onChange={handleSelectChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Input
@@ -443,6 +452,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.golonganRuang}
                     onChange={handleSelectChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Select
@@ -454,6 +464,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.unitKerja}
                     onChange={handleSelectChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Select
@@ -465,6 +476,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     value={formData.jenisPegawai}
                     onChange={handleSelectChange}
                     disabled={!isEditing}
+                    required
                 />
 
                 <Input
@@ -476,6 +488,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     type="date"
+                    required
                 />
 
                 <div className={styles.computedField}>
@@ -498,6 +511,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     type="date"
+                    required
                 />
 
                 <Input
@@ -509,6 +523,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     type="date"
+                    required
                 />
 
                 <Input

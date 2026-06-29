@@ -53,6 +53,23 @@ export const hrdDiklatService = {
     return data;
   },
 
+  updateMasterDiklat: async (
+    id: number,
+    payload: CreateMasterDiklatRequest
+  ): Promise<ApiResponse<CreateMasterDiklatResponse>> => {
+    const response = await apiFetch(`/hrd/diklat/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
+  },
+
   getPeserta: async (
     diklatId: number,
     section?: string

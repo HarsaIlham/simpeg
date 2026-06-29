@@ -38,7 +38,7 @@ const LoginForm = () => {
           password: err.errors.password ? err.errors.password[0] : undefined,
         });
       } else if (err.message) {
-        setErrors({ global: err.message });
+        setErrors({ global: "NIK atau Password tidak sesuai"});
       } else {
         setErrors({ global: "Gagal terhubung ke server. Pastikan sedang online." });
       }

@@ -30,15 +30,25 @@ interface CardPangkatProps {
 }
 
 const CardPangkat = memo(({ data, onEdit, onDelete, onViewDocument }: CardPangkatProps) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = data.endedAt ? new Date(data.endedAt) : null;
+    const isPast = end && !isNaN(end.getTime()) && end < today;
+    const isActive = !isPast;
 
     return (
         <RecordCard onDelete={onDelete} onEdit={onEdit} enableDelete={false}
             icon={<Icon icon={Award} variant="soft" color="#218838" bgColor="#e6f4ea" rounded="md" sizeBox="lg" sizeIcon="sm" />}>
             <div className={styles.header}>
                 <Text text={data.namaPangkat} weight="bold" color="default" fontSize="18px" />
-                <Badge variant={data.isCurrent ? "success" : "danger"}>
-                    {data.isCurrent ? "Aktif" : "Tidak Aktif"}
-                </Badge>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <Badge variant={isActive ? "success" : "danger"}>
+                        {isActive ? "Aktif" : "Tidak Aktif"}
+                    </Badge>
+                    <Badge variant={data.isCurrent ? "info" : "default"}>
+                        {data.isCurrent ? "Digunakan" : "Tidak Digunakan"}
+                    </Badge>
+                </div>
             </div>
             <div className={styles.grid}>
                 {data.tmtSk && <DataField key="tmt-sk" label="TMT SK" value={data.tmtSk || "-"} isDate={true} />}

@@ -1,4 +1,4 @@
-import AuthLayout from "../../../layouts/AuthLayout";
+import AuthLayout from "../../layouts/AuthLayout";
 import LoginCard from "./molecules/LoginCard";
 import HelpMessageCard from "./molecules/HelpMessageCard";
 import styles from "./Login.module.css";
@@ -9,7 +9,7 @@ const Login = () => {
         <AuthLayout backgroundImage={bgLogin}>
             <div className={styles.loginPage}>
                 <LoginCard />
-                <HelpMessageCard title="TIPS" subtitle="Gunakan NIK dan Password yang Telah Terdaftar"/>
+                <HelpMessageCard title="TIPS" subtitle="Gunakan NIK dan Password yang Telah Terdaftar" />
             </div>
         </AuthLayout>
     )

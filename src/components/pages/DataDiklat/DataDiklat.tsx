@@ -214,7 +214,7 @@ const DataDiklat = () => {
       setIsModalOpen(false);
       setSelectedDiklat(null);
       queryClient.invalidateQueries({ queryKey: ["diklat"] });
-      showPopup("checklist", "Berhasil", "Laporan sertifikat berhasil diupload.");
+      showPopup("checklist", "Berhasil", "Laporan berhasil diupload.");
     },
     onError: (err: any) => {
       showPopup("error", "Gagal", err?.message || "Gagal mengupload laporan.");

@@ -15,6 +15,8 @@ import Modal from "../../../ui/organisms/Modal";
 import Input from "../../../ui/atoms/Input";
 import { getGlobalUser } from "../../../../contexts/AuthContext";
 import { useMasterData } from "../../../../hooks/useMasterData";
+import { useDebounce } from "../../../../hooks/useDebounce";
+import { useDisclosure } from "../../../../hooks/useDisclosure";
 import { pegawaiService } from "../../../../services/pegawaiService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -23,10 +25,10 @@ export interface PegawaiItem {
     nama: string;
     jabatan: string;
     nik: string;
-    profesi: string;
+    unitKerja: string;
     status: string;
     role: "admin" | "hrd" | "direktur" | "pegawai";
-    statusData: "lengkap" | "belum-lengkap";
+    statusData: "Lengkap" | "Tidak Lengkap";
     jenisPegawai: string;
     pendidikan: string;
     statusPegawai: string;
@@ -35,7 +37,7 @@ export interface PegawaiItem {
 const STATUS_DATA_OPTIONS = [
     { value: "", label: "Semua Status" },
     { value: "lengkap", label: "Lengkap" },
-    { value: "belum-lengkap", label: "Belum Lengkap" },
+    { value: "belum-lengkap", label: "Tidak Lengkap" },
 ];
 
 const JENIS_PEGAWAI_OPTIONS = [
@@ -60,13 +62,12 @@ const STATUS_PEGAWAI_OPTIONS = [
     { value: "tidak aktif", label: "Tidak Aktif" },
 ];
 
-const PROFESI_OPTIONS = [
-    { value: "", label: "Semua Profesi" },
-    { value: "Dokter Spesialis Penyakit Dalam", label: "Dokter Spesialis Penyakit Dalam" },
-    { value: "Dokter Spesialis Bedah", label: "Dokter Spesialis Bedah" },
-    { value: "Perawat", label: "Perawat" },
-    { value: "Apoteker", label: "Apoteker" },
-    { value: "Dokter Spesialis Anak", label: "Dokter Spesialis Anak" },
+const UNIT_KERJA_OPTIONS = [
+    { value: "", label: "Semua Unit Kerja" },
+    { value: "Laboratorium", label: "Laboratorium" },
+    { value: "Radiologi", label: "Radiologi" },
+    { value: "Farmasi", label: "Farmasi" },
+    { value: "Kamar Operasi", label: "Kamar Operasi" },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -82,12 +83,12 @@ const PegawaiHrd = () => {
     const [jenisPegawai, setJenisPegawai] = useState("");
     const [pendidikan, setPendidikan] = useState("");
     const [statusPegawai, setStatusPegawai] = useState("");
-    const [profesi, setProfesi] = useState("");
+    const [unitKerja, setUnitKerja] = useState("");
 
     const [tahunMasuk, setTahunMasuk] = useState("");
     const [tglMasukDari, setTglMasukDari] = useState("");
     const [tglMasukSampai, setTglMasukSampai] = useState("");
-    const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+    const dateModalDisclosure = useDisclosure(false);
 
     const [tempTahunMasuk, setTempTahunMasuk] = useState("");
     const [tempTglMasukDari, setTempTglMasukDari] = useState("");
@@ -96,17 +97,13 @@ const PegawaiHrd = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const { options: filterJenisPegawaiOptions } = useMasterData("jenisPegawai", "Semua Jenis Pegawai", JENIS_PEGAWAI_OPTIONS);
-    const { options: filterProfesiOptions } = useMasterData("profesi", "Semua Profesi", PROFESI_OPTIONS);
+    const { options: filterUnitKerjaOptions } = useMasterData("unitKerja", "Semua Unit Kerja", UNIT_KERJA_OPTIONS);
 
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const debouncedSearch = useDebounce(searchValue, 500);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchValue);
-            setCurrentPage(1);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchValue]);
+        setCurrentPage(1);
+    }, [debouncedSearch]);
 
     const currentFilters = useMemo(() => ({
         search: debouncedSearch || undefined,
@@ -114,11 +111,11 @@ const PegawaiHrd = () => {
         jenis_pegawai: jenisPegawai || undefined,
         pendidikan: pendidikan || undefined,
         status_pegawai: statusPegawai || undefined,
-        profesi: profesi || undefined,
+        unit_kerja: unitKerja || undefined,
         tahun_masuk: tahunMasuk || undefined,
         tgl_masuk_dari: tglMasukDari || undefined,
         tgl_masuk_sampai: tglMasukSampai || undefined,
-    }), [debouncedSearch, statusdata, jenisPegawai, pendidikan, statusPegawai, profesi, tahunMasuk, tglMasukDari, tglMasukSampai]);
+    }), [debouncedSearch, statusdata, jenisPegawai, pendidikan, statusPegawai, unitKerja, tahunMasuk, tglMasukDari, tglMasukSampai]);
 
     const { data: response, isLoading, error: queryError } = useQuery({
         queryKey: ["pegawai", currentPage, currentFilters],
@@ -130,7 +127,7 @@ const PegawaiHrd = () => {
             jenis_pegawai: currentFilters.jenis_pegawai,
             pendidikan: currentFilters.pendidikan,
             status_pegawai: currentFilters.status_pegawai,
-            profesi: currentFilters.profesi,
+            unit_kerja: currentFilters.unit_kerja,
             tahun_masuk: currentFilters.tahun_masuk,
             tgl_masuk_dari: currentFilters.tgl_masuk_dari,
             tgl_masuk_sampai: currentFilters.tgl_masuk_sampai,
@@ -147,10 +144,10 @@ const PegawaiHrd = () => {
             nama: item.nama || "",
             nik: item.nik || "",
             jabatan: item.jabatan || "-",
-            profesi: item.profesi || item.unit_kerja || "-",
+            unitKerja: item.unit_kerja || "-",
             status: item.status || "Aktif",
             role: item.role || "pegawai",
-            statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
+            statusData: item.status_kelengkapan?.toLowerCase() === "lengkap" ? "Lengkap" : "Tidak Lengkap",
             jenisPegawai: item.jenis_pegawai || "",
             pendidikan: item.pendidikan || "",
             statusPegawai: item.status || "",
@@ -242,16 +239,16 @@ const PegawaiHrd = () => {
             icon: <FilterIcon size={16} />
         },
         {
-            name: "profesi",
-            options: filterProfesiOptions,
-            value: profesi,
+            name: "unit-kerja",
+            options: filterUnitKerjaOptions,
+            value: unitKerja,
             onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
-                setProfesi(e.target.value);
+                setUnitKerja(e.target.value);
                 setCurrentPage(1);
             },
             icon: <FilterIcon size={16} />
         },
-    ], [statusdata, filterJenisPegawaiOptions, jenisPegawai, pendidikan, statusPegawai, filterProfesiOptions, profesi]);
+    ], [statusdata, filterJenisPegawaiOptions, jenisPegawai, pendidikan, statusPegawai, filterUnitKerjaOptions, unitKerja]);
 
     const columns = useMemo(() => [
         {
@@ -270,11 +267,13 @@ const PegawaiHrd = () => {
             key: "nik",
             label: "NIK",
             width: "12%",
+            render: (row: PegawaiItem) => <span>{row.nik}</span>
         },
         {
-            key: "profesi",
-            label: "Profesi",
+            key: "unitKerja",
+            label: "Unit Kerja",
             width: "18%",
+            render: (row: PegawaiItem) => <span>{row.unitKerja}</span>
         },
         {
             key: "status",
@@ -291,8 +290,8 @@ const PegawaiHrd = () => {
             label: "Kelengkapan",
             width: "15%",
             render: (row: PegawaiItem) => (
-                <Badge variant={row.statusData === "lengkap" ? "success" : "danger"}>
-                    {row.statusData === "lengkap" ? "Lengkap" : "Belum Lengkap"}
+                <Badge variant={row.statusData.toLowerCase() === "lengkap" ? "success" : "danger"}>
+                    {row.statusData.toLowerCase() === "lengkap" ? "Lengkap" : "Tidak Lengkap"}
                 </Badge>
             )
         },
@@ -369,7 +368,7 @@ const PegawaiHrd = () => {
                                 setTempTahunMasuk(tahunMasuk);
                                 setTempTglMasukDari(tglMasukDari);
                                 setTempTglMasukSampai(tglMasukSampai);
-                                setIsDateModalOpen(true);
+                                dateModalDisclosure.onOpen();
                             }}
                         />
                     </FilterBar>
@@ -407,31 +406,13 @@ const PegawaiHrd = () => {
                 />
             </>
 
-            {isDateModalOpen && (
+            {dateModalDisclosure.isOpen && (
                 <Modal
                     title="Filter Tanggal Masuk Pegawai"
-                    isOpen={isDateModalOpen}
-                    onClose={() => setIsDateModalOpen(false)}
+                    isOpen={dateModalDisclosure.isOpen}
+                    onClose={dateModalDisclosure.onClose}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {/* <div>
-                            <Input
-                                id="filter-tahun-masuk"
-                                name="tahun_masuk"
-                                label="Berdasarkan Tahun Masuk"
-                                placeholder="Contoh: 2026"
-                                type="text"
-                                onlyNumbers={true}
-                                value={tempTahunMasuk}
-                                onChange={(e) => {
-                                    setTempTahunMasuk(e.target.value);
-                                    if (e.target.value) {
-                                        setTempTglMasukDari("");
-                                        setTempTglMasukSampai("");
-                                    }
-                                }}
-                            />
-                        </div> */}
                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <div style={{ flex: 1 }}>
                                 <Input
@@ -474,7 +455,7 @@ const PegawaiHrd = () => {
                                     setTglMasukDari("");
                                     setTglMasukSampai("");
                                     setCurrentPage(1);
-                                    setIsDateModalOpen(false);
+                                    dateModalDisclosure.onClose();
                                 }}
                             />
                             <Button
@@ -486,7 +467,7 @@ const PegawaiHrd = () => {
                                     setTglMasukDari(tempTglMasukDari);
                                     setTglMasukSampai(tempTglMasukSampai);
                                     setCurrentPage(1);
-                                    setIsDateModalOpen(false);
+                                    dateModalDisclosure.onClose();
                                 }}
                             />
                         </div>

@@ -19,6 +19,8 @@ import { generateCvPdf } from "../../../utils/generateCvPdf"
 import type { RiwayatDiklatItem } from "../../../types/api"
 import Popup from "../../ui/molecules/Popup"
 import { useMasterData } from "../../../hooks/useMasterData"
+import { useDebounce } from "../../../hooks/useDebounce"
+import { useDisclosure } from "../../../hooks/useDisclosure"
 import PdfViewerModal from "../../ui/molecules/PdfViewerModal"
 import { getProxiedFileUrl } from "../../../utils/api"
 import { getGlobalUser } from "../../../contexts/AuthContext"
@@ -90,11 +92,11 @@ const DataDiklat = () => {
   const [searchParams] = useSearchParams()
   const queryClient = useQueryClient()
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const diklatModalDisclosure = useDisclosure(false)
   const [modalMode, setModalMode] = useState<string>("")
   const [selectedDiklat, setSelectedDiklat] = useState<CardDiklatData | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const debouncedSearch = useDebounce(searchQuery, 500)
   const [filterJenis, setFilterJenis] = useState("")
   const [filterStatus, setFilterStatus] = useState(searchParams.get("status") ?? "")
 
@@ -153,12 +155,8 @@ const DataDiklat = () => {
   const perPage = riwayatPaginated?.per_page || ITEMS_PER_PAGE;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery)
-      setCurrentPage(1)
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+    setCurrentPage(1)
+  }, [debouncedSearch])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
@@ -171,7 +169,7 @@ const DataDiklat = () => {
     }
     setSelectedDiklat(diklat)
     setModalMode("Edit Diklat")
-    setIsModalOpen(true)
+    diklatModalDisclosure.onOpen()
   }
 
   const saveDiklatMutation = useMutation({
@@ -185,7 +183,7 @@ const DataDiklat = () => {
     onSuccess: (res, variables) => {
       if (res.success) {
         showPopup("checklist", "Berhasil", `Data diklat berhasil ${variables.id !== undefined ? "diperbarui" : "ditambahkan"}.`);
-        setIsModalOpen(false);
+        diklatModalDisclosure.onClose();
         setSelectedDiklat(null);
         queryClient.invalidateQueries({ queryKey: ["diklat"] });
       }
@@ -211,7 +209,7 @@ const DataDiklat = () => {
     mutationFn: ({ id, formData }: { id: number; formData: FormData }) => 
       diklatService.uploadLaporan(id, formData),
     onSuccess: () => {
-      setIsModalOpen(false);
+      diklatModalDisclosure.onClose();
       setSelectedDiklat(null);
       queryClient.invalidateQueries({ queryKey: ["diklat"] });
       showPopup("checklist", "Berhasil", "Laporan berhasil diupload.");
@@ -228,7 +226,7 @@ const DataDiklat = () => {
     setUploadFile(null)
     setUploadNoSertif("")
     setModalMode("Upload Laporan Diklat")
-    setIsModalOpen(true)
+    diklatModalDisclosure.onOpen()
   }
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
@@ -246,7 +244,7 @@ const DataDiklat = () => {
   const handleTambahDiklat = () => {
     setSelectedDiklat(null)
     setModalMode("Tambah Diklat")
-    setIsModalOpen(true)
+    diklatModalDisclosure.onOpen()
   }
 
   const cetakCvMutation = useMutation({
@@ -357,27 +355,27 @@ const DataDiklat = () => {
         />
       )}
 
-      {isModalOpen && modalMode !== "Upload Laporan Diklat" && (
+      {diklatModalDisclosure.isOpen && modalMode !== "Upload Laporan Diklat" && (
         <Modal
           title={modalMode}
-          isOpen={isModalOpen}
-          onClose={() => { setIsModalOpen(false); setSelectedDiklat(null); }}
+          isOpen={diklatModalDisclosure.isOpen}
+          onClose={() => { diklatModalDisclosure.onClose(); setSelectedDiklat(null); }}
         >
           <FormLaporanDiklat
             initialData={selectedDiklat}
             isEdit={modalMode === "Tambah Diklat" || modalMode === "Edit Diklat"}
-            onCancel={() => { setIsModalOpen(false); setSelectedDiklat(null); }}
+            onCancel={() => { diklatModalDisclosure.onClose(); setSelectedDiklat(null); }}
             onSubmit={handleFormSubmit}
             isLoading={isSubmitting}
           />
         </Modal>
       )}
 
-      {isModalOpen && modalMode === "Upload Laporan Diklat" && (
+      {diklatModalDisclosure.isOpen && modalMode === "Upload Laporan Diklat" && (
         <Modal
           title="Upload Laporan Diklat"
-          isOpen={isModalOpen}
-          onClose={() => { setIsModalOpen(false); setSelectedDiklat(null); }}
+          isOpen={diklatModalDisclosure.isOpen}
+          onClose={() => { diklatModalDisclosure.onClose(); setSelectedDiklat(null); }}
         >
           <form onSubmit={handleUploadSubmit} className={styles.uploadForm}>
             <p className={styles.uploadInfo}>
@@ -418,7 +416,7 @@ const DataDiklat = () => {
                 type="button"
                 label="Batal"
                 variant="secondary"
-                onClick={() => { setIsModalOpen(false); setSelectedDiklat(null); }}
+                onClick={() => { diklatModalDisclosure.onClose(); setSelectedDiklat(null); }}
               />
             </div>
           </form>

@@ -9,6 +9,7 @@ import { notificationService } from "../../../../services/notificationService";
 import { useSidebarStore } from "../../../../stores/useSidebarStore";
 import type { Notifikasi } from "../../../../types/api";
 import { getGlobalUser } from "../../../../contexts/AuthContext";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 
 interface propsType {
   title: string;
@@ -46,6 +47,10 @@ const formatRelativeTime = (dateStr: string): string => {
   });
 };
 
+const isNotificationUnread = (isRead: any): boolean => {
+  return !(isRead === true || isRead === 1 || isRead === "1" || String(isRead).toLowerCase() === "true");
+};
+
 const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
   const user = getGlobalUser();
   const isAdmin = user?.role.toLowerCase() === "admin";
@@ -54,11 +59,22 @@ const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
   const [localNotifs, setLocalNotifs] = useState<Notifikasi[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const { data: notificationsData } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => notificationService.getNotifications("info"),
+    enabled: !isAdmin && !!user, // only fetch if user is logged in and not admin
+    refetchInterval: 60000, // fetch every 1 minute
+  });
+
+  const fetchedNotifications = notificationsData?.success ? notificationsData.data?.notifications : undefined;
+  const effectiveNotifications = fetchedNotifications !== undefined ? fetchedNotifications : externalNotifications;
+
   useEffect(() => {
-    if (externalNotifications) {
-      setLocalNotifs(externalNotifications);
+    if (effectiveNotifications) {
+      console.log("Topbar: Received effective notifications:", effectiveNotifications);
+      setLocalNotifs(effectiveNotifications);
     }
-  }, [externalNotifications]);
+  }, [effectiveNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,27 +86,61 @@ const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const unreadCount = localNotifs.filter(n => !n.is_read).length;
+  const unreadCount = localNotifs.filter(n => isNotificationUnread(n.is_read)).length;
+  const queryClient = useQueryClient();
 
-  const handleMarkOneRead = useCallback(async (id: number) => {
-    try {
-      await notificationService.markAsRead(id);
+  const markAsReadMutation = useMutation({
+    mutationFn: (id: number) => notificationService.markAsRead(id),
+    onMutate: async (id) => {
+      console.log("Topbar: Optimistically marking notification as read for ID:", id);
       setLocalNotifs(prev =>
         prev.map(n => (n.id === id ? { ...n, is_read: true } : n))
       );
-    } catch (err) {
-      console.error("Gagal menandai notifikasi dibaca:", err);
+    },
+    onSuccess: () => {
+      console.log("Topbar: Mark as read success. Invalidating query: notifications, dashboardPegawai");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardPegawai"] });
+    },
+    onError: (err, id) => {
+      console.error("Topbar: Gagal menandai notifikasi dibaca:", err);
+      // Revert optimistic update
+      setLocalNotifs(prev =>
+        prev.map(n => (n.id === id ? { ...n, is_read: false } : n))
+      );
     }
-  }, []);
+  });
 
-  const handleMarkAllRead = useCallback(async () => {
-    try {
-      await notificationService.markAllAsRead();
+  const markAllAsReadMutation = useMutation({
+    mutationFn: () => notificationService.markAllAsRead(),
+    onMutate: async () => {
+      console.log("Topbar: Optimistically marking all notifications as read");
+      const previousNotifs = localNotifs;
       setLocalNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch (err) {
-      console.error("Gagal menandai semua notifikasi dibaca:", err);
+      return { previousNotifs };
+    },
+    onSuccess: () => {
+      console.log("Topbar: Mark all as read success. Invalidating query: notifications, dashboardPegawai");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardPegawai"] });
+    },
+    onError: (err, _, context) => {
+      console.error("Topbar: Gagal menandai semua notifikasi dibaca:", err);
+      if (context?.previousNotifs) {
+        setLocalNotifs(context.previousNotifs);
+      }
     }
-  }, []);
+  });
+
+  const handleMarkOneRead = useCallback((id: number) => {
+    console.log("Topbar: Triggering markAsReadMutation for ID:", id);
+    markAsReadMutation.mutate(id);
+  }, [markAsReadMutation]);
+
+  const handleMarkAllRead = useCallback(() => {
+    console.log("Topbar: Triggering markAllAsReadMutation");
+    markAllAsReadMutation.mutate();
+  }, [markAllAsReadMutation]);
 
   return (
     <div className={styles.topBar}>
@@ -132,18 +182,26 @@ const Topbar = ({ title, notifications: externalNotifications }: propsType) => {
                   Tidak ada notifikasi
                 </div>
               ) : (
-                localNotifs.map(notif => (
-                  <NotificationItem
-                    key={notif.id}
-                    id={String(notif.id)}
-                    title={notif.title}
-                    desc={notif.message}
-                    time={formatRelativeTime(notif.created_at)}
-                    variant={mapVariant(notif.title)}
-                    isUnread={!notif.is_read}
-                    onClick={!notif.is_read ? () => handleMarkOneRead(notif.id) : undefined}
-                  />
-                ))
+                localNotifs.map(notif => {
+                  const unread = isNotificationUnread(notif.is_read);
+                  return (
+                    <NotificationItem
+                      key={notif.id}
+                      id={String(notif.id)}
+                      title={notif.title}
+                      desc={notif.message}
+                      time={formatRelativeTime(notif.created_at)}
+                      variant={mapVariant(notif.title)}
+                      isUnread={unread}
+                      onClick={() => {
+                        console.log("Topbar: Notification item clicked:", notif.id, "isUnread:", unread);
+                        if (unread) {
+                          handleMarkOneRead(notif.id);
+                        }
+                      }}
+                    />
+                  );
+                })
               )}
             </div>
           </div>

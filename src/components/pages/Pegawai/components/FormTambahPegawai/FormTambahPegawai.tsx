@@ -88,6 +88,7 @@ const FormTambahPegawai = ({ onSubmit, onCancel, isSaving = false }: FormTambahP
                     onlyNumbers
                     required
                     disabled={isSaving}
+                    autoComplete="new-username"
                 />
                 <span className={styles.charCount}>{nik.length}/16 digit</span>
             </div>
@@ -104,6 +105,7 @@ const FormTambahPegawai = ({ onSubmit, onCancel, isSaving = false }: FormTambahP
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isSaving}
+                    autoComplete="new-password"
                 />
             </div>
 

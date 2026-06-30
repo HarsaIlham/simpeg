@@ -22,6 +22,8 @@ import FormCetakRekap from "./components/FormCetakRekap"
 import type { CetakRekapPayload } from "./components/FormCetakRekap/FormCetakRekap"
 import { generateRekapDiklatExcel } from "../../../utils/generateRekapDiklatPdf"
 import { useMasterData } from "../../../hooks/useMasterData"
+import { useDebounce } from "../../../hooks/useDebounce"
+import { useDisclosure } from "../../../hooks/useDisclosure"
 import { getGlobalUser } from "../../../contexts/AuthContext"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -41,15 +43,15 @@ const DiklatPegawai = () => {
     const queryClient = useQueryClient()
 
     const [searchQuery, setSearchQuery] = useState("")
-    const [debouncedSearch, setDebouncedSearch] = useState("")
+    const debouncedSearch = useDebounce(searchQuery, 500)
     const [filterJenis, setFilterJenis] = useState("")
 
     const [serverErrorsJenis, setServerErrorsJenis] = useState<Record<string, string[]> | undefined>(undefined)
     const [selectedDiklat, setSelectedDiklat] = useState<CardDiklatData | null>(null)
     const [modalMode, setModalMode] = useState<string>("")
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [isModalJenisOpen, setIsModalJenisOpen] = useState(false)
-    const [isModalCetakRekapOpen, setIsModalCetakRekapOpen] = useState(false)
+    const jadwalModalDisclosure = useDisclosure(false)
+    const jenisModalDisclosure = useDisclosure(false)
+    const cetakRekapModalDisclosure = useDisclosure(false)
 
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -97,12 +99,8 @@ const DiklatPegawai = () => {
     const perPage = responseData?.per_page || ITEMS_PER_PAGE;
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchQuery)
-            setCurrentPage(1)
-        }, 500)
-        return () => clearTimeout(timer)
-    }, [searchQuery])
+        setCurrentPage(1)
+    }, [debouncedSearch])
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page)
@@ -110,14 +108,14 @@ const DiklatPegawai = () => {
 
     const handleTambahDropdown = () => {
         setServerErrorsJenis(undefined)
-        setIsModalJenisOpen(true)
+        jenisModalDisclosure.onOpen()
     }
 
     const addJenisMutation = useMutation({
         mutationFn: (jenisBaru: string) => masterDataService.createTipeDiklat(jenisBaru),
         onSuccess: async (_res: any, variables: string) => {
             await refetchTipeDiklat();
-            setIsModalJenisOpen(false);
+            jenisModalDisclosure.onClose();
             showPopup("checklist", "Berhasil", `Jenis diklat "${variables}" berhasil ditambahkan.`);
         },
         onError: (err: any) => {
@@ -139,7 +137,7 @@ const DiklatPegawai = () => {
     }
 
     const handleCetakRekap = () => {
-        setIsModalCetakRekapOpen(true)
+        cetakRekapModalDisclosure.onOpen()
     }
 
     const cetakRekapMutation = useMutation({
@@ -151,7 +149,7 @@ const DiklatPegawai = () => {
             payload.tahunAkhir,
         ),
         onSuccess: () => {
-            setIsModalCetakRekapOpen(false);
+            cetakRekapModalDisclosure.onClose();
             showPopup("checklist", "Berhasil", "Rekap berhasil diunduh.");
         },
         onError: (err: any) => {
@@ -168,7 +166,7 @@ const DiklatPegawai = () => {
     const handleTambahJadwal = () => {
         setSelectedDiklat(null)
         setModalMode("Tambah Jadwal Diklat")
-        setIsModalOpen(true)
+        jadwalModalDisclosure.onOpen()
     }
 
     const submitJadwalMutation = useMutation({
@@ -179,7 +177,7 @@ const DiklatPegawai = () => {
             return hrdDiklatService.createMasterDiklat(payload);
         },
         onSuccess: (_res, variables) => {
-            setIsModalOpen(false);
+            jadwalModalDisclosure.onClose();
             setSelectedDiklat(null);
             const isEdit = variables.id !== undefined;
             showPopup("checklist", "Berhasil", `Jadwal diklat berhasil ${isEdit ? "diperbarui" : "ditambahkan"}.`);
@@ -229,7 +227,7 @@ const DiklatPegawai = () => {
     const handleEdit = (diklat: CardDiklatData) => {
         setSelectedDiklat(diklat)
         setModalMode("Edit Diklat")
-        setIsModalOpen(true)
+        jadwalModalDisclosure.onOpen()
     }
 
     if (isLoading) {
@@ -336,39 +334,39 @@ const DiklatPegawai = () => {
             )}
 
             <Modal
-                isOpen={isModalJenisOpen}
-                onClose={() => setIsModalJenisOpen(false)}
+                isOpen={jenisModalDisclosure.isOpen}
+                onClose={jenisModalDisclosure.onClose}
                 title="Tambah Jenis Diklat"
             >
                 <FormTambahJenisDiklat
                     isSubmitting={isSubmittingJenis}
                     serverErrors={serverErrorsJenis}
                     onSubmit={handleSubmitJenis}
-                    onCancel={() => setIsModalJenisOpen(false)}
+                    onCancel={jenisModalDisclosure.onClose}
                 />
             </Modal>
 
             <Modal
-                isOpen={isModalCetakRekapOpen}
-                onClose={() => setIsModalCetakRekapOpen(false)}
+                isOpen={cetakRekapModalDisclosure.isOpen}
+                onClose={cetakRekapModalDisclosure.onClose}
                 title="Cetak Rekap"
             >
                 <FormCetakRekap
                     isSubmitting={isSubmittingCetakRekap}
                     onSubmit={handleSubmitCetakRekap}
-                    onCancel={() => setIsModalCetakRekapOpen(false)}
+                    onCancel={cetakRekapModalDisclosure.onClose}
                 />
             </Modal>
 
             <Modal
-                isOpen={isModalOpen && (modalMode === "Tambah Jadwal Diklat" || modalMode === "Edit Diklat")}
-                onClose={() => { setIsModalOpen(false); setSelectedDiklat(null); }}
+                isOpen={jadwalModalDisclosure.isOpen && (modalMode === "Tambah Jadwal Diklat" || modalMode === "Edit Diklat")}
+                onClose={() => { jadwalModalDisclosure.onClose(); setSelectedDiklat(null); }}
                 title={modalMode}
             >
                 <FormTambahJadwalDiklat
                     initialData={selectedDiklat}
                     isEdit={modalMode === "Tambah Jadwal Diklat" || modalMode === "Edit Diklat"}
-                    onCancel={() => { setIsModalOpen(false); setSelectedDiklat(null); }}
+                    onCancel={() => { jadwalModalDisclosure.onClose(); setSelectedDiklat(null); }}
                     onSubmit={handleSubmitJadwal}
                     isLoading={isSubmittingJadwal}
                 />

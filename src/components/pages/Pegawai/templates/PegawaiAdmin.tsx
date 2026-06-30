@@ -13,6 +13,8 @@ import Popup from "../../../ui/molecules/Popup";
 import FormEditRoleStatus from "../../../ui/organisms/FormEditRoleStatus";
 import FormTambahPegawai from "../components/FormTambahPegawai";
 import { pegawaiService } from "../../../../services/pegawaiService";
+import { useDebounce } from "../../../../hooks/useDebounce";
+import { useDisclosure } from "../../../../hooks/useDisclosure";
 import Button from "../../../ui/atoms/Button";
 import Badge from "../../../ui/atoms/Badge";
 import { useNavigate } from "react-router";
@@ -28,7 +30,7 @@ export interface PegawaiItem {
     noTelepon: string;
     status: string;
     role: "admin" | "hrd" | "direktur" | "pegawai";
-    statusData: "lengkap" | "belum-lengkap";
+    statusData: "lengkap" | "tidak lengkap";
     jenisPegawai: string;
     pendidikan: string;
     statusPegawai: string;
@@ -47,10 +49,10 @@ const PegawaiAdmin = () => {
 
     const [searchValue, setSearchValue] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const debouncedSearch = useDebounce(searchValue, 500);
 
     const [editingPegawai, setEditingPegawai] = useState<PegawaiItem | null>(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const addModalDisclosure = useDisclosure(false);
 
     const [popup, setPopup] = useState({
         isOpen: false,
@@ -93,7 +95,7 @@ const PegawaiAdmin = () => {
             role: item.role || "pegawai",
             email: item.email || "-",
             noTelepon: item.no_telp || "-",
-            statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "belum-lengkap",
+            statusData: item.status_kelengkapan === "Lengkap" ? "lengkap" : "tidak lengkap",
             jenisPegawai: item.jenis_pegawai || "",
             pendidikan: item.pendidikan || "",
             statusPegawai: item.status || "",
@@ -124,12 +126,8 @@ const PegawaiAdmin = () => {
     }, [response]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchValue);
-            setCurrentPage(1);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchValue]);
+        setCurrentPage(1);
+    }, [debouncedSearch]);
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page);
@@ -169,7 +167,7 @@ const PegawaiAdmin = () => {
             pegawaiService.create(payload),
         onSuccess: (res, variables) => {
             if (res.success) {
-                setIsAddModalOpen(false);
+                addModalDisclosure.onClose();
                 showPopup("checklist", "Berhasil", `Pegawai ${variables.nama} berhasil ditambahkan.`);
                 queryClient.invalidateQueries({ queryKey: ["pegawaiAdmin"] });
                 queryClient.invalidateQueries({ queryKey: ["pegawai"] });
@@ -246,7 +244,7 @@ const PegawaiAdmin = () => {
             width: "15%",
             render: (row: PegawaiItem) => (
                 <Badge variant={row.statusData === "lengkap" ? "success" : "danger"}>
-                    {row.statusData === "lengkap" ? "Lengkap" : "Belum Lengkap"}
+                    {row.statusData === "lengkap" ? "Lengkap" : "Tidak Lengkap"}
                 </Badge>
             )
         },
@@ -334,7 +332,7 @@ const PegawaiAdmin = () => {
                         label="Tambah Pegawai"
                         variant="primary"
                         size="md"
-                        onClick={() => setIsAddModalOpen(true)}
+                        onClick={addModalDisclosure.onOpen}
                     />
                 </Card>
 
@@ -368,15 +366,15 @@ const PegawaiAdmin = () => {
                 />
             </>
 
-            {isAddModalOpen && (
+            {addModalDisclosure.isOpen && (
                 <Modal
                     title="Tambah Pegawai Baru"
-                    isOpen={isAddModalOpen}
-                    onClose={() => setIsAddModalOpen(false)}
+                    isOpen={addModalDisclosure.isOpen}
+                    onClose={addModalDisclosure.onClose}
                 >
                     <FormTambahPegawai
                         onSubmit={handleCreatePegawai}
-                        onCancel={() => setIsAddModalOpen(false)}
+                        onCancel={addModalDisclosure.onClose}
                         isSaving={isSaving}
                     />
                 </Modal>

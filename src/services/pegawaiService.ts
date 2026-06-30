@@ -13,6 +13,7 @@ export const pegawaiService = {
     pendidikan?: string;
     status_pegawai?: string;
     profesi?: string;
+    unit_kerja?: string;
     tahun_masuk?: string;
     tgl_masuk_dari?: string;
     tgl_masuk_sampai?: string;
@@ -27,6 +28,7 @@ export const pegawaiService = {
       if (params?.pendidikan) query.set("pendidikan", params.pendidikan);
       if (params?.status_pegawai) query.set("status_pegawai", params.status_pegawai);
       if (params?.profesi) query.set("profesi", params.profesi);
+      if (params?.unit_kerja) query.set("unit_kerja", params.unit_kerja);
       if (params?.tahun_masuk) query.set("tahun_masuk", params.tahun_masuk);
       if (params?.tgl_masuk_dari) query.set("tgl_masuk_dari", params.tgl_masuk_dari);
       if (params?.tgl_masuk_sampai) query.set("tgl_masuk_sampai", params.tgl_masuk_sampai);

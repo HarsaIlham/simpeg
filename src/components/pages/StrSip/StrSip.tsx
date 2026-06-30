@@ -15,9 +15,10 @@ import type { StrSipRecord, StrSipJenis, StrSipStatus } from "../../../types/api
 import type { Column } from "../../ui/organisms/DataTable";
 import styles from "./StrSip.module.css";
 import { strSipService } from "../../../services/strSipService";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { getProxiedFileUrl } from "../../../utils/api";
-import PdfViewerModal from "../../ui/molecules/PdfViewerModal";
 import { getGlobalUser } from "../../../contexts/AuthContext";
+import PdfViewerModal from "../../ui/molecules/PdfViewerModal";
 
 const STATUS_BADGE_MAP: Record<StrSipStatus, { label: string; variant: "success" | "warning" | "danger" }> = {
     aktif: { label: "Aktif", variant: "success" },
@@ -191,7 +192,7 @@ const StrSip = () => {
     const [previewFile, setPreviewFile] = useState<{ url: string; title: string } | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const debouncedSearch = useDebounce(searchQuery, 500);
 
     const [confirmNotify, setConfirmNotify] = useState<{
         isOpen: boolean;
@@ -213,21 +214,9 @@ const StrSip = () => {
         message: "",
     });
 
-    // Debounce search query input
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(searchQuery);
-            setCurrentPage(1);
-        }, 500);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchQuery]);
-
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterJenis, filterStatus, filterDateFrom, filterDateTo]);
+    }, [debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo]);
 
     const { data: response, isLoading: queryIsLoading, error: queryError } = useQuery({
         queryKey: ["strSipData", currentPage, debouncedSearch, filterJenis, filterStatus, filterDateFrom, filterDateTo],
@@ -438,7 +427,7 @@ const StrSip = () => {
                         columns={columns}
                         data={allData}
                         rowKey={(row) => `${row.jenis}-${row.id}`}
-                        emptyMessage={`Tidak ada data ${filterJenis ? `"${filterJenis}"` : "STR/SIP"} yang ${filterStatus ? `statusnya "${filterStatus}"` : ""}.`}
+                        emptyMessage={`Tidak ada data ${filterJenis ? `"${filterJenis}"` : "STR/SIP"} yang ${filterStatus ? `berstatus "${STATUS_BADGE_MAP[filterStatus as StrSipStatus]?.label || filterStatus}"` : ""}.`}
                         maxVisibleRows={10}
                     />
                 ))}

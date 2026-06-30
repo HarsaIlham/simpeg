@@ -19,9 +19,10 @@ interface propsType {
     onlyNumbers?: boolean;
     isDesimal?: boolean;
     isRupiah?: boolean;
+    autoComplete?: string;
 }
 
-const Input = ({label,type, name, id, placeholder, required, className, rightNode, value, onChange, disabled, bgColor, error, onlyNumbers, isDesimal, isRupiah}: propsType) => {
+const Input = ({label,type, name, id, placeholder, required, className, rightNode, value, onChange, disabled, bgColor, error, onlyNumbers, isDesimal, isRupiah, autoComplete}: propsType) => {
 
     const [isFocused, setIsFocused] = useState(false);
 
@@ -42,6 +43,7 @@ const Input = ({label,type, name, id, placeholder, required, className, rightNod
                     id={id}
                     name={name}
                     placeholder={isDateField && !isFocused && !value ? "DD MMMM YYYY" : placeholder}
+                    autoComplete={autoComplete}
                     required={required}
                     className={`${styles.input} ${rightNode ? styles.hasRightNode : ""} ${className || ""}`}
                     style={bgColor ? { backgroundColor: bgColor } : { backgroundColor: "#F9FAFC" }}

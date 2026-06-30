@@ -12,6 +12,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [nik, setNik] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ nik?: string; password?: string; global?: string }>({});
   
@@ -29,7 +30,7 @@ const LoginForm = () => {
 
     try {
       const response = await authService.login({ nik, password });
-      login(response.data.user, response.data.access_token);
+      login(response.data.user, response.data.access_token, remember);
       navigate("/");
     } catch (err: any) {
       if (err.errors) {
@@ -86,7 +87,13 @@ const LoginForm = () => {
       />
 
       <div className={styles.options}>
-        <Checkbox id="remember" name="remember" label="Ingat Saya" />
+        <Checkbox 
+          id="remember" 
+          name="remember" 
+          label="Ingat Saya" 
+          checked={remember}
+          onChange={(e) => setRemember(e.target.checked)}
+        />
         <Link to="/forgot-password" className={styles.forgotLink}>Lupa Password?</Link>
       </div>
       <div className={styles.submitWrapper}>

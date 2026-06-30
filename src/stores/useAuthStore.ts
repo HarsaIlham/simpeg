@@ -18,7 +18,7 @@ interface AuthState {
   profile: ProfileData | null;
   token: string | null;
   isLoading: boolean;
-  login: (userData: User, tokenData: string) => void;
+  login: (userData: User, tokenData: string, remember?: boolean) => void;
   logout: () => void;
   initialize: () => void;
   updateUser: (userData: Partial<User>) => void;
@@ -30,16 +30,25 @@ export const useAuthStore = create<AuthState>((set) => ({
   profile: null,
   token: null,
   isLoading: true,
-  login: (userData, tokenData) => {
-    localStorage.setItem("simpeg_user", JSON.stringify(userData));
-    localStorage.setItem("simpeg_token", tokenData);
+  login: (userData, tokenData, remember = false) => {
+    const storage = remember ? localStorage : sessionStorage;
+
+    localStorage.removeItem("simpeg_user");
+    localStorage.removeItem("simpeg_token");
+    sessionStorage.removeItem("simpeg_user");
+    sessionStorage.removeItem("simpeg_token");
+
+    storage.setItem("simpeg_user", JSON.stringify(userData));
+    storage.setItem("simpeg_token", tokenData);
     set({ user: userData, token: tokenData });
   },
   updateUser: (userData) => {
     set((state) => {
       if (!state.user) return {};
       const updatedUser = { ...state.user, ...userData };
-      localStorage.setItem("simpeg_user", JSON.stringify(updatedUser));
+      const isLocal = !!localStorage.getItem("simpeg_user");
+      const storage = isLocal ? localStorage : sessionStorage;
+      storage.setItem("simpeg_user", JSON.stringify(updatedUser));
       return { user: updatedUser };
     });
   },
@@ -49,14 +58,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     } finally {
       localStorage.removeItem("simpeg_user");
       localStorage.removeItem("simpeg_token");
+      sessionStorage.removeItem("simpeg_user");
+      sessionStorage.removeItem("simpeg_token");
       queryClient.clear();
       set({ user: null, token: null, profile: null });
     }
   },
   setProfile: (profile) => set({ profile }),
   initialize: () => {
-    const storedUser = localStorage.getItem("simpeg_user");
-    const storedToken = localStorage.getItem("simpeg_token");
+    const storedUser = localStorage.getItem("simpeg_user") || sessionStorage.getItem("simpeg_user");
+    const storedToken = localStorage.getItem("simpeg_token") || sessionStorage.getItem("simpeg_token");
     if (storedUser && storedToken) {
       try {
         set({ user: JSON.parse(storedUser), token: storedToken, isLoading: false });
@@ -64,6 +75,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         console.error("Gagal membaca memori penyimpanan sesi:", error);
         localStorage.removeItem("simpeg_user");
         localStorage.removeItem("simpeg_token");
+        sessionStorage.removeItem("simpeg_user");
+        sessionStorage.removeItem("simpeg_token");
         set({ user: null, token: null, isLoading: false });
       }
     } else {

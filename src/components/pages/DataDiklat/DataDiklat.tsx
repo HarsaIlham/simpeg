@@ -15,7 +15,6 @@ import FormLaporanDiklat from "../../ui/organisms/FormLaporanDiklat"
 import Pagination from "../../ui/molecules/Pagination"
 import { diklatService } from "../../../services/diklatService"
 import { cvService } from "../../../services/cvService"
-import { generateCvPdf } from "../../../utils/generateCvPdf"
 import type { RiwayatDiklatItem } from "../../../types/api"
 import Popup from "../../ui/molecules/Popup"
 import { useMasterData } from "../../../hooks/useMasterData"
@@ -250,6 +249,7 @@ const DataDiklat = () => {
   const cetakCvMutation = useMutation({
     mutationFn: () => cvService.getCvData(),
     onSuccess: async (cvData) => {
+      const { generateCvPdf } = await import("../../../utils/generateCvPdf");
       await generateCvPdf(cvData);
       showPopup("checklist", "Cetak CV", "CV berhasil diunduh.");
     },

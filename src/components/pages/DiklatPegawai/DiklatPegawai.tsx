@@ -20,7 +20,6 @@ import { mapHrdItemToCardDiklat, JENIS_OPTIONS } from "../../../utils/diklatUtil
 import type { CreateMasterDiklatRequest } from "../../../types/api"
 import FormCetakRekap from "./components/FormCetakRekap"
 import type { CetakRekapPayload } from "./components/FormCetakRekap/FormCetakRekap"
-import { generateRekapDiklatExcel } from "../../../utils/generateRekapDiklatPdf"
 import { useMasterData } from "../../../hooks/useMasterData"
 import { useDebounce } from "../../../hooks/useDebounce"
 import { useDisclosure } from "../../../hooks/useDisclosure"
@@ -141,13 +140,16 @@ const DiklatPegawai = () => {
     }
 
     const cetakRekapMutation = useMutation({
-        mutationFn: (payload: CetakRekapPayload) => generateRekapDiklatExcel(
-            diklatList,
-            payload.bulanAwal,
-            payload.tahunAwal,
-            payload.bulanAkhir,
-            payload.tahunAkhir,
-        ),
+        mutationFn: async (payload: CetakRekapPayload) => {
+            const { generateRekapDiklatExcel } = await import("../../../utils/generateRekapDiklatPdf");
+            return generateRekapDiklatExcel(
+                diklatList,
+                payload.bulanAwal,
+                payload.tahunAwal,
+                payload.bulanAkhir,
+                payload.tahunAkhir,
+            );
+        },
         onSuccess: () => {
             cetakRekapModalDisclosure.onClose();
             showPopup("checklist", "Berhasil", "Rekap berhasil diunduh.");

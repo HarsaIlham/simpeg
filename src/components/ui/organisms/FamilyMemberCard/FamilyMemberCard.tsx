@@ -94,7 +94,11 @@ const FamilyMemberCard = memo(({ data, onEdit, onDelete, onViewDocument }: Famil
         >
             <div className={styles.header}>
                 <Text text={data.nama} variant="body" weight="bold" color="default" />
-                <Badge variant={config.badgeVariant}>{data.status}</Badge>
+                <Badge variant={config.badgeVariant}>
+                    {(data.status === "Istri" || data.status === "Suami" || data.status === "Pasangan" || data.status === "pasangan")
+                        ? "Pasangan"
+                        : data.status}
+                </Badge>
                 {data.tanggungan && <Badge variant="success">Tanggungan</Badge>}
             </div>
             <div className={styles.grid}>

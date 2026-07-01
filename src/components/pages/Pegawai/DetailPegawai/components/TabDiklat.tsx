@@ -14,9 +14,10 @@ interface TabDiklatProps {
     diklatList: CardDiklatData[];
     isAdmin: boolean;
     onRefresh?: () => void;
+    pegawaiName?: string;
 }
 
-const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
+const TabDiklat = ({ diklatList, isAdmin, onRefresh, pegawaiName }: TabDiklatProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedDiklat, setSelectedDiklat] = useState<CardDiklatData | null>(null);
@@ -38,6 +39,25 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
 
     const closePopup = () => {
         setPopup(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const canEditDiklat = (diklat: CardDiklatData) => {
+        if (!isAdmin) return false;
+
+        const isInternal = diklat.jenisPelaksana === "internal";
+        const isExternal = diklat.jenisPelaksana === "external";
+
+        if (isExternal) {
+            return diklat.statusVerifikasi?.toLowerCase() !== "layak";
+        }
+
+        if (isInternal) {
+            const isCreatedByPegawai = diklat.pencatat === pegawaiName;
+            const isNotValid = diklat.statusValidasi?.toLowerCase() !== "valid";
+            return isCreatedByPegawai && isNotValid;
+        }
+
+        return false;
     };
 
     const handleTambahDiklat = () => {
@@ -96,7 +116,7 @@ const TabDiklat = ({ diklatList, isAdmin, onRefresh }: TabDiklatProps) => {
                         <CardDiklat
                             key={diklat.id}
                             data={diklat}
-                            onEdit={isAdmin ? () => handleEditDiklat(diklat) : undefined}
+                            onEdit={canEditDiklat(diklat) ? () => handleEditDiklat(diklat) : undefined}
                         />
                     ))}
                 </div>

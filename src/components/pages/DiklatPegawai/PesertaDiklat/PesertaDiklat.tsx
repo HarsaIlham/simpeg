@@ -15,6 +15,7 @@ import { hrdDiklatService } from "../../../../services/hrdDiklatService"
 import type { PesertaDiklatItem } from "../../../../types/api"
 import { useMasterData } from "../../../../hooks/useMasterData"
 import { Send } from "lucide-react"
+import { getFileUrl } from "../../../../utils/api"
 
 const STATUS_OPTIONS = [
     { value: "", label: "Semua Status" },
@@ -59,6 +60,7 @@ const PesertaDiklat = () => {
     const diklatData = location.state?.diklatData as {
         id: number
         namaDiklat: string
+        status?: string
     } | undefined
     const diklatId = diklatData?.id ?? 0
     const diklatName = diklatData?.namaDiklat ?? "Diklat"
@@ -204,6 +206,20 @@ const PesertaDiklat = () => {
     //     navigate(-1)
     // }, [navigate])
 
+    const handleRemind = useCallback(async (row: PesertaDiklatItem) => {
+        try {
+            const response = await hrdDiklatService.remindUploadLaporan(diklatId, row.pegawai_id)
+            if (response.success) {
+                showPopup("checklist", "Berhasil", response.message || "Pengingat berhasil dikirim.")
+            } else {
+                showPopup("error", "Gagal", response.message || "Gagal mengirim pengingat.")
+            }
+        } catch (err: unknown) {
+            const errorObj = err as { message?: string }
+            showPopup("error", "Gagal", errorObj?.message || "Gagal mengirim pengingat.")
+        }
+    }, [diklatId, showPopup])
+
     const columns: Column<PesertaDiklatItem>[] = useMemo(() => {
         const baseColumns: Column<PesertaDiklatItem>[] = [
             {
@@ -229,27 +245,56 @@ const PesertaDiklat = () => {
         ]
 
         if (mode === "view") {
-            return [
+            const cols: Column<PesertaDiklatItem>[] = [
                 ...baseColumns,
                 {
                     key: "dokumen",
                     label: "Dokumen",
                     width: "18%",
+                    render: (row: PesertaDiklatItem) => {
+                        if (row.dokumen) {
+                            return (
+                                <a
+                                    href={getFileUrl(row.dokumen)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: "var(--color-primary, #0D6EFD)", textDecoration: "underline" }}
+                                >
+                                    Lihat
+                                </a>
+                            )
+                        }
+                        const hasDocument = row.status_validasi !== null && row.status_validasi !== "Belum upload laporan"
+                        return hasDocument ? "Ada" : "Belum upload"
+                    }
                 },
-                {
+            ]
+
+            if (diklatData?.status === "selesai") {
+                cols.push({
                     key: "ingatkan",
                     label: "Ingatkan",
                     width: "11%",
-                    render: (row) => (
-                        <Button
-                            icon={<Send size={14} />}
-                            size="sm"
-                            variant="info"
-                            onClick={() => console.log("ingatkan", row)}
-                        />
-                    ),
-                },
-            ]
+                    render: (row) => {
+                        const hasDocument = row.status_validasi !== null && row.status_validasi !== "Belum upload laporan"
+
+                        if (hasDocument) {
+                            return null
+                        }
+
+                        return (
+                            <Button
+                                icon={<Send size={14} />}
+                                size="sm"
+                                variant="info"
+                                onClick={() => handleRemind(row)}
+                            />
+                        )
+                    },
+                })
+            }
+
+            return cols
         } else {
             return [
                 ...baseColumns,
@@ -269,7 +314,7 @@ const PesertaDiklat = () => {
                 },
             ]
         }
-    }, [mode, selectedIds, handleToggle])
+    }, [mode, selectedIds, handleToggle, diklatData?.status, handleRemind])
 
     if (isLoading) {
         return (
@@ -334,12 +379,14 @@ const PesertaDiklat = () => {
                 </div>
                 <div className={styles.toolbarRight}>
                     {mode === "view" ? (
-                        <Button
-                            label="Tambah Peserta"
-                            variant="success"
-                            size="md"
-                            onClick={() => setMode("add")}
-                        />
+                        diklatData?.status === "mendatang" && (
+                            <Button
+                                label="Tambah Peserta"
+                                variant="success"
+                                size="md"
+                                onClick={() => setMode("add")}
+                            />
+                        )
                     ) : (
                         <>
                             <Button

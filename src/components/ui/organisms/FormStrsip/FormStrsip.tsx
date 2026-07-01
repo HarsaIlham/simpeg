@@ -30,10 +30,11 @@ const FormStrsip = ({
     isSubmitting,
     serverErrors,
     forceType,
+    isPegawai: isPegawaiProp,
 }: FormStrsipProps) => {
     const [formType, setFormType] = useState<"" | "STR" | "SIP">(forceType || "STR");
     const user = getGlobalUser();
-    const isPegawai = user?.role.toLowerCase() === "pegawai";
+    const isPegawai = isPegawaiProp !== undefined ? isPegawaiProp : (user?.role.toLowerCase() === "pegawai");
 
     useEffect(() => {
         if (onTypeChange) {

@@ -30,6 +30,15 @@
     background-color: transparent;
 }
 
+@media (max-width: 640px) {
+    .actions {
+        flex-direction: column;
+        margin: 8px -16px -16px -16px;
+        padding: 16px;
+        gap: 8px;
+    }
+}
+
 .fileHint {
     color: var(--color-muted, #6B7280);
     font-size: 12px;

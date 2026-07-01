@@ -42,6 +42,9 @@ export const mapHrdItemToCardDiklat = (item: DiklatPegawaiHrdItem): CardDiklatDa
     pegawaiNik: item.pegawai_nik,
     idJadwalDiklat: item.id_jadwal_diklat,
     uploadLaporan: item.uploadlaporan,
+    jumlahPeserta: item.jumlah_peserta,
+    jumlahPesertaSudahValidasi: item.jumlah_peserta_sudah_validasi,
+    jumlahPesertaBelumValidasi: item.jumlah_peserta_belum_validasi,
 })
 
 export const JENIS_OPTIONS = [

@@ -34,6 +34,7 @@
 @media (max-width: 1024px) {
     .profilLayout {
         flex-direction: column;
+        align-items: stretch;
     }
     .profilContentLeft {
         position: relative;

@@ -148,9 +148,9 @@ const PegawaiHrd = () => {
             status: item.status || "Aktif",
             role: item.role || "pegawai",
             statusData: item.status_kelengkapan?.toLowerCase() === "lengkap" ? "Lengkap" : "Tidak Lengkap",
-            jenisPegawai: item.jenis_pegawai || "",
-            pendidikan: item.pendidikan || "",
-            statusPegawai: item.status || "",
+            jenisPegawai: item.jenis_pegawai || "-",
+            pendidikan: item.pendidikan_terakhir || "-",
+            statusPegawai: item.status || "-",
         }));
     }, [response]);
 
@@ -258,10 +258,10 @@ const PegawaiHrd = () => {
             render: (row: PegawaiItem) => <span className={styles.empName}>{row.nama}</span>
         },
         {
-            key: "jabatan",
-            label: "Jabatan",
+            key: "pendidikan",
+            label: "Pendidikan",
             width: "10%",
-            render: (row: PegawaiItem) => <span>{row.jabatan}</span>
+            render: (row: PegawaiItem) => <span>{row.pendidikan}</span>
         },
         {
             key: "nik",

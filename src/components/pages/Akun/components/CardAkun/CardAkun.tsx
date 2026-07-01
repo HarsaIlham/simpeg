@@ -27,7 +27,7 @@ const CardAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value.slice(0, 16) }));
     };
 
     const handleEdit = () => {
@@ -65,6 +65,7 @@ const CardAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false
                                     icon={<Send size={16} />}
                                     variant="primary"
                                     onClick={handleSubmit}
+                                    disabled={formData.username.length !== 16}
                                 />
                                 <Button
                                     label="Batal"
@@ -91,10 +92,14 @@ const CardAkun = ({ initialData, onSubmit, onUbahPasswordClick, readOnly = false
                     label="Username"
                     name="username"
                     id="username"
+                    type="text"
                     value={formData.username}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                />
+                    required
+                    onlyNumbers
+                    error={isEditing && formData.username.length !== 16 ? "Username harus berupa 16 digit angka." : undefined}
+                    />
                 {!isEditing && (
                     <div className={styles.passwordActionWrapper}>
                         <Button

@@ -190,4 +190,17 @@ export const hrdDiklatService = {
 
     return data;
   },
+
+  remindUploadLaporan: async (diklatId: number, pegawaiId: number): Promise<ApiResponse<any>> => {
+    const response = await apiFetch(`/hrd/diklat/${diklatId}/pegawai/${pegawaiId}/reminder-upload-laporan`, {
+      method: "POST",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
+  },
 };

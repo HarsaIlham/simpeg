@@ -252,6 +252,9 @@ export interface DiklatPegawaiHrdItem extends RiwayatDiklatItem {
   pegawai_nik: string;
   status_kelayakan: string | null;
   status_validasi: string | null;
+  jumlah_peserta?: number;
+  jumlah_peserta_sudah_validasi?: number;
+  jumlah_peserta_belum_validasi?: number;
 }
 
 export interface DiklatPegawaiHrdListResponse {
@@ -301,6 +304,8 @@ export interface PesertaDiklatItem {
   unit_kerja: string;
   profesi: string;
   status: boolean;
+  status_validasi?: string | null;
+  dokumen?: string | null;
 }
 
 export interface PesertaDiklatResponse {

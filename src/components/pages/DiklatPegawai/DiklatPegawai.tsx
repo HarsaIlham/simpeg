@@ -219,6 +219,7 @@ const DiklatPegawai = () => {
                 diklatData: {
                     id: diklat.id,
                     namaDiklat: diklat.namaDiklat,
+                    status: diklat.status,
                 },
             },
         })

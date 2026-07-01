@@ -166,7 +166,7 @@ const DetailPegawai = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const user = getGlobalUser();
-    const isAdmin = user?.role === "admin" || user?.role === "hrd";
+    const isAdmin = user?.role === "hrd";
 
     const [activeTab, setActiveTab] = useState("pegawai");
 
@@ -357,7 +357,7 @@ const DetailPegawai = () => {
                                     <p className={styles.errorText}>{(diklatError as any).message || "Gagal memuat data diklat."}</p>
                                 </div>
                             ) : (
-                                <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={handleRefresh} />
+                                <TabDiklat diklatList={diklatList} isAdmin={isAdmin} onRefresh={handleRefresh} pegawaiName={pegawaiMeta.nama} />
                             )
                         )}
                         {activeTab === "keluarga" && (

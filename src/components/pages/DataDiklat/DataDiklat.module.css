@@ -66,7 +66,8 @@
 @media (max-width: 768px) {
     .cardHeader {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: var(--spacing-md);
     }
 
     .searchWrapper {
@@ -75,8 +76,13 @@
     }
 
     .buttonGroup {
+        display: flex;
         width: 100%;
         gap: var(--spacing-md);
+    }
+
+    .buttonGroup > * {
+        flex: 1;
     }
 
     .filterRow {
@@ -86,5 +92,11 @@
 
     .spacer {
         display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .buttonGroup {
+        flex-direction: column;
     }
 }

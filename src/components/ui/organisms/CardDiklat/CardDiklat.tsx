@@ -1,4 +1,4 @@
-import { GraduationCap, Calendar, MapPin, Clock, Upload, CreditCard, BadgeDollarSignIcon, BookOpenText, User } from "lucide-react"
+import { GraduationCap, Calendar, MapPin, Clock, Upload, CreditCard, BadgeDollarSignIcon, BookOpenText, User, Users, CheckSquare, AlertCircle } from "lucide-react"
 import RecordCard from "../../molecules/RecordCard"
 import Icon from "../../atoms/Icon"
 import Text from "../../atoms/Text"
@@ -34,6 +34,9 @@ export interface CardDiklatData {
     statusValidasi?: string;
     statusVerifikasi?: string;
     uploadLaporan: boolean;
+    jumlahPeserta?: number;
+    jumlahPesertaSudahValidasi?: number;
+    jumlahPesertaBelumValidasi?: number;
 }
 
 interface CardDiklatProps {
@@ -106,8 +109,12 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                             <span>{data.tanggalMulai} - {data.tanggalSelesai}</span>
                         </div>
                         <div className={styles.detailItem}>
-                            <span className={styles.detailIcon}><MapPin size={14} /></span>
-                            <span>{data.tempat}</span>
+                            {data.tempat && (
+                                <>
+                                    <span className={styles.detailIcon}><MapPin size={14} /></span>
+                                    <span>{data.tempat}</span>
+                                </>
+                            )}
                         </div>
                         <div className={styles.detailItem}>
                             <span className={styles.detailIcon}><Clock size={14} /></span>
@@ -132,6 +139,30 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                             </div>
                         )}
                     </div>
+                    {((data.jumlahPeserta !== undefined && data.jumlahPeserta !== null) ||
+                      (data.jumlahPesertaSudahValidasi !== undefined && data.jumlahPesertaSudahValidasi !== null) ||
+                      (data.jumlahPesertaBelumValidasi !== undefined && data.jumlahPesertaBelumValidasi !== null)) && (
+                        <div className={styles.detailList}>
+                            {data.jumlahPeserta !== undefined && data.jumlahPeserta !== null && (
+                                <div className={styles.detailItem}>
+                                    <span className={styles.detailIcon}><Users size={14} /></span>
+                                    <span>Jumlah Peserta: {data.jumlahPeserta}</span>
+                                </div>
+                            )}
+                            {data.jumlahPesertaSudahValidasi !== undefined && data.jumlahPesertaSudahValidasi !== null && (
+                                <div className={styles.detailItem}>
+                                    <span className={styles.detailIcon}><CheckSquare size={14} /></span>
+                                    <span>Sudah Validasi: {data.jumlahPesertaSudahValidasi}</span>
+                                </div>
+                            )}
+                            {data.jumlahPesertaBelumValidasi !== undefined && data.jumlahPesertaBelumValidasi !== null && (
+                                <div className={styles.detailItem}>
+                                    <span className={styles.detailIcon}><AlertCircle size={14} /></span>
+                                    <span>Belum Validasi: {data.jumlahPesertaBelumValidasi}</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                     <div className={styles.detailList}>
                         <div className={styles.detailItem}>
                             {data.sertifikat && (
@@ -170,7 +201,7 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                     <div className={styles.footerRow}>
                         Penyelenggara:
                         <span className={styles.footerLabelBold}>{data.penyelenggara}</span>
-                        <div style={{ paddingLeft: "50px" }}>
+                        <div className={styles.statusBadgeWrapper}>
                             {data.status === "selesai" ? (
                                 <Badge variant="success" >Sudah Terlaksana</Badge>
                             ) : data.status === "berlangsung" ? (
@@ -205,7 +236,7 @@ const CardDiklat = ({ data, onEdit, onDelete, onUploadLaporan, onValidasi, onTam
                             onClick={onValidasi}
                         />
                     )}
-                    {onTambahPeserta && isBelumTerlaksana && (
+                    {onTambahPeserta && (
                         <Button
                             label="Peserta Diklat"
                             variant="primary"

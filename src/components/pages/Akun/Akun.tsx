@@ -51,8 +51,7 @@ const Akun = () => {
                 title: "Gagal Memperbarui Akun",
                 message: error?.message || "Terjadi kesalahan saat memperbarui username.",
             });
-            setIsPopupOpen(true);
-            // Re-throw so CardAkun can keep the editing state open for the user to correct it
+            setIsPopupOpen(true);           
             throw error;
         }
     };

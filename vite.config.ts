@@ -16,7 +16,7 @@ export default defineConfig({
         },
       },
       // '/dokumen': {
-      //   target: 'http://10.94.146.215:8000',
+      //   target: 'http://127.0.0.1:8000',
       //   changeOrigin: true,
       //   configure: (proxy) => {
       //     proxy.on('proxyRes', (proxyRes) => {

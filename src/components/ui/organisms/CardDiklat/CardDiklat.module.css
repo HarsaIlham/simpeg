@@ -87,6 +87,10 @@
     }
 }
 
+.statusBadgeWrapper {
+    padding-left: 50px;
+}
+
 .footer {
     display: flex;
     align-items: center;
@@ -105,6 +109,7 @@
     display: flex;
     flex-direction: row;
     gap: var(--spacing-xs);
+    flex-wrap: wrap;
 }
 
 .footerLabelBold {
@@ -119,9 +124,40 @@
 }
 
 @media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .bodyWrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+    }
+
+    .statusBadgeWrapper {
+        padding-left: 0;
+    }
+
     .footer {
         flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-md);
+    }
+
+    .footerRow {
+        flex-direction: column;
         align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+
+    .footerRight {
+        width: 100%;
+        display: flex;
         gap: var(--spacing-sm);
+    }
+
+    .footerRight > * {
+        flex: 1;
     }
 }

@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, GraduationCap, Briefcase, Award, FileText, ClipboardList } from "lucide-react";
 import Card from "../../../ui/atoms/Card";
 import styles from "./RiwayatKarirContainer.module.css";
@@ -117,58 +118,96 @@ export const RiwayatKarirContainer = ({
     setPreviewFile({ url, title: title || "Dokumen" });
   };
 
-  const [pendidikanList, setPendidikanList] = useState<CardPendidikanData[]>([]);
-  const [isLoadingPendidikan, setIsLoadingPendidikan] = useState(false);
-  const [errorPendidikan, setErrorPendidikan] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
   const [selectedPendidikan, setSelectedPendidikan] = useState<CardPendidikanData | null>(null);
-
-  const [jabatanList, setJabatanList] = useState<CardJabatanData[]>([]);
-  const [isLoadingJabatan, setIsLoadingJabatan] = useState(false);
-  const [errorJabatan, setErrorJabatan] = useState<string | null>(null);
   const [selectedJabatan, setSelectedJabatan] = useState<CardJabatanData | null>(null);
-
-  const [pangkatList, setPangkatList] = useState<CardPangkatData[]>([]);
-  const [isLoadingPangkat, setIsLoadingPangkat] = useState(false);
-  const [errorPangkat, setErrorPangkat] = useState<string | null>(null);
   const [selectedPangkat, setSelectedPangkat] = useState<CardPangkatData | null>(null);
-
-  const [strList, setStrList] = useState<CardStrData[]>([]);
-  const [isLoadingStr, setIsLoadingStr] = useState(false);
-  const [errorStr, setErrorStr] = useState<string | null>(null);
   const [selectedStr, setSelectedStr] = useState<CardStrData | null>(null);
-
-  const [sipList, setSipList] = useState<CardSipData[]>([]);
-  const [isLoadingSip, setIsLoadingSip] = useState(false);
-  const [errorSip, setErrorSip] = useState<string | null>(null);
   const [selectedSip, setSelectedSip] = useState<CardSipData | null>(null);
-
-  const [penugasanList, setPenugasanList] = useState<CardPenugasanKlinisData[]>([]);
-  const [isLoadingPenugasan, setIsLoadingPenugasan] = useState(false);
-  const [errorPenugasan, setErrorPenugasan] = useState<string | null>(null);
   const [selectedPenugasan, setSelectedPenugasan] = useState<CardPenugasanKlinisData | null>(null);
 
-  useEffect(() => {
-    if (pendidikanListProp !== undefined) setPendidikanList(pendidikanListProp);
-    if (jabatanListProp !== undefined) setJabatanList(jabatanListProp);
-    if (pangkatListProp !== undefined) setPangkatList(pangkatListProp);
-    if (strListProp !== undefined) setStrList(strListProp);
-    if (sipListProp !== undefined) setSipList(sipListProp);
-    if (penugasanListProp !== undefined) setPenugasanList(penugasanListProp);
-  }, [pendidikanListProp, jabatanListProp, pangkatListProp, strListProp, sipListProp, penugasanListProp]);
+  // React Query auto-caching hooks for self-service mode
+  const { data: pendidikanData, isLoading: isLoadingPendidikanQuery, error: errorPendidikanQuery } = useQuery({
+    queryKey: ["riwayatKarir", "pendidikan"],
+    queryFn: async () => {
+      const response = await pendidikanService.getAll();
+      if (!response.success) throw new Error(response.message || "Gagal mengambil data pendidikan.");
+      return (response.data?.summary.items || []).map(mapToCardPendidikan);
+    },
+    enabled: !pegawaiId,
+  });
 
-  const activeLoadingPendidikan = isLoadingProps?.pendidikan ?? isLoadingPendidikan;
-  const activeLoadingJabatan = isLoadingProps?.jabatan ?? isLoadingJabatan;
-  const activeLoadingPangkat = isLoadingProps?.pangkat ?? isLoadingPangkat;
-  const activeLoadingStr = isLoadingProps?.str ?? isLoadingStr;
-  const activeLoadingSip = isLoadingProps?.sip ?? isLoadingSip;
-  const activeLoadingPenugasan = isLoadingProps?.penugasan ?? isLoadingPenugasan;
+  const { data: jabatanData, isLoading: isLoadingJabatanQuery, error: errorJabatanQuery } = useQuery({
+    queryKey: ["riwayatKarir", "jabatan"],
+    queryFn: async () => {
+      const response = await jabatanService.getAll();
+      if (!response.success) throw new Error(response.message || "Gagal mengambil data jabatan.");
+      return (response.data?.items || []).map(mapToCardJabatan);
+    },
+    enabled: !pegawaiId,
+  });
 
-  const activeErrorPendidikan = errorProps?.pendidikan ?? errorPendidikan;
-  const activeErrorJabatan = errorProps?.jabatan ?? errorJabatan;
-  const activeErrorPangkat = errorProps?.pangkat ?? errorPangkat;
-  const activeErrorStr = errorProps?.str ?? errorStr;
-  const activeErrorSip = errorProps?.sip ?? errorSip;
-  const activeErrorPenugasan = errorProps?.penugasan ?? errorPenugasan;
+  const { data: pangkatData, isLoading: isLoadingPangkatQuery, error: errorPangkatQuery } = useQuery({
+    queryKey: ["riwayatKarir", "pangkat"],
+    queryFn: async () => {
+      const response = await pangkatService.getAll();
+      if (!response.success) throw new Error(response.message || "Gagal mengambil data pangkat.");
+      return (response.data?.items || []).map(mapToCardPangkat);
+    },
+    enabled: !pegawaiId,
+  });
+
+  const { data: strData, isLoading: isLoadingStrQuery, error: errorStrQuery } = useQuery({
+    queryKey: ["riwayatKarir", "str"],
+    queryFn: async () => {
+      const response = await strService.getAll();
+      if (!response.success) throw new Error(response.message || "Gagal mengambil data STR.");
+      return (response.data?.items || []).map(mapToCardStr);
+    },
+    enabled: !pegawaiId,
+  });
+
+  const { data: sipData, isLoading: isLoadingSipQuery, error: errorSipQuery } = useQuery({
+    queryKey: ["riwayatKarir", "sip"],
+    queryFn: async () => {
+      const response = await sipService.getAll();
+      if (!response.success) throw new Error(response.message || "Gagal mengambil data SIP.");
+      return (response.data?.items || []).map(mapToCardSip);
+    },
+    enabled: !pegawaiId,
+  });
+
+  const { data: penugasanData, isLoading: isLoadingPenugasanQuery, error: errorPenugasanQuery } = useQuery({
+    queryKey: ["riwayatKarir", "penugasan"],
+    queryFn: async () => {
+      const response = await penugasanKlinisService.getAll();
+      if (!response.success) throw new Error(response.message || "Gagal mengambil data penugasan klinis.");
+      return (response.data?.items || []).map(mapToCardPenugasan);
+    },
+    enabled: !pegawaiId,
+  });
+
+  const pendidikanList = pegawaiId ? (pendidikanListProp || []) : (pendidikanData || []);
+  const jabatanList = pegawaiId ? (jabatanListProp || []) : (jabatanData || []);
+  const pangkatList = pegawaiId ? (pangkatListProp || []) : (pangkatData || []);
+  const strList = pegawaiId ? (strListProp || []) : (strData || []);
+  const sipList = pegawaiId ? (sipListProp || []) : (sipData || []);
+  const penugasanList = pegawaiId ? (penugasanListProp || []) : (penugasanData || []);
+
+  const activeLoadingPendidikan = pegawaiId ? (isLoadingProps?.pendidikan ?? false) : isLoadingPendidikanQuery;
+  const activeLoadingJabatan = pegawaiId ? (isLoadingProps?.jabatan ?? false) : isLoadingJabatanQuery;
+  const activeLoadingPangkat = pegawaiId ? (isLoadingProps?.pangkat ?? false) : isLoadingPangkatQuery;
+  const activeLoadingStr = pegawaiId ? (isLoadingProps?.str ?? false) : isLoadingStrQuery;
+  const activeLoadingSip = pegawaiId ? (isLoadingProps?.sip ?? false) : isLoadingSipQuery;
+  const activeLoadingPenugasan = pegawaiId ? (isLoadingProps?.penugasan ?? false) : isLoadingPenugasanQuery;
+
+  const activeErrorPendidikan = pegawaiId ? (errorProps?.pendidikan ?? null) : (errorPendidikanQuery ? (errorPendidikanQuery as Error).message : null);
+  const activeErrorJabatan = pegawaiId ? (errorProps?.jabatan ?? null) : (errorJabatanQuery ? (errorJabatanQuery as Error).message : null);
+  const activeErrorPangkat = pegawaiId ? (errorProps?.pangkat ?? null) : (errorPangkatQuery ? (errorPangkatQuery as Error).message : null);
+  const activeErrorStr = pegawaiId ? (errorProps?.str ?? null) : (errorStrQuery ? (errorStrQuery as Error).message : null);
+  const activeErrorSip = pegawaiId ? (errorProps?.sip ?? null) : (errorSipQuery ? (errorSipQuery as Error).message : null);
+  const activeErrorPenugasan = pegawaiId ? (errorProps?.penugasan ?? null) : (errorPenugasanQuery ? (errorPenugasanQuery as Error).message : null);
 
   const getPendidikanService = () => {
     if (pegawaiId) {
@@ -236,114 +275,6 @@ export const RiwayatKarirContainer = ({
     return penugasanKlinisService;
   };
 
-  // Self-service Lazy Loading
-  const [fetchedTabs, setFetchedTabs] = useState<Record<string, boolean>>({});
-
-  const fetchTab = useCallback(async (tab: string) => {
-    if (pegawaiId) return; // In HRD mode, data is supplied via props
-
-    if (tab === "pendidikan") {
-      setIsLoadingPendidikan(true);
-      setErrorPendidikan(null);
-      try {
-        const response = await pendidikanService.getAll();
-        if (response.success && response.data) {
-          const items = response.data.summary.items || [];
-          setPendidikanList(items.map(mapToCardPendidikan));
-        } else {
-          setErrorPendidikan(response.message || "Gagal mengambil data pendidikan.");
-        }
-      } catch (err: unknown) {
-        const errorObj = err as { message?: string };
-        setErrorPendidikan(errorObj?.message || "Terjadi kesalahan saat mengambil data pendidikan.");
-      } finally {
-        setIsLoadingPendidikan(false);
-      }
-    } else if (tab === "jabatan") {
-      setIsLoadingJabatan(true);
-      setErrorJabatan(null);
-      try {
-        const response = await jabatanService.getAll();
-        if (response.success && response.data) {
-          setJabatanList((response.data.items || []).map(mapToCardJabatan));
-        } else {
-          setErrorJabatan(response.message || "Gagal mengambil data jabatan.");
-        }
-      } catch (err: unknown) {
-        const errorObj = err as { message?: string };
-        setErrorJabatan(errorObj?.message || "Terjadi kesalahan saat mengambil data jabatan.");
-      } finally {
-        setIsLoadingJabatan(false);
-      }
-    } else if (tab === "pangkat") {
-      setIsLoadingPangkat(true);
-      setErrorPangkat(null);
-      try {
-        const response = await pangkatService.getAll();
-        if (response.success && response.data) {
-          setPangkatList((response.data.items || []).map(mapToCardPangkat));
-        } else {
-          setErrorPangkat(response.message || "Gagal mengambil data pangkat.");
-        }
-      } catch (err: unknown) {
-        const errorObj = err as { message?: string };
-        setErrorPangkat(errorObj?.message || "Terjadi kesalahan saat mengambil data pangkat.");
-      } finally {
-        setIsLoadingPangkat(false);
-      }
-    } else if (tab === "str-sip") {
-      setIsLoadingStr(true);
-      setIsLoadingSip(true);
-      setErrorStr(null);
-      setErrorSip(null);
-      try {
-        const [resStr, resSip] = await Promise.all([strService.getAll(), sipService.getAll()]);
-        if (resStr.success && resStr.data) {
-          setStrList((resStr.data.items || []).map(mapToCardStr));
-        } else {
-          setErrorStr(resStr.message || "Gagal mengambil data STR.");
-        }
-        if (resSip.success && resSip.data) {
-          setSipList((resSip.data.items || []).map(mapToCardSip));
-        } else {
-          setErrorSip(resSip.message || "Gagal mengambil data SIP.");
-        }
-      } catch (err: unknown) {
-        const errorObj = err as { message?: string };
-        setErrorStr(errorObj?.message || "Terjadi kesalahan saat mengambil data STR/SIP.");
-        setErrorSip(errorObj?.message || "Terjadi kesalahan saat mengambil data STR/SIP.");
-      } finally {
-        setIsLoadingStr(false);
-        setIsLoadingSip(false);
-      }
-    } else if (tab === "penugasan") {
-      setIsLoadingPenugasan(true);
-      setErrorPenugasan(null);
-      try {
-        const response = await penugasanKlinisService.getAll();
-        if (response.success && response.data) {
-          setPenugasanList((response.data.items || []).map(mapToCardPenugasan));
-        } else {
-          setErrorPenugasan(response.message || "Gagal mengambil data penugasan klinis.");
-        }
-      } catch (err: unknown) {
-        const errorObj = err as { message?: string };
-        setErrorPenugasan(errorObj?.message || "Terjadi kesalahan saat mengambil data penugasan klinis.");
-      } finally {
-        setIsLoadingPenugasan(false);
-      }
-    }
-  }, [pegawaiId]);
-
-  useEffect(() => {
-    if (pegawaiId) return; // In HRD mode, data is supplied via props
-    if (fetchedTabs[activeTab]) return;
-
-    fetchTab(activeTab).then(() => {
-      setFetchedTabs((prev) => ({ ...prev, [activeTab]: true }));
-    });
-  }, [activeTab, fetchedTabs, fetchTab, pegawaiId]);
-
   const handleSubmit = async (type: string, formData: FormData, selectedItem: any) => {
     setIsSubmitting(true);
     setServerErrors(undefined);
@@ -384,7 +315,12 @@ export const RiwayatKarirContainer = ({
       if (pegawaiId) {
         onRefresh?.();
       } else {
-        await fetchTab(activeTab);
+        if (type === "str" || type === "sip") {
+          queryClient.invalidateQueries({ queryKey: ["riwayatKarir", "str"] });
+          queryClient.invalidateQueries({ queryKey: ["riwayatKarir", "sip"] });
+        } else {
+          queryClient.invalidateQueries({ queryKey: ["riwayatKarir", type] });
+        }
       }
     } catch (err: unknown) {
       const errorObj = err as { message?: string; errors?: Record<string, string[]> };
@@ -415,7 +351,12 @@ export const RiwayatKarirContainer = ({
         if (pegawaiId) {
           onRefresh?.();
         } else {
-          await fetchTab(activeTab);
+          if (deleteTarget.type === "str" || deleteTarget.type === "sip") {
+            queryClient.invalidateQueries({ queryKey: ["riwayatKarir", "str"] });
+            queryClient.invalidateQueries({ queryKey: ["riwayatKarir", "sip"] });
+          } else {
+            queryClient.invalidateQueries({ queryKey: ["riwayatKarir", deleteTarget.type] });
+          }
         }
       }
     } catch (err: unknown) {
@@ -631,7 +572,7 @@ export const RiwayatKarirContainer = ({
               onCancel={handleCloseModal}
               onSubmit={(fd) => handleSubmit(strsipType === "STR" || !!selectedStr ? "str" : "sip", fd, selectedStr || selectedSip)}
               onTypeChange={(type) => setStrsipType(type)}
-              isPegawai={false}
+              isPegawai={!pegawaiId}
             />
           )}
 

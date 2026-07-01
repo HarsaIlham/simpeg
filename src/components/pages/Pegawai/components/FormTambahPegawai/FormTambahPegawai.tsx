@@ -24,7 +24,7 @@ const FormTambahPegawai = ({ onSubmit, onCancel, isSaving = false }: FormTambahP
             return;
         }
 
-        if (nik.length > 16) {
+        if (nik.length != 16) {
             setError("NIK harus berupa 16 digit angka.");
             return;
         }

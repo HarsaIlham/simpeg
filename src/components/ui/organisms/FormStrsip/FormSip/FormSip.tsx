@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Button from "../../../atoms/Button";
 import Input from "../../../atoms/Input";
-import Select from "../../../atoms/Select";
 import styles from "../FormStrsip.module.css";
 import type { CardSipData } from "../../CardSip/CardSip";
 
@@ -19,7 +18,7 @@ const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
     const [nomorSip, setNomorSip] = useState(initialData?.nomorSip ?? "");
     const [tanggalTerbit, setTanggalTerbit] = useState(initialData?.tanggalTerbit ?? "");
     const [tanggalKadaluarsa, setTanggalKadaluarsa] = useState(initialData?.tanggalKadaluarsa ?? "");
-    const [isCurrent, setIsCurrent] = useState(initialData?.isCurrent ?? true);
+    const [linkSk, _setLinkSk] = useState(initialData?.linkSk ?? "");
     const [skFile, setSkFile] = useState<File | null>(null);
 
     const getFieldError = (field: string): string | undefined => {
@@ -31,7 +30,6 @@ const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
         const submitData = new FormData();
         submitData.append("nomor_sip", nomorSip);
         submitData.append("tanggal_terbit", tanggalTerbit);
-        submitData.append("is_current", isCurrent ? "1" : "0");
 
         if (tanggalKadaluarsa) submitData.append("tanggal_kadaluarsa", tanggalKadaluarsa);
         if (skFile) submitData.append("sk_sip", skFile);
@@ -77,19 +75,6 @@ const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
                 </div>
             </div>
 
-            <Select
-                id="sip-status"
-                name="is_current"
-                label="Status"
-                options={[
-                    { value: "aktif", label: "Aktif" },
-                    { value: "tidak-aktif", label: "Tidak Aktif" },
-                ]}
-                value={isCurrent ? "aktif" : "tidak-aktif"}
-                onChange={(e) => setIsCurrent(e.target.value === "aktif")}
-                required
-            />
-
             <Input
                 id="sip-dokumen"
                 name="sk_sip"
@@ -100,9 +85,9 @@ const FormSip = ({ onCancel, onSubmit, initialData, isSubmitting = false, server
                     setSkFile(file);
                 }}
                 error={getFieldError("sk_sip")}
-                required={isPegawai && !initialData?.linkSk}
+                required={isPegawai && !linkSk && !skFile}
             />
-            {initialData?.linkSk && !skFile && (
+            {linkSk && !skFile && (
                 <span style={{ color: 'var(--color-muted, #6B7280)', fontSize: '12px', fontStyle: 'italic', marginTop: '-12px', display: 'block' }}>
                     File sudah ada. Upload baru hanya jika ingin mengganti.
                 </span>

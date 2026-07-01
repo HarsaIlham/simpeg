@@ -227,8 +227,7 @@ const Pengaturan = () => {
                                     className={styles.helpLink}
                                 >
                                     fonnte.com
-                                </a>
-                                . Token digunakan untuk mengirimkan reminder STR/SIP melalui WhatsApp.
+                                </a>                                
                             </p>
                         </div>
 

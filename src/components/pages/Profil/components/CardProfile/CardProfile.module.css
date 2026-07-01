@@ -142,3 +142,9 @@
     background: #6b7280;
     box-shadow: 0 0 6px rgba(107, 114, 128, 0.4);
 }
+
+@media (max-width: 768px) {
+    .card {
+        padding: var(--spacing-xl);
+    }
+}

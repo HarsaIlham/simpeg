@@ -139,7 +139,7 @@ const buildColumns = (
             key: "ingatkan",
             label: "Ingatkan",
             width: "11%",
-            render: (row) => (
+            render: (row) => row.status !== "aktif" && (
                 <Button
                     icon={<Send size={14} />}
                     size="sm"
@@ -394,7 +394,7 @@ const StrSip = () => {
                 <StatCard
                     icon={<FileText size={24} />}
                     value={summary.total}
-                    label="Total STR/SIP"
+                    label={`Total ${filterJenis || "STR/SIP"}`}
                     variant="green"
                 />
                 <StatCard

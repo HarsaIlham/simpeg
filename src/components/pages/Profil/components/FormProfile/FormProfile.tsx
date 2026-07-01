@@ -274,8 +274,7 @@ const FormProfile = ({ initialData, onSubmit, onDocumentUpload, isDocUploading =
                     id="nip"
                     value={formData.nip}
                     onChange={handleInputChange}
-                    disabled={!isEditing}
-                    required
+                    disabled={!isEditing}                    
                 />
 
                 <Input

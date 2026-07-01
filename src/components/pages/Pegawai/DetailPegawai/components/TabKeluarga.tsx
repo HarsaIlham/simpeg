@@ -260,12 +260,6 @@ const TabKeluarga = ({ keluargaList, isAdmin, pegawaiId, onRefresh }: TabKeluarg
         }
     };
 
-    // ============================
-    // DELETE handler (HRD endpoint)
-    // ============================
-    const handleDeleteRequest = (member: FamilyMemberData) => {
-        setDeleteTarget(member);
-    };
 
     const handleDeleteConfirm = async () => {
         if (!deleteTarget) return;
@@ -434,7 +428,6 @@ const TabKeluarga = ({ keluargaList, isAdmin, pegawaiId, onRefresh }: TabKeluarg
                             data={member}
                             onViewDocument={(url, label) => setPreviewFile({ url, title: label })}
                             onEdit={isAdmin ? () => handleEdit(member) : undefined}
-                            onDelete={isAdmin ? () => handleDeleteRequest(member) : undefined}
                         />
                     ))
                 )}
